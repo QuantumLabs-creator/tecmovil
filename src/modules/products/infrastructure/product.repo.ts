@@ -36,24 +36,26 @@ async function generateProductCode(tx: Prisma.TransactionClient) {
 }
 
 function mapProduct(
-  p: Prisma.ProductGetPayload<{
-    include: { category: true; supplier: true; unit: true };
-  }>
-): ProductRecord {
+  p: Prisma.ProductGetPayload<{ include: { category: true; supplier: true; unit: true } }>
+) {
   return {
     id: p.id,
     code: p.code,
     name: p.name,
     description: p.description ?? null,
+    image: p.image ?? null,
 
     purchasePrice: p.purchasePrice,
-    salePrice: p.salePrice,
+    retailPrice: p.retailPrice,
+    wholesalePrice: p.wholesalePrice ?? null,
+    wholesaleMinQuantity: p.wholesaleMinQuantity,
 
     minSalePrice: p.minSalePrice ?? null,
     maxSalePrice: p.maxSalePrice ?? null,
 
     minStock: p.minStock,
     currentStock: p.currentStock,
+    reservedStock: p.reservedStock,
 
     active: p.active,
     createdAt: p.createdAt,
@@ -212,23 +214,32 @@ export class PrismaProductRepository implements ProductRepository {
       if (!unitId) throw new Error("unitId requerido");
 
       const created = await tx.product.create({
-        data: {
-          code,
-          name,
-          description: description ?? null,
-          purchasePrice,
-          salePrice,
-          minSalePrice,
-          maxSalePrice,
-          minStock,
-          currentStock,
-          active,
-          categoryId,
-          unitId,
-          supplierId: supplierId ?? null,
-        },
-        include: { category: true, supplier: true, unit: true },
-      });
+  data: {
+    code: input.code ?? (await generateProductCode(tx)),
+    name: input.name,
+    description: input.description ?? null,
+    image: input.image ?? null,
+
+    purchasePrice: input.purchasePrice,
+    retailPrice: input.retailPrice,
+    wholesalePrice: input.wholesalePrice ?? null,
+    wholesaleMinQuantity: input.wholesaleMinQuantity ?? 10,
+
+    minSalePrice: input.minSalePrice ?? null,
+    maxSalePrice: input.maxSalePrice ?? null,
+
+    minStock: input.minStock ?? 0,
+    currentStock: input.currentStock ?? 0,
+    reservedStock: input.reservedStock ?? 0,
+
+    active: input.active ?? true,
+
+    categoryId: input.categoryId,
+    unitId: input.unitId,
+    supplierId: input.supplierId ?? null,
+  },
+  include: { category: true, supplier: true, unit: true },
+});
 
       return mapProduct(created);
     });
