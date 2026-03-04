@@ -1,15 +1,23 @@
 // src/modules/products/application/dtos/product.dto.ts
-
 export interface ProductDTO {
   id: string;
+  code: string;
+
   name: string;
   description: string | null;
+  image: string | null;
 
-  purchasePrice: string; // mejor serializar Decimal a string
-  salePrice: string;
+  purchasePrice: string;
+  retailPrice: string;
+  wholesalePrice: string | null;
+  wholesaleMinQuantity: number;
+
+  minSalePrice: string | null;
+  maxSalePrice: string | null;
 
   minStock: number;
   currentStock: number;
+  reservedStock: number;
 
   active: boolean;
 
@@ -17,23 +25,30 @@ export interface ProductDTO {
   supplierId: string | null;
   unitId: string;
 
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: string; // ISO
+  updatedAt: string; // ISO
 }
 
 export interface CreateProductDTO {
+  // opcional: si escaneas y quieres respetar el código, si no lo mandas se autogenera
+  code?: string;
 
   name: string;
   description?: string | null;
+  image?: string | null;
 
   purchasePrice: unknown;
-  salePrice: unknown;
+  retailPrice: unknown;
 
-  minStock?: unknown;
-  currentStock?: unknown;
+  wholesalePrice?: unknown;
+  wholesaleMinQuantity?: unknown;
 
   minSalePrice?: unknown;
   maxSalePrice?: unknown;
+
+  minStock?: unknown;
+  currentStock?: unknown;
+  reservedStock?: unknown;
 
   active?: unknown;
 
@@ -42,61 +57,31 @@ export interface CreateProductDTO {
   unitId: string;
 }
 
-export interface UpdateProductDTO {
-  name?: string;
-  description?: string | null;
-
-  purchasePrice?: unknown;
-  salePrice?: unknown;
-
-  minStock?: unknown;
-  currentStock?: unknown;
-
-  minSalePrice?: unknown;
-  maxSalePrice?: unknown;
-
-  active?: unknown;
-
-  categoryId?: string;
-  supplierId?: string | null;
-  unitId?: string;
-}
+export interface UpdateProductDTO extends Partial<CreateProductDTO> {}
 
 export interface SearchProductsDTO {
   q?: string;
-  active?: string;      // "true" | "false"
+  active?: string;
   categoryId?: string;
   supplierId?: string;
   unitId?: string;
-  lowStock?: string;    // "true"
+  lowStock?: string; // "true"
   page?: number;
   pageSize?: number;
 }
 
-export function assertCreateProductDTO(input: unknown): asserts input is CreateProductDTO {
-  if (!input || typeof input !== "object") {
-    throw new Error("Body inválido");
-  }
+function isBlank(v: unknown) {
+  return v === undefined || v === null || String(v).trim() === "";
+}
 
+export function assertCreateProductDTO(input: unknown): asserts input is CreateProductDTO {
+  if (!input || typeof input !== "object") throw new Error("Body inválido");
   const x = input as any;
 
-  if (!String(x.name ?? "").trim()) {
-    throw new Error("name requerido");
-  }
+  if (!String(x.name ?? "").trim()) throw new Error("name requerido");
+  if (!String(x.categoryId ?? "").trim()) throw new Error("categoryId requerido");
+  if (!String(x.unitId ?? "").trim()) throw new Error("unitId requerido");
 
-  if (!String(x.categoryId ?? "").trim()) {
-    throw new Error("categoryId requerido");
-  }
-
-  if (!String(x.unitId ?? "").trim()) {
-    throw new Error("unitId requerido");
-  }
-
-  if (x.purchasePrice === undefined || String(x.purchasePrice).trim() === "") {
-    throw new Error("purchasePrice requerido");
-  }
-
-  if (x.salePrice === undefined || String(x.salePrice).trim() === "") {
-    throw new Error("salePrice requerido");
-  }
+  if (isBlank(x.purchasePrice)) throw new Error("purchasePrice requerido");
+  if (isBlank(x.retailPrice)) throw new Error("retailPrice requerido");
 }
