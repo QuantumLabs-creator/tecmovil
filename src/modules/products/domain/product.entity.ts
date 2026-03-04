@@ -1,20 +1,27 @@
 // src/modules/products/domain/product.entity.ts
+
 import type { Prisma } from "@/src/generated/prisma/client";
 
 export class ProductEntity {
   static create(input: {
+    code?: string | null;
 
     name: string;
     description: string | null;
+    image: string | null;
 
     purchasePrice: Prisma.Decimal;
-    salePrice: Prisma.Decimal;
+    retailPrice: Prisma.Decimal;
 
-    minStock: number;
-    currentStock: number;
+    wholesalePrice: Prisma.Decimal | null;
+    wholesaleMinQuantity: number;
 
     minSalePrice: Prisma.Decimal | null;
     maxSalePrice: Prisma.Decimal | null;
+
+    minStock: number;
+    currentStock: number;
+    reservedStock: number;
 
     active: boolean;
 
@@ -22,25 +29,10 @@ export class ProductEntity {
     supplierId: string | null;
     unitId: string;
   }) {
-    return {
+    if (!String(input.name ?? "").trim()) throw new Error("name requerido");
+    if (!String(input.categoryId ?? "").trim()) throw new Error("categoryId requerido");
+    if (!String(input.unitId ?? "").trim()) throw new Error("unitId requerido");
 
-      name: input.name,
-      description: input.description,
-
-      purchasePrice: input.purchasePrice,
-      salePrice: input.salePrice,
-
-      minStock: input.minStock,
-      currentStock: input.currentStock,
-
-      minSalePrice: input.minSalePrice,
-      maxSalePrice: input.maxSalePrice,
-
-      active: input.active,
-
-      categoryId: input.categoryId,
-      supplierId: input.supplierId,
-      unitId: input.unitId,
-    };
+    return { ...input };
   }
 }
