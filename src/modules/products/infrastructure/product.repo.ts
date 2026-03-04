@@ -245,106 +245,119 @@ export class PrismaProductRepository implements ProductRepository {
     });
   }
 
-  async update(id: string, input: UpdateProductInput): Promise<ProductRecord> {
-    return prisma.$transaction(async (tx) => {
-      const existing = await tx.product.findUnique({ where: { id } });
-      if (!existing) throw new Error("Producto no encontrado");
-
-      const data: Prisma.ProductUpdateInput = {};
-
-      // ===== Campos simples
-      if (input.name !== undefined) {
-        const v = normalizeText(input.name);
-        if (!v) throw new Error("name inválido");
-        data.name = v;
-      }
-
-      if (input.description !== undefined) {
-        data.description = normalizeText(input.description) ?? null;
-      }
-
-      // ===== Precios (para validación cruzada)
-      const nextSalePrice =
-        input.salePrice !== undefined
-          ? normalizeMoney(input.salePrice, "salePrice")
-          : existing.salePrice;
-
-      const nextMinSale =
-        input.minSalePrice !== undefined
-          ? isBlank(input.minSalePrice)
-            ? null
-            : normalizeMoney(input.minSalePrice, "minSalePrice")
-          : existing.minSalePrice ?? null;
-
-      const nextMaxSale =
-        input.maxSalePrice !== undefined
-          ? isBlank(input.maxSalePrice)
-            ? null
-            : normalizeMoney(input.maxSalePrice, "maxSalePrice")
-          : existing.maxSalePrice ?? null;
-
-      // ✅ validaciones de rango con valores finales
-      if (nextMinSale && (nextMinSale as any).greaterThan(nextSalePrice as any)) {
-        throw new Error("minSalePrice no puede ser mayor que salePrice");
-      }
-      if (nextMaxSale && (nextMaxSale as any).lessThan(nextSalePrice as any)) {
-        throw new Error("maxSalePrice no puede ser menor que salePrice");
-      }
-      if (nextMinSale && nextMaxSale && (nextMinSale as any).greaterThan(nextMaxSale as any)) {
-        throw new Error("minSalePrice no puede ser mayor que maxSalePrice");
-      }
-
-      if (input.purchasePrice !== undefined) {
-        data.purchasePrice = normalizeMoney(input.purchasePrice, "purchasePrice");
-      }
-
-      if (input.salePrice !== undefined) {
-        data.salePrice = nextSalePrice;
-      }
-
-      // ✅ aplicar min/max si vienen
-      if (input.minSalePrice !== undefined) data.minSalePrice = nextMinSale;
-      if (input.maxSalePrice !== undefined) data.maxSalePrice = nextMaxSale;
-
-      if (input.minStock !== undefined) {
-        data.minStock = Math.max(0, normalizeInt(input.minStock, 0));
-      }
-
-      if (input.currentStock !== undefined) {
-        data.currentStock = Math.max(0, normalizeInt(input.currentStock, 0));
-      }
-
-      if (input.active !== undefined) {
-        data.active = normalizeBoolean(input.active, true);
-      }
-
-      // ===== Relaciones
-      if (input.categoryId !== undefined) {
-        const v = String(input.categoryId ?? "").trim();
-        if (!v) throw new Error("categoryId inválido");
-        data.category = { connect: { id: v } };
-      }
-
-      if (input.unitId !== undefined) {
-        const v = String(input.unitId ?? "").trim();
-        if (!v) throw new Error("unitId inválido");
-        data.unit = { connect: { id: v } };
-      }
-
-      if (input.supplierId !== undefined) {
-        const v = normalizeText(input.supplierId);
-        data.supplier = v ? { connect: { id: v } } : { disconnect: true };
-      }
-
-      const updated = await tx.product.update({
-        where: { id },
-        data,
-        include: { category: true, supplier: true, unit: true },
-      });
-
-      return mapProduct(updated);
+  async update(id: string, input: any): Promise<ProductRecord> {
+  return prisma.$transaction(async (tx) => {
+    const existing = await tx.product.findUnique({
+      where: { id },
+      include: { category: true, supplier: true, unit: true },
     });
-  }
+    if (!existing) throw new Error("Producto no encontrado");
+
+    const data: Prisma.ProductUpdateInput = {};
+
+    // ===== Textos
+    if (input.name !== undefined) {
+      const v = String(input.name ?? "").trim();
+      if (!v) throw new Error("name inválido");
+      data.name = v;
+    }
+    if (input.description !== undefined) data.description = input.description ?? null;
+    if (input.image !== undefined) data.image = input.image ?? null;
+
+    // ===== Stocks (rule: reserved <= current)
+    const nextCurrent =
+      input.currentStock !== undefined ? Number(input.currentStock) : existing.currentStock;
+
+    const nextReserved =
+      input.reservedStock !== undefined ? Number(input.reservedStock) : existing.reservedStock;
+
+    if (nextReserved > nextCurrent) {
+      throw new Error("reservedStock no puede ser mayor que currentStock");
+    }
+
+    if (input.minStock !== undefined) data.minStock = Math.max(0, Number(input.minStock));
+    if (input.currentStock !== undefined) data.currentStock = Math.max(0, Number(input.currentStock));
+    if (input.reservedStock !== undefined) data.reservedStock = Math.max(0, Number(input.reservedStock));
+
+    // ===== Precios (validación cruzada final)
+    const nextRetail =
+      input.retailPrice !== undefined ? input.retailPrice : existing.retailPrice;
+
+    const nextWholesale =
+      input.wholesalePrice !== undefined ? input.wholesalePrice : (existing.wholesalePrice ?? null);
+
+    const nextMinSale =
+      input.minSalePrice !== undefined ? input.minSalePrice : (existing.minSalePrice ?? null);
+
+    const nextMaxSale =
+      input.maxSalePrice !== undefined ? input.maxSalePrice : (existing.maxSalePrice ?? null);
+
+    // Reglas: minSale <= retail y <= wholesale (si existe)
+    if (nextMinSale && nextMinSale.greaterThan(nextRetail)) {
+      throw new Error("minSalePrice no puede ser mayor que retailPrice");
+    }
+    if (nextMaxSale && nextMaxSale.lessThan(nextRetail)) {
+      throw new Error("maxSalePrice no puede ser menor que retailPrice");
+    }
+    if (nextMinSale && nextMaxSale && nextMinSale.greaterThan(nextMaxSale)) {
+      throw new Error("minSalePrice no puede ser mayor que maxSalePrice");
+    }
+
+    if (nextWholesale) {
+      if (nextMinSale && nextMinSale.greaterThan(nextWholesale)) {
+        throw new Error("minSalePrice no puede ser mayor que wholesalePrice");
+      }
+      if (nextMaxSale && nextMaxSale.lessThan(nextWholesale)) {
+        throw new Error("maxSalePrice no puede ser menor que wholesalePrice");
+      }
+    }
+
+    // Aplicar precios
+    if (input.purchasePrice !== undefined) data.purchasePrice = input.purchasePrice;
+    if (input.retailPrice !== undefined) data.retailPrice = input.retailPrice;
+
+    if (input.wholesalePrice !== undefined) data.wholesalePrice = input.wholesalePrice; // Decimal|null
+    if (input.wholesaleMinQuantity !== undefined) {
+      data.wholesaleMinQuantity = Math.max(1, Number(input.wholesaleMinQuantity));
+    }
+
+    if (input.minSalePrice !== undefined) data.minSalePrice = input.minSalePrice; // Decimal|null
+    if (input.maxSalePrice !== undefined) data.maxSalePrice = input.maxSalePrice; // Decimal|null
+
+    // ===== Relaciones
+    if (input.categoryId !== undefined) {
+      const v = String(input.categoryId ?? "").trim();
+      if (!v) throw new Error("categoryId inválido");
+      data.category = { connect: { id: v } };
+    }
+
+    if (input.unitId !== undefined) {
+      const v = String(input.unitId ?? "").trim();
+      if (!v) throw new Error("unitId inválido");
+      data.unit = { connect: { id: v } };
+    }
+
+    if (input.supplierId !== undefined) {
+      const v = input.supplierId; // string|null (ya normalizado)
+      data.supplier = v ? { connect: { id: v } } : { disconnect: true };
+    }
+
+    // (opcional) si permites cambiar code manual:
+    if (input.code !== undefined) {
+      const v = String(input.code ?? "").trim();
+      if (!v) throw new Error("code inválido");
+      data.code = v;
+    }
+
+    const updated = await tx.product.update({
+      where: { id },
+      data,
+      include: { category: true, supplier: true, unit: true },
+    });
+
+    return mapProduct(updated);
+  });
+}
 
   async delete(id: string): Promise<void> {
     const p = await prisma.product.findUnique({ where: { id } });
