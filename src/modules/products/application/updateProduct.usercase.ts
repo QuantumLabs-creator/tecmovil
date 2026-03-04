@@ -7,8 +7,12 @@ export class UpdateProductUseCase {
   constructor(private readonly repo: ProductRepository) {}
 
   async execute(id: string, dto: UpdateProductDTO): Promise<ProductRecord> {
-    if (!id?.trim()) throw new Error("id requerido");
+    const pid = String(id ?? "").trim();
+    if (!pid) throw new Error("id requerido");
+
+    // ✅ normaliza y convierte money/ints/bools
     const input = normalizeUpdateProduct(dto);
-    return this.repo.update(id.trim(), input);
+
+    return this.repo.update(pid, input);
   }
 }
