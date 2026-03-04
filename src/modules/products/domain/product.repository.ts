@@ -1,20 +1,26 @@
 // src/modules/products/domain/product.repository.ts
+
 import type { Prisma } from "@/src/generated/prisma/client";
 
 export type ProductRecord = {
   id: string;
   code: string;
+
   name: string;
   description: string | null;
+  image: string | null;
 
   purchasePrice: Prisma.Decimal;
-  salePrice: Prisma.Decimal;
-
-  minStock: number;
-  currentStock: number;
+  retailPrice: Prisma.Decimal;
+  wholesalePrice: Prisma.Decimal | null;
+  wholesaleMinQuantity: number;
 
   minSalePrice: Prisma.Decimal | null;
   maxSalePrice: Prisma.Decimal | null;
+
+  minStock: number;
+  currentStock: number;
+  reservedStock: number;
 
   active: boolean;
   createdAt: Date;
@@ -36,27 +42,34 @@ export type ProductListResult = {
 
 export type ProductListParams = {
   q?: string;
-  active?: string; // "true" | "false"
+  active?: string;
   categoryId?: string;
   supplierId?: string;
   unitId?: string;
-  lowStock?: boolean; // currentStock <= minStock
+  lowStock?: boolean;
   page: number;
   pageSize: number;
 };
 
 export type CreateProductInput = {
+  code?: string | null;
+
   name: string;
   description?: string | null;
+  image?: string | null;
 
-  purchasePrice: unknown; // number|string|Decimal (lo normalizas en rules)
-  salePrice: unknown;
+  purchasePrice: unknown;
+  retailPrice: unknown;
+
+  wholesalePrice?: unknown;
+  wholesaleMinQuantity?: unknown;
+
+  minSalePrice?: unknown;
+  maxSalePrice?: unknown;
 
   minStock?: unknown;
   currentStock?: unknown;
-
-  minSalePrice?: unknown; // opcional
-  maxSalePrice?: unknown;
+  reservedStock?: unknown;
 
   active?: unknown;
 
@@ -71,7 +84,7 @@ export interface ProductRepository {
   getById(id: string): Promise<ProductRecord | null>;
   getByCode(code: string): Promise<ProductRecord | null>;
   list(params: ProductListParams): Promise<ProductListResult>;
-  create(input: CreateProductInput): Promise<ProductRecord>;
-  update(id: string, input: UpdateProductInput): Promise<ProductRecord>;
+  create(input: any): Promise<ProductRecord>;
+  update(id: string, input: any): Promise<ProductRecord>;
   delete(id: string): Promise<void>;
 }
