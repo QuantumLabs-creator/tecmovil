@@ -1,21 +1,17 @@
+export const runtime = "nodejs";
 
 import { ok, fail } from "@/src/shared/http/api";
 import { cookies } from "next/headers";
-import { verifyAccessToken } from "@/src/modules/auth/infrastructure/auth.utils";
 import { PrismaAuthRepository } from "@/src/modules/auth/infrastructure/auth.repo";
-
+import { getCurrentUserUseCase } from "@/src/modules/auth/application/getCurrentUser.usecase";
 
 export async function GET() {
   try {
     const token = (await cookies()).get("access_token")?.value;
     if (!token) return fail("No autenticado", 401);
 
-    const payload = await verifyAccessToken(token);
-
     const repo = new PrismaAuthRepository();
-    const user = await repo.findById(payload.sub);
-
-    if (!user || !user.active) return fail("No autenticado", 401);
+    const user = await getCurrentUserUseCase(repo, token);
 
     return ok({
       user: {
@@ -29,7 +25,7 @@ export async function GET() {
         createdAt: user.createdAt,
       },
     });
-  } catch {
-    return fail("No autenticado", 401);
+  } catch (e: any) {
+    return fail(e?.message ?? "No autenticado", 401);
   }
 }
