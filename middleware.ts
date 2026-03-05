@@ -34,7 +34,7 @@ export async function middleware(req: NextRequest) {
     if (pathname.startsWith("/api")) {
       return NextResponse.json({ ok: false, message: "No autenticado" }, { status: 401 });
     }
-    return NextResponse.redirect(new URL("/login", req.url));
+    return NextResponse.redirect(new URL("/auth", req.url));
   }
 
   const jwtSecret = process.env.JWT_SECRET;
@@ -60,7 +60,7 @@ export async function middleware(req: NextRequest) {
     if (pathname.startsWith("/api")) {
       return NextResponse.json({ ok: false, message: "Token inválido" }, { status: 401 });
     }
-    return NextResponse.redirect(new URL("/login", req.url));
+    return NextResponse.redirect(new URL("/auth", req.url));
   }
 }
 
