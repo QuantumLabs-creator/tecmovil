@@ -48,3 +48,31 @@ body {
   display: none !important;
   /* Safari y Chrome antiguo */
 }
+
+/* Animación de spinner */
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+/* Transiciones suaves para tema */
+html {
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Focus visible para accesibilidad keyboard */
+:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* Reducir movimiento para usuarios que lo prefieran */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
