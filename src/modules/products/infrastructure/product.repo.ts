@@ -167,83 +167,97 @@ export class PrismaProductRepository implements ProductRepository {
   }
 
   async create(input: CreateProductInput): Promise<ProductRecord> {
-    return prisma.$transaction(async (tx) => {
-      const code = await generateProductCode(tx);
+  return prisma.$transaction(async (tx) => {
+    const code = input.code?.trim() || (await generateProductCode(tx));
 
-      const name = normalizeText(input.name);
-      if (!name) throw new Error("name requerido");
+    const name = normalizeText(input.name);
+    if (!name) throw new Error("name requerido");
 
-      const description = normalizeText(input.description);
+    const categoryId = String(input.categoryId ?? "").trim();
+    const unitId = String(input.unitId ?? "").trim();
+    if (!categoryId) throw new Error("categoryId requerido");
+    if (!unitId) throw new Error("unitId requerido");
 
-      const purchasePrice = normalizeMoney(input.purchasePrice, "purchasePrice");
-      const salePrice = normalizeMoney(input.salePrice, "salePrice");
+    const purchasePrice = normalizeMoney(input.purchasePrice, "purchasePrice");
+    const retailPrice = normalizeMoney(input.retailPrice, "retailPrice");
 
-      const minSalePrice = isBlank(input.minSalePrice)
-        ? null
-        : normalizeMoney(input.minSalePrice, "minSalePrice");
+    const wholesalePrice = isBlank(input.wholesalePrice)
+      ? null
+      : normalizeMoney(input.wholesalePrice, "wholesalePrice");
 
-      const maxSalePrice = isBlank(input.maxSalePrice)
-        ? null
-        : normalizeMoney(input.maxSalePrice, "maxSalePrice");
+    const wholesaleMinQuantity =
+      input.wholesaleMinQuantity === undefined
+        ? 10
+        : Math.max(1, normalizeInt(input.wholesaleMinQuantity, 10));
 
-      // ✅ validaciones de rango
-      if (minSalePrice && (minSalePrice as any).greaterThan(salePrice as any)) {
-        throw new Error("minSalePrice no puede ser mayor que salePrice");
+    const minSalePrice = isBlank(input.minSalePrice)
+      ? null
+      : normalizeMoney(input.minSalePrice, "minSalePrice");
+
+    const maxSalePrice = isBlank(input.maxSalePrice)
+      ? null
+      : normalizeMoney(input.maxSalePrice, "maxSalePrice");
+
+    // ✅ reglas: min/max contra retail y wholesale si existe
+    if (minSalePrice && minSalePrice.greaterThan(retailPrice)) {
+      throw new Error("minSalePrice no puede ser mayor que retailPrice");
+    }
+    if (maxSalePrice && maxSalePrice.lessThan(retailPrice)) {
+      throw new Error("maxSalePrice no puede ser menor que retailPrice");
+    }
+    if (minSalePrice && maxSalePrice && minSalePrice.greaterThan(maxSalePrice)) {
+      throw new Error("minSalePrice no puede ser mayor que maxSalePrice");
+    }
+
+    if (wholesalePrice) {
+      if (minSalePrice && minSalePrice.greaterThan(wholesalePrice)) {
+        throw new Error("minSalePrice no puede ser mayor que wholesalePrice");
       }
-      if (maxSalePrice && (maxSalePrice as any).lessThan(salePrice as any)) {
-        throw new Error("maxSalePrice no puede ser menor que salePrice");
+      if (maxSalePrice && maxSalePrice.lessThan(wholesalePrice)) {
+        throw new Error("maxSalePrice no puede ser menor que wholesalePrice");
       }
-      if (
-        minSalePrice &&
-        maxSalePrice &&
-        (minSalePrice as any).greaterThan(maxSalePrice as any)
-      ) {
-        throw new Error("minSalePrice no puede ser mayor que maxSalePrice");
-      }
+    }
 
-      const minStock = Math.max(0, normalizeInt(input.minStock, 0));
-      const currentStock = Math.max(0, normalizeInt(input.currentStock, 0));
+    const minStock = Math.max(0, normalizeInt(input.minStock, 0));
+    const currentStock = Math.max(0, normalizeInt(input.currentStock, 0));
+    const reservedStock = Math.max(0, normalizeInt(input.reservedStock, 0));
 
-      const active = normalizeBoolean(input.active, true);
+    // ✅ regla stock
+    if (reservedStock > currentStock) {
+      throw new Error("reservedStock no puede ser mayor que currentStock");
+    }
 
-      const categoryId = String(input.categoryId ?? "").trim();
-      const unitId = String(input.unitId ?? "").trim();
-      const supplierId = normalizeText(input.supplierId);
+    const created = await tx.product.create({
+      data: {
+        code,
+        name,
+        description: normalizeText(input.description) ?? null,
+        image: normalizeText(input.image) ?? null,
 
-      if (!categoryId) throw new Error("categoryId requerido");
-      if (!unitId) throw new Error("unitId requerido");
+        purchasePrice,
+        retailPrice,
+        wholesalePrice,
+        wholesaleMinQuantity,
 
-      const created = await tx.product.create({
-  data: {
-    code: input.code ?? (await generateProductCode(tx)),
-    name: input.name,
-    description: input.description ?? null,
-    image: input.image ?? null,
+        minSalePrice,
+        maxSalePrice,
 
-    purchasePrice: input.purchasePrice,
-    retailPrice: input.retailPrice,
-    wholesalePrice: input.wholesalePrice ?? null,
-    wholesaleMinQuantity: input.wholesaleMinQuantity ?? 10,
+        minStock,
+        currentStock,
+        reservedStock,
 
-    minSalePrice: input.minSalePrice ?? null,
-    maxSalePrice: input.maxSalePrice ?? null,
+        active: normalizeBoolean(input.active, true),
 
-    minStock: input.minStock ?? 0,
-    currentStock: input.currentStock ?? 0,
-    reservedStock: input.reservedStock ?? 0,
-
-    active: input.active ?? true,
-
-    categoryId: input.categoryId,
-    unitId: input.unitId,
-    supplierId: input.supplierId ?? null,
-  },
-  include: { category: true, supplier: true, unit: true },
-});
-
-      return mapProduct(created);
+        categoryId,
+        unitId,
+        supplierId: normalizeText(input.supplierId) ?? null,
+      },
+      include: { category: true, supplier: true, unit: true },
     });
-  }
+
+    return mapProduct(created);
+  });
+}
 
   async update(id: string, input: any): Promise<ProductRecord> {
   return prisma.$transaction(async (tx) => {
