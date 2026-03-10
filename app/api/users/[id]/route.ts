@@ -11,7 +11,10 @@ function isAdmin(session: any) {
   return String(session?.role ?? "").toUpperCase() === "ADMIN";
 }
 
-export async function GET(_req: Request, ctx: { params: { id: string } }) {
+export async function GET(
+  _req: Request,
+  ctx: { params: Promise<{ id: string }> }
+) {
   try {
     const session = await requireAuth();
 
@@ -19,10 +22,12 @@ export async function GET(_req: Request, ctx: { params: { id: string } }) {
       return fail("No autorizado", 403);
     }
 
+    const params = await ctx.params;
+
     const repo = new PrismaUserRepository();
     const uc = new GetUserUseCase(repo);
 
-    const data = await uc.execute(ctx.params.id);
+    const data = await uc.execute(params.id);
 
     return ok(data);
   } catch (e: any) {
@@ -32,7 +37,10 @@ export async function GET(_req: Request, ctx: { params: { id: string } }) {
   }
 }
 
-export async function PATCH(req: Request, ctx: { params: { id: string } }) {
+export async function PATCH(
+  req: Request,
+  ctx: { params: Promise<{ id: string }> }
+) {
   try {
     const session = await requireAuth();
 
@@ -40,12 +48,13 @@ export async function PATCH(req: Request, ctx: { params: { id: string } }) {
       return fail("No autorizado", 403);
     }
 
+    const params = await ctx.params;
     const body = await req.json();
 
     const repo = new PrismaUserRepository();
     const uc = new UpdateUserUseCase(repo);
 
-    const data = await uc.execute(ctx.params.id, body);
+    const data = await uc.execute(params.id, body);
 
     return ok(data);
   } catch (e: any) {
