@@ -1,11 +1,11 @@
-// app/api/units/route.ts
+// app/api/suppliers/route.ts
 
-import { PrismaUnitRepository } from "@/src/modules/units/infrastructure/unit.repo";
-import { CreateUnitUseCase } from "@/src/modules/units/application/createUnit.usecase";
-import { SearchUnitUseCase } from "@/src/modules/units/application/searchUnit.usecase";
+import { PrismaSupplierRepository } from "@/src/modules/suppliers/infrastructure/supplier.repo";
+import { CreateSupplierUseCase } from "@/src/modules/suppliers/application/createSupplier.usecase";
+import { SearchSupplierUseCase } from "@/src/modules/suppliers/application/searchSupplier.usecase";
 import { ok, fail } from "@/src/shared/http/api";
 
-const repo = new PrismaUnitRepository();
+const repo = new PrismaSupplierRepository();
 
 export async function GET(req: Request) {
   try {
@@ -16,12 +16,12 @@ export async function GET(req: Request) {
     const page = Number(searchParams.get("page") ?? "1");
     const pageSize = Number(searchParams.get("pageSize") ?? "50");
 
-    const uc = new SearchUnitUseCase(repo);
+    const uc = new SearchSupplierUseCase(repo);
     const result = await uc.execute({ q, active, page, pageSize });
 
     return ok(result);
   } catch (e: any) {
-    return fail(e?.message ?? "Error al buscar unidades", 400);
+    return fail(e?.message ?? "Error al buscar proveedores", 400);
   }
 }
 
@@ -29,11 +29,11 @@ export async function POST(req: Request) {
   try {
     const body = await req.json();
 
-    const uc = new CreateUnitUseCase(repo);
+    const uc = new CreateSupplierUseCase(repo);
     const created = await uc.execute(body);
 
-    return ok(created);
+    return ok(created, 201);
   } catch (e: any) {
-    return fail(e?.message ?? "Error al crear unidad", 400);
+    return fail(e?.message ?? "Error al crear proveedor", 400);
   }
 }

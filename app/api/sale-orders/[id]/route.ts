@@ -1,4 +1,3 @@
-// app/api/sale-orders/[id]/route.ts
 import { ok, fail } from "@/src/shared/http/api";
 import { requireAuth } from "@/src/modules/auth/infrastructure/auth.guard";
 
@@ -9,14 +8,18 @@ function hasAnyRole(role: string, roles: string[]) {
   return roles.includes(String(role ?? "").toUpperCase());
 }
 
-export async function GET(_req: Request, ctx: { params: { id: string } }) {
+export async function GET(
+  _req: Request,
+  ctx: { params: Promise<{ id: string }> }
+) {
   try {
     const session = await requireAuth();
+    const params = await ctx.params;
 
     const repo = new PrismaSaleOrderRepository();
     const uc = new GetSaleOrderUseCase(repo);
 
-    const data = await uc.execute(ctx.params.id);
+    const data = await uc.execute(params.id);
 
     if (!data) {
       return fail("Pedido no encontrado", 404);
@@ -24,7 +27,6 @@ export async function GET(_req: Request, ctx: { params: { id: string } }) {
 
     const isPrivileged = hasAnyRole(session.role, ["ADMIN", "SELLER", "WAREHOUSE"]);
 
-    // ✅ si es USER, solo puede ver su propio pedido
     if (!isPrivileged) {
       if (!data.userId || data.userId !== session.userId) {
         return fail("No autorizado", 403);

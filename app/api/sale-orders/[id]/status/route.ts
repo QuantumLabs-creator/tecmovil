@@ -1,4 +1,3 @@
-// app/api/sale-orders/[id]/status/route.ts
 import { ok, fail } from "@/src/shared/http/api";
 import { requireAuth } from "@/src/modules/auth/infrastructure/auth.guard";
 
@@ -10,17 +9,21 @@ function canManage(session: any) {
   return ["ADMIN", "WAREHOUSE", "SELLER"].includes(role);
 }
 
-export async function PATCH(req: Request, ctx: { params: { id: string } }) {
+export async function PATCH(
+  req: Request,
+  ctx: { params: Promise<{ id: string }> }
+) {
   try {
     const session = await requireAuth();
     if (!canManage(session)) return fail("No autorizado", 401);
 
+    const params = await ctx.params;
     const body = await req.json();
 
     const repo = new PrismaSaleOrderRepository();
     const uc = new SetSaleOrderStatusUseCase(repo);
 
-    const data = await uc.execute(ctx.params.id, session.userId, body);
+    const data = await uc.execute(params.id, session.userId, body);
 
     return ok(data);
   } catch (e: any) {

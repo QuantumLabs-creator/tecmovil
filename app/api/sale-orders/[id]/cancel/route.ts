@@ -1,4 +1,3 @@
-// app/api/sale-orders/[id]/cancel/route.ts
 import { ok, fail } from "@/src/shared/http/api";
 import { requireAuth } from "@/src/modules/auth/infrastructure/auth.guard";
 
@@ -9,14 +8,18 @@ function hasAnyRole(role: string, roles: string[]) {
   return roles.includes(String(role ?? "").toUpperCase());
 }
 
-export async function POST(req: Request, ctx: { params: { id: string } }) {
+export async function POST(
+  req: Request,
+  ctx: { params: Promise<{ id: string }> }
+) {
   try {
     const session = await requireAuth();
+    const params = await ctx.params;
     const body = await req.json();
 
     const repo = new PrismaSaleOrderRepository();
 
-    const order = await repo.getById(ctx.params.id);
+    const order = await repo.getById(params.id);
     if (!order) return fail("Pedido no encontrado", 404);
 
     const isPrivileged = hasAnyRole(session.role, ["ADMIN"]);
@@ -28,7 +31,7 @@ export async function POST(req: Request, ctx: { params: { id: string } }) {
     }
 
     const uc = new CancelSaleOrderUseCase(repo);
-    const data = await uc.execute(ctx.params.id, session.userId, body);
+    const data = await uc.execute(params.id, session.userId, body);
 
     return ok(data);
   } catch (e: any) {
