@@ -32,7 +32,7 @@ export async function POST(req: Request) {
     const uc = new CreateSupplierUseCase(repo);
     const created = await uc.execute(body);
 
-    return ok(created, 201);
+    return ok(created);
   } catch (e: any) {
     return fail(e?.message ?? "Error al crear proveedor", 400);
   }

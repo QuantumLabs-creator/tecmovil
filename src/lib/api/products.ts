@@ -58,6 +58,11 @@ export type ApiError = {
   status: number;
 };
 
+type ApiSuccess<T> = {
+  ok?: boolean;
+  data: T;
+};
+
 const API_BASE = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") || "";
 
 async function fetchApi<T>(path: string, options?: RequestInit): Promise<T> {
@@ -102,16 +107,46 @@ function buildQuery(params?: ProductListParams) {
 
 export async function getProductsApi(
   params?: ProductListParams
-): Promise<ProductListResponse> {
-  return fetchApi<ProductListResponse>(`/api/products${buildQuery(params)}`, {
+): Promise<ApiSuccess<ProductListResponse>> {
+  return fetchApi<ApiSuccess<ProductListResponse>>(
+    `/api/products${buildQuery(params)}`,
+    {
+      method: "GET",
+      cache: "no-store",
+    }
+  );
+}
+
+export async function getProductByIdApi(
+  id: string
+): Promise<ApiSuccess<{ product: Product }>> {
+  return fetchApi<ApiSuccess<{ product: Product }>>(`/api/products/${id}`, {
     method: "GET",
     cache: "no-store",
   });
 }
 
-export async function getProductByIdApi(id: string): Promise<Product> {
-  return fetchApi<Product>(`/api/products/${id}`, {
-    method: "GET",
-    cache: "no-store",
+export async function createProductApi(payload: unknown): Promise<ApiSuccess<{ product: Product }>> {
+  return fetchApi<ApiSuccess<{ product: Product }>>(`/api/products`, {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function updateProductApi(
+  id: string,
+  payload: unknown
+): Promise<ApiSuccess<{ product: Product }>> {
+  return fetchApi<ApiSuccess<{ product: Product }>>(`/api/products/${id}`, {
+    method: "PATCH",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function deactivateProductApi(
+  id: string
+): Promise<ApiSuccess<{ success?: boolean }>> {
+  return fetchApi<ApiSuccess<{ success?: boolean }>>(`/api/products/${id}`, {
+    method: "DELETE",
   });
 }
