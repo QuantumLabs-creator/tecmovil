@@ -2,48 +2,34 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-
-type DashboardResponse = {
-  kpis: {
-    productos: { total: number; activos: number; sinStock: number };
-    movimientos: { hoy: number; mes: number };
-    usuarios: { total: number; admins: number };
-    mesActual: { month: number; year: number };
-  };
-  activity: {
-    id: string;
-    type: "PRODUCT" | "MOVE_IN" | "MOVE_OUT" | "USER";
-    title: string;
-    subtitle?: string;
-    at: string;
-  }[];
-};
+import { getDashboardApi, type DashboardResponse } from "@/src/lib/api/dashboard";
 
 export default function DashboardPage() {
   const [data, setData] = useState<DashboardResponse | null>(null);
   const [loading, setLoading] = useState(true);
 
-  async function load() {
+  async function loadDashboard() {
     setLoading(true);
+
     try {
-      // ✅ nuevo endpoint sugerido para inventarios
-      const res = await fetch("/api/dashboard", { cache: "no-store" });
-      if (!res.ok) throw new Error("No se pudo cargar dashboard");
-      const json = (await res.json()) as DashboardResponse;
-      setData(json);
+      const result = await getDashboardApi();
+      setData(result);
     } catch (e: any) {
-      toast.error("Error", { description: e?.message ?? "Intenta nuevamente" });
+      toast.error("Error", {
+        description: e?.error || e?.message || "Intenta nuevamente",
+      });
     } finally {
       setLoading(false);
     }
   }
 
   useEffect(() => {
-    load();
+    loadDashboard();
   }, []);
 
   const cards = useMemo(() => {
     const k = data?.kpis;
+
     return [
       {
         title: "Productos",
@@ -118,7 +104,8 @@ export default function DashboardPage() {
                           <div className="mt-0.5 text-xs text-zinc-400">{a.subtitle}</div>
                         ) : null}
                       </div>
-                      <div className="text-xs text-zinc-400 whitespace-nowrap">
+
+                      <div className="whitespace-nowrap text-xs text-zinc-400">
                         {new Date(a.at).toLocaleString("es-PE")}
                       </div>
                     </div>
@@ -131,6 +118,7 @@ export default function DashboardPage() {
 
         <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-4 shadow-sm">
           <div className="text-sm font-medium">Acciones rápidas</div>
+
           <div className="mt-3 space-y-2">
             <a
               className="block rounded-xl border border-[var(--color-border)] bg-[var(--color-muted)] p-3 text-sm hover:opacity-90"

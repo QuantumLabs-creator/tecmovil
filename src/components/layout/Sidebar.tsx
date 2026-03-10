@@ -130,12 +130,22 @@ const navTree: NavNode[] = [
   },
   {
     type: "group",
+    key: "sales",
+    label: "Ventas",
+    icon: Icons.Package,
+    roles: ["ADMIN", "SELLER"],
+    items: [
+      { href: "/dashboard/sale-orders", label: "Pedidos", icon: Icons.Package },
+    ],
+  },
+  {
+    type: "group",
     key: "users",
     label: "Usuarios",
     icon: Icons.Users,
-    roles: ["ADMIN"], // 🔐 Solo visible para admins
+    roles: ["ADMIN"],
     items: [
-      { href: "/dashboard/users/", label: "Gestión de Usuarios", icon: Icons.Users },
+      { href: "/dashboard/users", label: "Gestión de Usuarios", icon: Icons.Users },
     ],
   },
 ];
@@ -153,9 +163,13 @@ type Props = {
 export default function Sidebar({ onNavigate, collapsed = false, onToggle, roles = [] }: Props) {
   const pathname = usePathname();
 
+  console.log("roles prop:", roles);
+console.log("pathname:", pathname);
   // ✅ Filtro por roles optimizado
   const visibleTree = useMemo(() => {
     const canSee = (allowed?: string[]) => !allowed || allowed.length === 0 || allowed.some((r) => roles.includes(r));
+
+
 
     return navTree
       .filter((n) => canSee(n.roles))
@@ -221,7 +235,7 @@ export default function Sidebar({ onNavigate, collapsed = false, onToggle, roles
       <div className={cn("flex items-center border-b border-[var(--color-border)] px-4", collapsed ? "justify-center py-4" : "gap-3 py-4")}>
         {/* Logo Placeholder */}
         <div className={cn("flex-shrink-0 rounded-lg bg-[var(--color-muted)]", collapsed ? "h-8 w-8" : "h-10 w-10")} />
-        
+
         {!collapsed && (
           <div className="min-w-0 overflow-hidden">
             <h1 className="text-sm font-semibold leading-tight truncate">Gestión Inventarios</h1>

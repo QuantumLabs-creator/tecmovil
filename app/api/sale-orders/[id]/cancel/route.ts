@@ -5,14 +5,29 @@ import { requireAuth } from "@/src/modules/auth/infrastructure/auth.guard";
 import { PrismaSaleOrderRepository } from "@/src/modules/saleOrders/infrastructure/saleOrder.repo";
 import { CancelSaleOrderUseCase } from "@/src/modules/saleOrders/application/cancelSaleOrder.usecase";
 
+function hasAnyRole(role: string, roles: string[]) {
+  return roles.includes(String(role ?? "").toUpperCase());
+}
+
 export async function POST(req: Request, ctx: { params: { id: string } }) {
   try {
     const session = await requireAuth();
     const body = await req.json();
 
     const repo = new PrismaSaleOrderRepository();
-    const uc = new CancelSaleOrderUseCase(repo);
 
+    const order = await repo.getById(ctx.params.id);
+    if (!order) return fail("Pedido no encontrado", 404);
+
+    const isPrivileged = hasAnyRole(session.role, ["ADMIN"]);
+
+    if (!isPrivileged) {
+      if (!order.userId || order.userId !== session.userId) {
+        return fail("No autorizado", 403);
+      }
+    }
+
+    const uc = new CancelSaleOrderUseCase(repo);
     const data = await uc.execute(ctx.params.id, session.userId, body);
 
     return ok(data);

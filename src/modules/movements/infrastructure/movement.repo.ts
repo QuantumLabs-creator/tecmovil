@@ -12,7 +12,11 @@ import type {
 } from "../domain/movement.repository";
 
 import { normalizeMoney } from "@/src/modules/products/domain/product.rules";
-import { applyMovement, normalizeQuantity } from "../domain/movement.rules";
+import {
+  applyMovement,
+  normalizeAdjustToStock,
+  normalizeQuantity,
+} from "../domain/movement.rules";
 import { MovementEntity } from "../domain/movement.entity";
 
 /** ===================== Helpers ===================== */
@@ -100,40 +104,58 @@ export class PrismaMovementRepository implements MovementRepository {
   async create(input: CreateMovementInput): Promise<MovementRecord> {
     const productId = String(input.productId ?? "").trim();
     const userId = String(input.userId ?? "").trim();
-
-    // ✅ enum correcto (no Prisma.MovementType)
     const type = String(input.type ?? "").trim() as $Enums.MovementType;
 
     if (!productId) throw new Error("productId requerido");
     if (!userId) throw new Error("userId requerido");
     if (!type) throw new Error("type requerido");
 
-    const qty = normalizeQuantity(input.quantity);
+    const qty =
+      type === "ADJUSTMENT"
+        ? 0
+        : normalizeQuantity(input.quantity);
 
-    // money opcional
+    const adjustToStock =
+      type === "ADJUSTMENT"
+        ? normalizeAdjustToStock(input.adjustToStock)
+        : null;
+
     const unitPrice =
-      input.unitPrice === undefined || input.unitPrice === null || String(input.unitPrice).trim() === ""
+      input.unitPrice === undefined ||
+      input.unitPrice === null ||
+      String(input.unitPrice).trim() === ""
         ? null
         : normalizeMoney(input.unitPrice, "unitPrice");
 
     return prisma.$transaction(async (tx) => {
       const product = await tx.product.findUnique({
         where: { id: productId },
-        select: { id: true, active: true, currentStock: true, reservedStock: true },
+        select: {
+          id: true,
+          active: true,
+          currentStock: true,
+          reservedStock: true,
+        },
       });
+
       if (!product) throw new Error("Producto no existe");
       if (!product.active) throw new Error("Producto inactivo");
 
-      // ✅ aplica reglas
-      const effect = applyMovement(type, qty, {
-        currentStock: product.currentStock,
-        reservedStock: product.reservedStock,
-      });
+      const effect = applyMovement(
+        type,
+        qty,
+        {
+          currentStock: product.currentStock,
+          reservedStock: product.reservedStock,
+        },
+        {
+          adjustToStock,
+        }
+      );
 
-      // ✅ usa entity para construir el "data" final validado
       const entity = MovementEntity.create({
         type,
-        quantity: qty,
+        quantity: effect.quantity,
         stockBefore: effect.stockBefore,
         stockAfter: effect.stockAfter,
         reason: input.reason ?? null,
@@ -143,13 +165,11 @@ export class PrismaMovementRepository implements MovementRepository {
         userId,
       });
 
-      // 1) crear movimiento
       const created = await tx.movement.create({
         data: entity,
         include: { product: true, user: true },
       });
 
-      // 2) actualizar stock producto
       await tx.product.update({
         where: { id: product.id },
         data: {
@@ -161,4 +181,4 @@ export class PrismaMovementRepository implements MovementRepository {
       return mapMovement(created);
     });
   }
-} 
+}

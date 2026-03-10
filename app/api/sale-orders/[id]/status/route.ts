@@ -10,7 +10,7 @@ function canManage(session: any) {
   return ["ADMIN", "WAREHOUSE", "SELLER"].includes(role);
 }
 
-export async function POST(req: Request, ctx: { params: { id: string } }) {
+export async function PATCH(req: Request, ctx: { params: { id: string } }) {
   try {
     const session = await requireAuth();
     if (!canManage(session)) return fail("No autorizado", 401);

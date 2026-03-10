@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { loginApi, meApi, registerApi } from "@/src/lib/api/auth";
 
 export default function AuthTestPage() {
   const [name, setName] = useState("Alex");
@@ -11,31 +12,30 @@ export default function AuthTestPage() {
   const [loading, setLoading] = useState(false);
   const [out, setOut] = useState<any>(null);
 
-  async function callApi(path: string, method: "GET" | "POST", body?: any) {
-    const res = await fetch(path, {
-      method,
-      headers: body ? { "Content-Type": "application/json" } : undefined,
-      body: body ? JSON.stringify(body) : undefined,
-      credentials: "include", // ✅ cookie access_token
-    });
-
-    const json = await res.json().catch(() => null);
-    return { status: res.status, json };
-  }
-
   async function onRegister() {
     setLoading(true);
     setOut(null);
+
     try {
-      const result = await callApi("/api/auth/register", "POST", {
+      const result = await registerApi({
         name,
         email,
         password,
         role,
       });
-      setOut({ action: "register", ...result });
+
+      setOut({
+        action: "register",
+        ok: true,
+        result,
+      });
     } catch (e: any) {
-      setOut({ action: "register", error: e?.message ?? String(e) });
+      setOut({
+        action: "register",
+        ok: false,
+        error: e?.error ?? e?.message ?? String(e),
+        status: e?.status ?? null,
+      });
     } finally {
       setLoading(false);
     }
@@ -44,14 +44,25 @@ export default function AuthTestPage() {
   async function onLogin() {
     setLoading(true);
     setOut(null);
+
     try {
-      const result = await callApi("/api/auth/login", "POST", {
+      const result = await loginApi({
         email,
         password,
       });
-      setOut({ action: "login", ...result });
+
+      setOut({
+        action: "login",
+        ok: true,
+        result,
+      });
     } catch (e: any) {
-      setOut({ action: "login", error: e?.message ?? String(e) });
+      setOut({
+        action: "login",
+        ok: false,
+        error: e?.error ?? e?.message ?? String(e),
+        status: e?.status ?? null,
+      });
     } finally {
       setLoading(false);
     }
@@ -60,11 +71,22 @@ export default function AuthTestPage() {
   async function onMe() {
     setLoading(true);
     setOut(null);
+
     try {
-      const result = await callApi("/api/auth/me", "GET");
-      setOut({ action: "me", ...result });
+      const result = await meApi();
+
+      setOut({
+        action: "me",
+        ok: true,
+        result,
+      });
     } catch (e: any) {
-      setOut({ action: "me", error: e?.message ?? String(e) });
+      setOut({
+        action: "me",
+        ok: false,
+        error: e?.error ?? e?.message ?? String(e),
+        status: e?.status ?? null,
+      });
     } finally {
       setLoading(false);
     }
@@ -75,6 +97,7 @@ export default function AuthTestPage() {
       <h1 style={{ fontSize: 24, fontWeight: 800, marginBottom: 8 }}>
         Auth Test (Register/Login/Me)
       </h1>
+
       <p style={{ opacity: 0.75, marginBottom: 16 }}>
         Crea un usuario con <b>Register</b>, luego prueba <b>Login</b> y <b>/me</b>.
       </p>
@@ -114,7 +137,7 @@ export default function AuthTestPage() {
           <span>Role (auto-registro)</span>
           <select
             value={role}
-            onChange={(e) => setRole(e.target.value as any)}
+            onChange={(e) => setRole(e.target.value as "USER" | "SELLER")}
             style={{ padding: 10, border: "1px solid #ddd", borderRadius: 10 }}
           >
             <option value="USER">USER</option>
@@ -185,8 +208,8 @@ export default function AuthTestPage() {
       </pre>
 
       <p style={{ marginTop: 10, fontSize: 12, opacity: 0.75 }}>
-        Si Register responde ok, ya creó el usuario. Si Login responde ok, debió setear
-        la cookie. Luego /me debe devolverte el usuario.
+        Si Register responde ok, ya creó el usuario. Si Login responde ok, debió setear la
+        cookie. Luego /me debe devolverte el usuario.
       </p>
     </main>
   );

@@ -1,9 +1,15 @@
 // src/modules/movements/domain/movement.rules.ts
 
 import type { MovementType } from "@/src/generated/prisma/client";
-import { normalizeInt } from "@/src/modules/products/domain/product.rules"; // reusa tu helper si quieres
 
-export type StockState = { currentStock: number; reservedStock: number };
+export type StockState = {
+  currentStock: number;
+  reservedStock: number;
+};
+
+export type ApplyMovementExtra = {
+  adjustToStock?: number | null;
+};
 
 export function normalizeQuantity(v: unknown): number {
   const qty = Math.trunc(Number(v));
@@ -11,14 +17,28 @@ export function normalizeQuantity(v: unknown): number {
   return qty;
 }
 
-export function applyMovement(type: MovementType, qty: number, s: StockState) {
+export function normalizeAdjustToStock(v: unknown): number {
+  const n = Math.trunc(Number(v));
+  if (!Number.isFinite(n) || n < 0) throw new Error("adjustToStock inválido");
+  return n;
+}
+
+export function applyMovement(
+  type: MovementType,
+  qty: number,
+  s: StockState,
+  extra?: ApplyMovementExtra
+) {
   const stockBefore = s.currentStock;
   const reservedBefore = s.reservedStock;
 
   let stockAfter = stockBefore;
   let reservedAfter = reservedBefore;
+  let finalQty = qty;
 
-  if (reservedBefore > stockBefore) throw new Error("reservedStock no puede ser mayor que currentStock");
+  if (reservedBefore > stockBefore) {
+    throw new Error("reservedStock no puede ser mayor que currentStock");
+  }
 
   switch (type) {
     case "IN":
@@ -26,33 +46,54 @@ export function applyMovement(type: MovementType, qty: number, s: StockState) {
       stockAfter = stockBefore + qty;
       break;
     }
+
     case "OUT": {
       if (stockBefore - qty < 0) throw new Error("Stock insuficiente");
       stockAfter = stockBefore - qty;
 
-      // si al bajar stock el reservado queda mayor, lo ajustas
       if (reservedAfter > stockAfter) reservedAfter = stockAfter;
       break;
     }
+
     case "RESERVE": {
-      if (reservedBefore + qty > stockBefore) throw new Error("No hay stock disponible para reservar");
+      if (reservedBefore + qty > stockBefore) {
+        throw new Error("No hay stock disponible para reservar");
+      }
       reservedAfter = reservedBefore + qty;
       break;
     }
+
     case "RELEASE": {
-      if (reservedBefore - qty < 0) throw new Error("No hay stock reservado suficiente para liberar");
+      if (reservedBefore - qty < 0) {
+        throw new Error("No hay stock reservado suficiente para liberar");
+      }
       reservedAfter = reservedBefore - qty;
       break;
     }
+
     case "ADJUSTMENT": {
-      // Para evitar errores de negocio, no lo permitimos aún (hasta definir delta vs set).
-      throw new Error("ADJUSTMENT pendiente de diseño (delta o set). Usa IN/OUT con reason por ahora.");
+      const target = normalizeAdjustToStock(extra?.adjustToStock);
+
+      if (reservedBefore > target) {
+        throw new Error("No se puede ajustar por debajo del stock reservado");
+      }
+
+      stockAfter = target;
+      finalQty = Math.abs(stockAfter - stockBefore);
+      break;
     }
+
     default: {
       const exhaustive: never = type;
       return exhaustive;
     }
   }
 
-  return { stockBefore, stockAfter, reservedBefore, reservedAfter };
+  return {
+    stockBefore,
+    stockAfter,
+    reservedBefore,
+    reservedAfter,
+    quantity: finalQty,
+  };
 }

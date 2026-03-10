@@ -6,6 +6,10 @@ type Role = "ADMIN" | "USER" | "WAREHOUSE" | "SELLER";
 
 const RBAC: Array<{ prefix: string; roles: Role[] }> = [
   { prefix: "/dashboard", roles: ["ADMIN", "USER", "WAREHOUSE", "SELLER"] },
+
+  { prefix: "/shop", roles: ["ADMIN", "USER", "SELLER"] },
+  { prefix: "/my-orders", roles: ["ADMIN", "USER", "SELLER"] },
+
   { prefix: "/api/products", roles: ["ADMIN", "WAREHOUSE"] },
   { prefix: "/api/categories", roles: ["ADMIN", "WAREHOUSE"] },
   { prefix: "/api/units", roles: ["ADMIN", "WAREHOUSE"] },
@@ -64,6 +68,13 @@ export async function middleware(req: NextRequest) {
   }
 }
 
+
 export const config = {
-  matcher: ["/dashboard/:path*", "/api/:path*"],
+  matcher: [
+    "/dashboard/:path*",
+    "/shop/:path*",
+    "/my-orders/:path*",
+    "/api/:path*",
+  ],
+
 };

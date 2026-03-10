@@ -7,7 +7,7 @@ import { SearchMovementsUseCase } from "@/src/modules/movements/application/sear
 
 export async function GET(req: Request) {
   try {
-    await requireAuth(); // si quieres que listar requiera login
+    await requireAuth();
 
     const url = new URL(req.url);
 
@@ -40,7 +40,7 @@ export async function POST(req: Request) {
     const repo = new PrismaMovementRepository();
     const uc = new CreateMovementUseCase(repo);
 
-    const created = await uc.execute(body, session.userId);
+    const created = await uc.execute(body, session.userId, session.role);
 
     return ok(created);
   } catch (e: any) {

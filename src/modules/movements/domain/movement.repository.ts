@@ -46,6 +46,7 @@ export type CreateMovementInput = {
   unitPrice?: unknown;
   reference?: string | null;
   userId: string;
+  adjustToStock?: number | null;
 };
 
 export interface MovementRepository {
