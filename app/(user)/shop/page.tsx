@@ -45,7 +45,7 @@ export default function ShopPage() {
         pageSize: 50,
       });
 
-      setProducts(result.items ?? []);
+      setProducts(result.data.items ?? []);
     } catch (e: any) {
       toast.error("Error", {
         description: e?.error || e?.message || "No se pudieron cargar los productos",

@@ -105,17 +105,19 @@ const navTree: NavNode[] = [
     label: "Dashboard",
     icon: Icons.Dashboard,
     href: "/dashboard",
+    roles: ["ADMIN", "WAREHOUSE", "SELLER"],
   },
   {
     type: "group",
     key: "products",
     label: "Inventario",
     icon: Icons.Package,
+    roles: ["ADMIN", "WAREHOUSE"],
     items: [
-      { href: "/dashboard/products", label: "Productos", icon: Icons.Package },
-      { href: "/dashboard/categories", label: "Categorías", icon: Icons.Package },
-      { href: "/dashboard/units", label: "Unidades", icon: Icons.Package },
-      { href: "/dashboard/suppliers", label: "Proveedores", icon: Icons.Package },
+      { href: "/dashboard/products", label: "Productos", icon: Icons.Package, roles: ["ADMIN", "WAREHOUSE"] },
+      { href: "/dashboard/categories", label: "Categorías", icon: Icons.Package, roles: ["ADMIN", "WAREHOUSE"] },
+      { href: "/dashboard/units", label: "Unidades", icon: Icons.Package, roles: ["ADMIN", "WAREHOUSE"] },
+      { href: "/dashboard/suppliers", label: "Proveedores", icon: Icons.Package, roles: ["ADMIN", "WAREHOUSE"] },
     ],
   },
   {
@@ -123,9 +125,10 @@ const navTree: NavNode[] = [
     key: "movements",
     label: "Movimientos",
     icon: Icons.ArrowUpDown,
+    roles: ["ADMIN", "WAREHOUSE"],
     items: [
-      { href: "/dashboard/movements/new", label: "Nuevo Movimiento", icon: Icons.Plus },
-      { href: "/dashboard/movements/history", label: "Historial", icon: Icons.History },
+      { href: "/dashboard/movements/new", label: "Nuevo Movimiento", icon: Icons.Plus, roles: ["ADMIN", "WAREHOUSE"] },
+      { href: "/dashboard/movements/history", label: "Historial", icon: Icons.History, roles: ["ADMIN", "WAREHOUSE"] },
     ],
   },
   {
@@ -133,9 +136,9 @@ const navTree: NavNode[] = [
     key: "sales",
     label: "Ventas",
     icon: Icons.Package,
-    roles: ["ADMIN", "SELLER"],
+    roles: ["ADMIN", "SELLER", "WAREHOUSE"],
     items: [
-      { href: "/dashboard/sale-orders", label: "Pedidos", icon: Icons.Package },
+      { href: "/dashboard/sale-orders", label: "Pedidos", icon: Icons.Package, roles: ["ADMIN", "SELLER", "WAREHOUSE"] },
     ],
   },
   {
@@ -145,7 +148,7 @@ const navTree: NavNode[] = [
     icon: Icons.Users,
     roles: ["ADMIN"],
     items: [
-      { href: "/dashboard/users", label: "Gestión de Usuarios", icon: Icons.Users },
+      { href: "/dashboard/users", label: "Gestión de Usuarios", icon: Icons.Users, roles: ["ADMIN"] },
     ],
   },
 ];
@@ -164,7 +167,7 @@ export default function Sidebar({ onNavigate, collapsed = false, onToggle, roles
   const pathname = usePathname();
 
   console.log("roles prop:", roles);
-console.log("pathname:", pathname);
+  console.log("pathname:", pathname);
   // ✅ Filtro por roles optimizado
   const visibleTree = useMemo(() => {
     const canSee = (allowed?: string[]) => !allowed || allowed.length === 0 || allowed.some((r) => roles.includes(r));

@@ -4,7 +4,7 @@ import { useState, FormEvent } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Eye, EyeOff, Lock, Mail, Package, AlertCircle, User } from "lucide-react";
-import { loginApi, registerApi, ensureSession } from "@/src/lib/api/auth";
+import { loginApi, registerApi, ensureSession, meApi } from "@/src/lib/api/auth";
 
 type AuthMode = "login" | "register";
 
@@ -90,12 +90,20 @@ export default function AuthPage() {
           password: form.password,
         });
 
-        const hasSession = await ensureSession();
-        if (!hasSession) {
+        const session = await ensureSession();
+        if (!session) {
           throw new Error("No se pudo validar la sesión. Intenta nuevamente.");
         }
 
-        router.replace(nextPath);
+        const me = await meApi();
+        const role = me.data?.user?.role;
+
+        if (role === "USER") {
+          router.replace("/shop");
+        } else {
+          router.replace("/dashboard");
+        }
+
         router.refresh();
         return;
       }

@@ -2,7 +2,11 @@ export type AuthUser = {
   id: string;
   name: string;
   email: string;
+  phone?: string | null;
   role?: string;
+  active?: boolean;
+  lastLogin?: string | null;
+  createdAt?: string;
 };
 
 export type LoginPayload = {
@@ -18,7 +22,10 @@ export type RegisterPayload = {
 };
 
 export type AuthResponse = {
-  user: AuthUser;
+  ok: boolean;
+  data: {
+    user: AuthUser;
+  };
 };
 
 export type OkResponse = {
@@ -46,7 +53,7 @@ async function fetchApi<T>(path: string, options: RequestInit): Promise<T> {
 
   if (!res.ok) {
     throw {
-      error: data?.error || "Error en la operación",
+      error: data?.error || data?.message || "Error en la operación",
       status: res.status,
     } satisfies ApiError;
   }
@@ -83,8 +90,8 @@ export async function logoutApi(): Promise<OkResponse> {
 
 export async function ensureSession(): Promise<boolean> {
   try {
-    await meApi();
-    return true;
+    const result = await meApi();
+    return !!result?.data?.user?.id;
   } catch {
     return false;
   }
