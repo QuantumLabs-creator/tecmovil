@@ -1,5 +1,3 @@
-// src/lib/api/sale-orders.ts
-
 export type SaleOrderStatus =
   | "PENDING_REQUEST"
   | "APPROVED"
@@ -77,6 +75,11 @@ export type SaleOrderListResponse = {
   };
 };
 
+export type ApiEnvelope<T> = {
+  ok: boolean;
+  data: T;
+};
+
 export type SaleOrderListParams = {
   q?: string;
   status?: SaleOrderStatus;
@@ -122,7 +125,7 @@ export type ApiError = {
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") || "";
 
-async function fetchApi<T>(path: string, options?: RequestInit): Promise<T> {
+async function fetchApi<T>(path: string, options?: RequestInit): Promise<ApiEnvelope<T>> {
   const res = await fetch(`${API_BASE}${path}`, {
     credentials: "include",
     ...options,
@@ -136,12 +139,12 @@ async function fetchApi<T>(path: string, options?: RequestInit): Promise<T> {
 
   if (!res.ok) {
     throw {
-      error: data?.error || "Error en la operación",
+      error: data?.error || data?.message || "Error en la operación",
       status: res.status,
     } satisfies ApiError;
   }
 
-  return data as T;
+  return data as ApiEnvelope<T>;
 }
 
 function buildQuery(params?: SaleOrderListParams) {
@@ -169,7 +172,7 @@ function buildQuery(params?: SaleOrderListParams) {
 
 export async function getSaleOrdersApi(
   params?: SaleOrderListParams
-): Promise<SaleOrderListResponse> {
+): Promise<ApiEnvelope<SaleOrderListResponse>> {
   return fetchApi<SaleOrderListResponse>(`/api/sale-orders${buildQuery(params)}`, {
     method: "GET",
     cache: "no-store",
@@ -178,14 +181,17 @@ export async function getSaleOrdersApi(
 
 export async function getMySaleOrdersApi(
   params?: Omit<SaleOrderListParams, "userId">
-): Promise<SaleOrderListResponse> {
-  return fetchApi<SaleOrderListResponse>(`/api/sale-orders${buildQuery(params)}`, {
+): Promise<ApiEnvelope<SaleOrderListResponse>> {
+  const query = buildQuery(params);
+  const separator = query ? "&" : "?";
+
+  return fetchApi<SaleOrderListResponse>(`/api/sale-orders${query}${separator}mine=true`, {
     method: "GET",
     cache: "no-store",
   });
 }
 
-export async function getSaleOrderByIdApi(id: string): Promise<SaleOrder> {
+export async function getSaleOrderByIdApi(id: string): Promise<ApiEnvelope<SaleOrder>> {
   return fetchApi<SaleOrder>(`/api/sale-orders/${id}`, {
     method: "GET",
     cache: "no-store",
@@ -198,24 +204,23 @@ export async function getSaleOrderByIdApi(id: string): Promise<SaleOrder> {
 
 export async function createSaleOrderApi(
   payload: CreateSaleOrderPayload
-): Promise<SaleOrder> {
+): Promise<ApiEnvelope<SaleOrder>> {
   return fetchApi<SaleOrder>("/api/sale-orders", {
     method: "POST",
     body: JSON.stringify(payload),
   });
 }
 
-// opcional: para flujo POS si luego lo usas
 export async function createSaleOrderPosApi(
   payload: CreateSaleOrderPayload
-): Promise<SaleOrder> {
+): Promise<ApiEnvelope<SaleOrder>> {
   return fetchApi<SaleOrder>("/api/sale-orders/pos", {
     method: "POST",
     body: JSON.stringify(payload),
   });
 }
 
-export async function approveSaleOrderApi(id: string): Promise<SaleOrder> {
+export async function approveSaleOrderApi(id: string): Promise<ApiEnvelope<SaleOrder>> {
   return fetchApi<SaleOrder>(`/api/sale-orders/${id}/approve`, {
     method: "POST",
   });
@@ -224,7 +229,7 @@ export async function approveSaleOrderApi(id: string): Promise<SaleOrder> {
 export async function rejectSaleOrderApi(
   id: string,
   payload: RejectSaleOrderPayload
-): Promise<SaleOrder> {
+): Promise<ApiEnvelope<SaleOrder>> {
   return fetchApi<SaleOrder>(`/api/sale-orders/${id}/reject`, {
     method: "POST",
     body: JSON.stringify(payload),
@@ -234,7 +239,7 @@ export async function rejectSaleOrderApi(
 export async function cancelSaleOrderApi(
   id: string,
   payload: CancelSaleOrderPayload
-): Promise<SaleOrder> {
+): Promise<ApiEnvelope<SaleOrder>> {
   return fetchApi<SaleOrder>(`/api/sale-orders/${id}/cancel`, {
     method: "POST",
     body: JSON.stringify(payload),
@@ -244,7 +249,7 @@ export async function cancelSaleOrderApi(
 export async function setSaleOrderStatusApi(
   id: string,
   payload: SetSaleOrderStatusPayload
-): Promise<SaleOrder> {
+): Promise<ApiEnvelope<SaleOrder>> {
   return fetchApi<SaleOrder>(`/api/sale-orders/${id}/status`, {
     method: "PATCH",
     body: JSON.stringify(payload),

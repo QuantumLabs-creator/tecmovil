@@ -75,7 +75,7 @@ export default function DashboardSaleOrdersPage() {
         pageSize: 30,
       });
 
-      setItems(result.items ?? []);
+      setItems(result.data?.items ?? []);
     } catch (e: any) {
       toast.error("Error", {
         description: e?.error || e?.message || "No se pudieron cargar los pedidos",

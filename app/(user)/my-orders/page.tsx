@@ -11,43 +11,27 @@ import {
 
 function getStatusLabel(status: SaleOrderStatus) {
     switch (status) {
-        case "PENDING_REQUEST":
-            return "Pendiente";
-        case "APPROVED":
-            return "Aprobado";
-        case "PREPARING":
-            return "En preparación";
-        case "READY":
-            return "Listo";
-        case "COMPLETED":
-            return "Completado";
-        case "CANCELLED":
-            return "Cancelado";
-        case "REJECTED":
-            return "Rechazado";
-        default:
-            return status;
+        case "PENDING_REQUEST": return "Pendiente";
+        case "APPROVED": return "Aprobado";
+        case "PREPARING": return "En preparación";
+        case "READY": return "Listo";
+        case "COMPLETED": return "Completado";
+        case "CANCELLED": return "Cancelado";
+        case "REJECTED": return "Rechazado";
+        default: return status;
     }
 }
 
 function getStatusClasses(status: SaleOrderStatus) {
     switch (status) {
-        case "PENDING_REQUEST":
-            return "bg-amber-500/10 text-amber-400 ring-1 ring-amber-500/20";
-        case "APPROVED":
-            return "bg-sky-500/10 text-sky-400 ring-1 ring-sky-500/20";
-        case "PREPARING":
-            return "bg-violet-500/10 text-violet-400 ring-1 ring-violet-500/20";
-        case "READY":
-            return "bg-emerald-500/10 text-emerald-400 ring-1 ring-emerald-500/20";
-        case "COMPLETED":
-            return "bg-green-500/10 text-green-400 ring-1 ring-green-500/20";
-        case "CANCELLED":
-            return "bg-zinc-500/10 text-zinc-400 ring-1 ring-zinc-500/20";
-        case "REJECTED":
-            return "bg-red-500/10 text-red-400 ring-1 ring-red-500/20";
-        default:
-            return "bg-zinc-500/10 text-zinc-400 ring-1 ring-zinc-500/20";
+        case "PENDING_REQUEST": return "bg-amber-100 text-amber-700 ring-1 ring-amber-200";
+        case "APPROVED": return "bg-sky-100 text-sky-700 ring-1 ring-sky-200";
+        case "PREPARING": return "bg-violet-100 text-violet-700 ring-1 ring-violet-200";
+        case "READY": return "bg-emerald-100 text-emerald-700 ring-1 ring-emerald-200";
+        case "COMPLETED": return "bg-green-100 text-green-700 ring-1 ring-green-200";
+        case "CANCELLED": return "bg-gray-100 text-gray-600 ring-1 ring-gray-200";
+        case "REJECTED": return "bg-red-100 text-red-700 ring-1 ring-red-200";
+        default: return "bg-gray-100 text-gray-600 ring-1 ring-gray-200";
     }
 }
 
@@ -57,6 +41,7 @@ function formatMoney(value: string) {
     return new Intl.NumberFormat("es-PE", {
         style: "currency",
         currency: "PEN",
+        minimumFractionDigits: 2
     }).format(n);
 }
 
@@ -67,12 +52,8 @@ export default function MyOrdersPage() {
     async function loadOrders() {
         setLoading(true);
         try {
-            const result = await getMySaleOrdersApi({
-                page: 1,
-                pageSize: 20,
-            });
-
-            setItems(result.items);
+            const result = await getMySaleOrdersApi({ page: 1, pageSize: 20 });
+            setItems(result.data?.items ?? []);
         } catch (e: any) {
             toast.error("Error", {
                 description: e?.error || e?.message || "No se pudieron cargar tus pedidos",
@@ -89,89 +70,112 @@ export default function MyOrdersPage() {
     const hasOrders = useMemo(() => (items?.length ?? 0) > 0, [items]);
 
     return (
-        <div className="space-y-6">
-            <div className="flex items-end justify-between gap-4">
-                <div>
-                    <h1 className="text-xl font-semibold tracking-tight">Mis pedidos</h1>
-                    <p className="mt-1 text-sm text-zinc-400">
-                        Revisa el estado de tus pedidos y consulta su detalle.
+        <div className="space-y-8 animate-in fade-in duration-500">
+            {/* Header */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-200 pb-6">
+                <div className="space-y-1">
+                    <h1 className="text-2xl font-bold tracking-tight text-gray-900">Mis Pedidos</h1>
+                    <p className="text-sm text-gray-600 max-w-md">
+                        Gestiona y revisa el estado de todas tus órdenes de compra en un solo lugar.
                     </p>
                 </div>
 
                 <Link
                     href="/"
-                    className="rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-2 text-sm hover:opacity-90"
+                    className="group inline-flex items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-5 py-2.5 text-sm font-medium text-gray-700 transition-all hover:border-gray-400 hover:bg-gray-50 hover:text-gray-900 active:scale-95"
                 >
-                    Ir al catálogo
+                    <span>Ir al catálogo</span>
+                    <svg className="h-4 w-4 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                    </svg>
                 </Link>
             </div>
 
-            <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-4 shadow-sm">
+            {/* Main Card */}
+            <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
+                
                 {loading ? (
-                    <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-muted)] p-4 text-sm text-zinc-300">
-                        Cargando pedidos...
+                    // Skeleton Loader
+                    <div className="p-6 space-y-4">
+                        {[1, 2, 3].map((i) => (
+                            <div key={i} className="flex items-center gap-4 animate-pulse">
+                                <div className="h-10 w-32 rounded-lg bg-gray-200"></div>
+                                <div className="h-10 w-24 rounded-lg bg-gray-100"></div>
+                                <div className="h-6 w-20 rounded-full bg-gray-100"></div>
+                                <div className="ml-auto h-10 w-24 rounded-lg bg-gray-100"></div>
+                            </div>
+                        ))}
                     </div>
                 ) : !hasOrders ? (
-                    <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-muted)] p-6 text-sm text-zinc-300">
-                        <div className="font-medium">Aún no tienes pedidos.</div>
-                        <p className="mt-1 text-zinc-400">
-                            Cuando generes uno, lo verás listado aquí.
+                    // Empty State
+                    <div className="flex flex-col items-center justify-center py-20 text-center">
+                        <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gray-100">
+                            <svg className="h-8 w-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                            </svg>
+                        </div>
+                        <h3 className="text-lg font-medium text-gray-900">Aún no tienes pedidos</h3>
+                        <p className="mt-1 max-w-sm text-sm text-gray-600">
+                            Parece que aún no has realizado ninguna compra. Explora nuestro catálogo para comenzar.
                         </p>
                     </div>
                 ) : (
+                    // Table
                     <div className="overflow-x-auto">
-                        <table className="min-w-full text-sm">
-                            <thead className="text-left text-zinc-400">
-                                <tr className="border-b border-[var(--color-border)]">
-                                    <th className="px-3 py-3 font-medium">Pedido</th>
-                                    <th className="px-3 py-3 font-medium">Fecha</th>
-                                    <th className="px-3 py-3 font-medium">Estado</th>
-                                    <th className="px-3 py-3 font-medium">Total</th>
-                                    <th className="px-3 py-3 font-medium">Items</th>
-                                    <th className="px-3 py-3 font-medium text-right">Acción</th>
+                        <table className="w-full text-left text-sm">
+                            <thead className="bg-gray-50 text-xs uppercase tracking-wider text-gray-500">
+                                <tr>
+                                    <th className="px-6 py-4 font-semibold">Pedido</th>
+                                    <th className="px-6 py-4 font-semibold">Fecha</th>
+                                    <th className="px-6 py-4 font-semibold">Estado</th>
+                                    <th className="px-6 py-4 font-semibold text-right">Total</th>
+                                    <th className="px-6 py-4 font-semibold text-center">Items</th>
+                                    <th className="px-6 py-4 font-semibold text-right"></th>
                                 </tr>
                             </thead>
-
-                            <tbody>
+                            <tbody className="divide-y divide-gray-100">
                                 {items.map((order) => (
-                                    <tr
-                                        key={order.id}
-                                        className="border-b border-[var(--color-border)] last:border-b-0"
+                                    <tr 
+                                        key={order.id} 
+                                        className="group transition-colors hover:bg-gray-50"
                                     >
-                                        <td className="px-3 py-4">
-                                            <div className="font-medium">{order.orderNumber}</div>
-                                            <div className="mt-0.5 text-xs text-zinc-500">
+                                        <td className="px-6 py-4">
+                                            <div className="font-medium text-gray-900">{order.orderNumber}</div>
+                                            <div className="mt-0.5 text-xs text-gray-500">
                                                 {order.customerType === "WHOLESALE" ? "Mayorista" : "Minorista"}
                                             </div>
                                         </td>
 
-                                        <td className="px-3 py-4 text-zinc-300">
-                                            {new Date(order.orderDate).toLocaleString("es-PE")}
+                                        <td className="px-6 py-4 text-gray-600 font-mono text-xs">
+                                            {new Date(order.orderDate).toLocaleDateString("es-PE", {
+                                                day: '2-digit', month: '2-digit', year: 'numeric'
+                                            })}
                                         </td>
 
-                                        <td className="px-3 py-4">
-                                            <span
-                                                className={[
-                                                    "inline-flex rounded-full px-2.5 py-1 text-xs font-medium",
-                                                    getStatusClasses(order.status),
-                                                ].join(" ")}
-                                            >
+                                        <td className="px-6 py-4">
+                                            <span className={[
+                                                "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium",
+                                                getStatusClasses(order.status),
+                                            ].join(" ")}>
+                                                <span className="mr-1.5 h-1.5 w-1.5 rounded-full bg-current opacity-70"></span>
                                                 {getStatusLabel(order.status)}
                                             </span>
                                         </td>
 
-                                        <td className="px-3 py-4 font-medium">
+                                        <td className="px-6 py-4 text-right font-semibold text-gray-900 tabular-nums">
                                             {formatMoney(order.total)}
                                         </td>
 
-                                        <td className="px-3 py-4 text-zinc-300">
-                                            {order.details.length}
+                                        <td className="px-6 py-4 text-center text-gray-600">
+                                            <span className="inline-flex h-6 w-6 items-center justify-center rounded-md bg-gray-100 text-xs font-medium text-gray-700">
+                                                {order.details.length}
+                                            </span>
                                         </td>
 
-                                        <td className="px-3 py-4 text-right">
+                                        <td className="px-6 py-4 text-right">
                                             <Link
                                                 href={`/my-orders/${order.id}`}
-                                                className="inline-flex rounded-xl border border-[var(--color-border)] bg-[var(--color-muted)] px-3 py-2 text-sm hover:opacity-90"
+                                                className="inline-flex items-center justify-center rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 transition-all hover:border-gray-400 hover:bg-gray-50 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-200"
                                             >
                                                 Ver detalle
                                             </Link>
