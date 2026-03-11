@@ -23,6 +23,8 @@ const RBAC: Array<{
   // ✅ solo backoffice puede modificarlos
   { prefix: "/api/products", roles: ["ADMIN", "WAREHOUSE"], methods: ["POST", "PATCH", "PUT", "DELETE"] },
 
+  { prefix: "/api/receipts", roles: ["ADMIN", "WAREHOUSE", "SELLER", "USER"] },
+
   { prefix: "/api/categories", roles: ["ADMIN", "WAREHOUSE"] },
   { prefix: "/api/units", roles: ["ADMIN", "WAREHOUSE"] },
   { prefix: "/api/suppliers", roles: ["ADMIN", "WAREHOUSE"] },

@@ -270,6 +270,20 @@ export class PrismaSaleOrderRepository implements SaleOrderRepository {
       if (!order) throw new Error("Pedido no encontrado");
       if (order.status !== "PENDING_REQUEST") throw new Error("Solo se puede aprobar PENDING_REQUEST");
 
+      const paymentProof = await tx.receipt.findFirst({
+        where: {
+          saleOrderId: id,
+          type: "PAYMENT_PROOF",
+          deleted: false,
+        },
+        select: { id: true },
+      });
+
+      if (!paymentProof) {
+        throw new Error("No se puede aprobar el pedido sin comprobante de pago");
+      }
+
+
       // validate + reserve
       for (const d of order.details) {
         const p = await tx.product.findUnique({

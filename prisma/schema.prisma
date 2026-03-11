@@ -329,34 +329,35 @@ model SaleOrderDetail {
 // ============================================
 
 model Receipt {
-  id            String   @id @default(cuid())
-  type          ReceiptType
-  fileUrl       String   // URL o path en storage (S3, Cloudinary, local)
-  fileName      String
-  fileSize      Int      // En bytes
-  mimeType      String
-  uploadedAt    DateTime @default(now())
-  
-  // 🔒 Validación para evitar llenar la BD
-  deleted       Boolean  @default(false)  // Soft delete
-  deletedAt     DateTime?
-  deletionReason String? // Motivo de eliminación (auditoría)
-  autoDeleteAt  DateTime? // Fecha programada para eliminación automática
+    id            String   @id @default(cuid())
+      type          ReceiptType
+        fileUrl       String   // URL o path en storage (S3, Cloudinary, local)
+          fileName      String
+            fileSize      Int      // En bytes
+              mimeType      String
+                uploadedAt    DateTime @default(now())
+                  
+                    // 🔒 Validación para evitar llenar la BD
+                      deleted       Boolean  @default(false)  // Soft delete
+                        deletedAt     DateTime?
+                          deletionReason String? // Motivo de eliminación (auditoría)
+                            autoDeleteAt  DateTime? // Fecha programada para eliminación automática
 
-  // Relaciones polimórficas simplificadas
-  orderId       String?   // Para purchase orders
-  order         Order?    @relation(fields: [orderId], references: [id])
-  
-  saleOrderId   String?   // Para sale orders
-  saleOrder     SaleOrder? @relation(fields: [saleOrderId], references: [id])
+                              // Relaciones polimórficas simplificadas
+                                orderId       String?   // Para purchase orders
+                                  order         Order?    @relation(fields: [orderId], references: [id])
+                                    
+                                      saleOrderId   String?   // Para sale orders
+                                        saleOrder     SaleOrder? @relation(fields: [saleOrderId], references: [id])
 
-  uploadedById  String
-  uploadedBy    User @relation(fields: [uploadedById], references: [id])
+                                          uploadedById  String
+                                            uploadedBy    User @relation(fields: [uploadedById], references: [id])
 
-  @@index([orderId])
-  @@index([saleOrderId])
-  @@index([deleted])
-  @@map("receipts")
+                                              @@index([orderId])
+                                                @@index([saleOrderId])
+                                                  @@index([deleted])
+                                                    @@map("receipts")
+}
 }
 
 enum ReceiptType {

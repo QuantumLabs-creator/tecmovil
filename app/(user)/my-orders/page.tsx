@@ -8,6 +8,8 @@ import {
     type SaleOrder,
     type SaleOrderStatus,
 } from "@/src/lib/api/sale-orders";
+import { getReceiptsApi } from "@/src/lib/api/receipts";
+
 
 function getStatusLabel(status: SaleOrderStatus) {
     switch (status) {
@@ -46,14 +48,36 @@ function formatMoney(value: string) {
 }
 
 export default function MyOrdersPage() {
-    const [items, setItems] = useState<SaleOrder[]>([]);
+    const [items, setItems] = useState<(SaleOrder & { receiptsCount?: number })[]>([]);
     const [loading, setLoading] = useState(true);
 
     async function loadOrders() {
         setLoading(true);
         try {
             const result = await getMySaleOrdersApi({ page: 1, pageSize: 20 });
-            setItems(result.data?.items ?? []);
+            const orders = result.data?.items ?? [];
+
+            // Cargar cantidad de comprobantes para cada pedido
+            const ordersWithReceipts = await Promise.all(
+                orders.map(async (order) => {
+                    try {
+                        const receiptsResult = await getReceiptsApi({
+                            saleOrderId: order.id,
+                            deleted: false,
+                            page: 1,
+                            pageSize: 1,
+                        });
+                        return {
+                            ...order,
+                            receiptsCount: receiptsResult.data?.meta?.total ?? 0,
+                        };
+                    } catch {
+                        return { ...order, receiptsCount: 0 };
+                    }
+                })
+            );
+
+            setItems(ordersWithReceipts);
         } catch (e: any) {
             toast.error("Error", {
                 description: e?.error || e?.message || "No se pudieron cargar tus pedidos",
@@ -81,7 +105,7 @@ export default function MyOrdersPage() {
                 </div>
 
                 <Link
-                    href="/"
+                    href="/shop"
                     className="group inline-flex items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-5 py-2.5 text-sm font-medium text-gray-700 transition-all hover:border-gray-400 hover:bg-gray-50 hover:text-gray-900 active:scale-95"
                 >
                     <span>Ir al catálogo</span>
@@ -95,7 +119,6 @@ export default function MyOrdersPage() {
             <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
                 
                 {loading ? (
-                    // Skeleton Loader
                     <div className="p-6 space-y-4">
                         {[1, 2, 3].map((i) => (
                             <div key={i} className="flex items-center gap-4 animate-pulse">
@@ -107,7 +130,6 @@ export default function MyOrdersPage() {
                         ))}
                     </div>
                 ) : !hasOrders ? (
-                    // Empty State
                     <div className="flex flex-col items-center justify-center py-20 text-center">
                         <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gray-100">
                             <svg className="h-8 w-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -120,7 +142,6 @@ export default function MyOrdersPage() {
                         </p>
                     </div>
                 ) : (
-                    // Table
                     <div className="overflow-x-auto">
                         <table className="w-full text-left text-sm">
                             <thead className="bg-gray-50 text-xs uppercase tracking-wider text-gray-500">
@@ -128,8 +149,8 @@ export default function MyOrdersPage() {
                                     <th className="px-6 py-4 font-semibold">Pedido</th>
                                     <th className="px-6 py-4 font-semibold">Fecha</th>
                                     <th className="px-6 py-4 font-semibold">Estado</th>
+                                    <th className="px-6 py-4 font-semibold text-center">Comprobantes</th>
                                     <th className="px-6 py-4 font-semibold text-right">Total</th>
-                                    <th className="px-6 py-4 font-semibold text-center">Items</th>
                                     <th className="px-6 py-4 font-semibold text-right"></th>
                                 </tr>
                             </thead>
@@ -162,14 +183,26 @@ export default function MyOrdersPage() {
                                             </span>
                                         </td>
 
-                                        <td className="px-6 py-4 text-right font-semibold text-gray-900 tabular-nums">
-                                            {formatMoney(order.total)}
+                                        <td className="px-6 py-4 text-center">
+                                            {order.receiptsCount && order.receiptsCount > 0 ? (
+                                                <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-700 ring-1 ring-emerald-200">
+                                                    <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                    </svg>
+                                                    {order.receiptsCount} archivo(s)
+                                                </span>
+                                            ) : (
+                                                <span className="inline-flex items-center gap-1.5 rounded-full bg-gray-100 px-2.5 py-1 text-xs font-medium text-gray-600 ring-1 ring-gray-200">
+                                                    <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                                                    </svg>
+                                                    Sin archivos
+                                                </span>
+                                            )}
                                         </td>
 
-                                        <td className="px-6 py-4 text-center text-gray-600">
-                                            <span className="inline-flex h-6 w-6 items-center justify-center rounded-md bg-gray-100 text-xs font-medium text-gray-700">
-                                                {order.details.length}
-                                            </span>
+                                        <td className="px-6 py-4 text-right font-semibold text-gray-900 tabular-nums">
+                                            {formatMoney(order.total)}
                                         </td>
 
                                         <td className="px-6 py-4 text-right">
