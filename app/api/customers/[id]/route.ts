@@ -12,14 +12,16 @@ function hasAnyRole(session: any, roles: string[]) {
   return roles.includes(role);
 }
 
-export async function GET(_req: Request, ctx: { params: { id: string } }) {
+export async function GET(_req: Request,
+  ctx: { params: Promise<{ id: string }> }) {
   try {
     await requireAuth();
+    const { id } = await ctx.params;
 
     const repo = new PrismaCustomerRepository();
     const uc = new GetCustomerUseCase(repo);
 
-    const data = await uc.execute(ctx.params.id);
+    const data = await uc.execute(id);
     return ok(data);
   } catch (e: any) {
     const msg = e?.message ?? "Error al obtener cliente";
@@ -28,10 +30,11 @@ export async function GET(_req: Request, ctx: { params: { id: string } }) {
   }
 }
 
-export async function PUT(req: Request, ctx: { params: { id: string } }) {
+export async function PUT(req: Request,
+  ctx: { params: Promise<{ id: string }> }) {
   try {
     const session = await requireAuth();
-
+const { id } = await ctx.params; 
     // ✅ editar clientes normalmente: ADMIN/SELLER
     if (!hasAnyRole(session, ["ADMIN", "SELLER"])) {
       return fail("No autorizado", 401);
@@ -42,7 +45,7 @@ export async function PUT(req: Request, ctx: { params: { id: string } }) {
     const repo = new PrismaCustomerRepository();
     const uc = new UpdateCustomerUseCase(repo);
 
-    const data = await uc.execute(ctx.params.id, body);
+    const data = await uc.execute(id, body);
     return ok(data);
   } catch (e: any) {
     const msg = e?.message ?? "Error al actualizar cliente";
@@ -51,9 +54,11 @@ export async function PUT(req: Request, ctx: { params: { id: string } }) {
   }
 }
 
-export async function DELETE(_req: Request, ctx: { params: { id: string } }) {
+export async function DELETE(_req: Request,
+  ctx: { params: Promise<{ id: string }> } ) {
   try {
     const session = await requireAuth();
+    const { id } = await ctx.params; 
 
     // ✅ eliminar (soft delete) normalmente: solo ADMIN
     if (!hasAnyRole(session, ["ADMIN"])) {
@@ -63,7 +68,7 @@ export async function DELETE(_req: Request, ctx: { params: { id: string } }) {
     const repo = new PrismaCustomerRepository();
     const uc = new DeleteCustomerUseCase(repo);
 
-    await uc.execute(ctx.params.id);
+    await uc.execute(id);
     return ok({ ok: true });
   } catch (e: any) {
     const msg = e?.message ?? "Error al eliminar cliente";
