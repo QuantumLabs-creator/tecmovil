@@ -4,14 +4,15 @@ import { requireAuth } from "@/src/modules/auth/infrastructure/auth.guard";
 import { PrismaMovementRepository } from "@/src/modules/movements/infrastructure/movement.repo";
 import { GetMovementUseCase } from "@/src/modules/movements/application/getMovement.usecase";
 
-export async function GET(_: Request, { params }: { params: { id: string } }) {
+export async function GET(_req: Request,
+  ctx: { params: Promise<{ id: string }> }) {
   try {
     await requireAuth();
-
+    const { id } = await ctx.params;
     const repo = new PrismaMovementRepository();
     const uc = new GetMovementUseCase(repo);
 
-    const movement = await uc.execute(params.id);
+    const movement = await uc.execute(id);
 
     return ok(movement);
   } catch (e: any) {
