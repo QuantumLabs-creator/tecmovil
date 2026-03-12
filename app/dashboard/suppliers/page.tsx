@@ -172,18 +172,52 @@ export default function SuppliersPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-xl font-semibold tracking-tight">Proveedores</h1>
-        <p className="mt-1 text-sm text-zinc-400">
-          Gestiona los proveedores del sistema.
-        </p>
+    <div className="space-y-8 animate-in fade-in duration-500">
+      {/* Header */}
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-gray-200 pb-6">
+        <div className="space-y-1">
+          <h1 className="text-2xl font-bold tracking-tight text-gray-900">Proveedores</h1>
+          <p className="text-sm text-gray-600">
+            Gestiona los proveedores y contactos comerciales del sistema.
+          </p>
+        </div>
+
       </div>
 
-      <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-4 shadow-sm">
+      {/* Stats */}
+      <div className="grid gap-4 sm:grid-cols-3">
+        <div className="rounded-xl border border-gray-200 bg-white p-4">
+          <div className="text-xs font-medium text-gray-500 uppercase tracking-wide">Total</div>
+          <div className="mt-1 text-2xl font-bold text-gray-900">{items.length}</div>
+        </div>
+        <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4">
+          <div className="text-xs font-medium text-emerald-700 uppercase tracking-wide">Activos</div>
+          <div className="mt-1 text-2xl font-bold text-emerald-800">
+            {items.filter((x) => x.active).length}
+          </div>
+        </div>
+        <div className="rounded-xl border border-gray-200 bg-gray-50 p-4">
+          <div className="text-xs font-medium text-gray-700 uppercase tracking-wide">Inactivos</div>
+          <div className="mt-1 text-2xl font-bold text-gray-800">
+            {items.filter((x) => !x.active).length}
+          </div>
+        </div>
+      </div>
+
+      {/* Table */}
+      <div className="">
         {loading ? (
-          <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-muted)] p-4 text-sm text-zinc-300">
-            Cargando proveedores...
+          <div className="p-6 space-y-4">
+            {[1, 2, 3, 4, 5].map((i) => (
+              <div key={i} className="flex items-center gap-4 animate-pulse">
+                <div className="h-12 w-12 rounded-lg bg-gray-200"></div>
+                <div className="flex-1 space-y-2">
+                  <div className="h-4 w-32 bg-gray-200 rounded"></div>
+                  <div className="h-3 w-48 bg-gray-100 rounded"></div>
+                </div>
+                <div className="h-8 w-24 bg-gray-100 rounded"></div>
+              </div>
+            ))}
           </div>
         ) : (
           <SuppliersTable
@@ -195,6 +229,7 @@ export default function SuppliersPage() {
         )}
       </div>
 
+      {/* Modal */}
       <SuppliersModal
         open={modalOpen}
         mode={modalMode}

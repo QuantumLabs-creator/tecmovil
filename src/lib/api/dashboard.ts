@@ -19,6 +19,11 @@ export type ApiError = {
   status: number;
 };
 
+type ApiResponse<T> = {
+  ok: boolean;
+  data: T;
+};
+
 const API_BASE = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") || "";
 
 async function fetchApi<T>(path: string, options?: RequestInit): Promise<T> {
@@ -43,8 +48,8 @@ async function fetchApi<T>(path: string, options?: RequestInit): Promise<T> {
   return data as T;
 }
 
-export async function getDashboardApi(): Promise<DashboardResponse> {
-  return fetchApi<DashboardResponse>("/api/dashboard", {
+export async function getDashboardApi(): Promise<ApiResponse<DashboardResponse>> {
+  return fetchApi<ApiResponse<DashboardResponse>>("/api/dashboard", {
     method: "GET",
     cache: "no-store",
   });

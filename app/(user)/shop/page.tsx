@@ -211,14 +211,30 @@ export default function ShopPage() {
                     className="group relative flex flex-col rounded-2xl border border-gray-200 bg-white p-5 transition-all hover:border-gray-400 hover:shadow-lg hover:shadow-gray-200/50"
                   >
                     <div className="mb-4 flex items-start justify-between">
+                      <span className="mt-1 text-sm font-semibold text-gray-900 line-clamp-2">
+                        {product.name}
+                      </span>
+
                       <span className="inline-flex items-center rounded-md bg-gray-100 px-2 py-1 text-xs font-medium text-gray-600 ring-1 ring-inset ring-gray-200">
                         {product.category.name}
                       </span>
-                      <span className="text-xs font-mono text-gray-500">{product.code}</span>
+                    </div>
+
+                    <div className="mb-4 overflow-hidden rounded-xl border border-gray-200 bg-gray-100">
+                      {product.image ? (
+                        <img
+                          src={product.image}
+                          alt={product.name}
+                          className="h-48 w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                        />
+                      ) : (
+                        <div className="flex h-48 w-full items-center justify-center text-sm text-gray-400">
+                          Sin imagen
+                        </div>
+                      )}
                     </div>
 
                     <div className="mb-2 flex-1">
-                      <h3 className="font-semibold text-gray-900 line-clamp-2">{product.name}</h3>
                       {product.description && (
                         <p className="mt-1 text-sm text-gray-600 line-clamp-2">{product.description}</p>
                       )}
@@ -232,8 +248,8 @@ export default function ShopPage() {
                         </div>
                         {product.wholesalePrice && (
                           <div className="text-right">
-                             <div className="text-[10px] text-gray-500">Mayorista</div>
-                             <div className="text-xs font-medium text-gray-600">{formatMoney(product.wholesalePrice)}</div>
+                            <div className="text-[10px] text-gray-500">Mayorista</div>
+                            <div className="text-xs font-medium text-gray-600">{formatMoney(product.wholesalePrice)}</div>
                           </div>
                         )}
                       </div>
@@ -249,11 +265,10 @@ export default function ShopPage() {
                         type="button"
                         onClick={() => addToCart(product)}
                         disabled={isOutOfStock}
-                        className={`w-full rounded-xl py-2.5 text-sm font-medium transition-all ${
-                          isOutOfStock
-                            ? "cursor-not-allowed bg-gray-100 text-gray-400"
-                            : "bg-gray-900 text-white hover:bg-gray-800 active:scale-[0.98]"
-                        }`}
+                        className={`w-full rounded-xl py-2.5 text-sm font-medium transition-all ${isOutOfStock
+                          ? "cursor-not-allowed bg-gray-100 text-gray-400"
+                          : "bg-gray-900 text-white hover:bg-gray-800 active:scale-[0.98]"
+                          }`}
                       >
                         {isOutOfStock ? "Agotado" : "Agregar al carrito"}
                       </button>
@@ -298,7 +313,7 @@ export default function ShopPage() {
 
                     <div className="mb-2 pr-6">
                       <div className="font-medium text-gray-900 line-clamp-1">{item.name}</div>
-                      <div className="text-xs text-gray-500">{item.code}</div>
+
                     </div>
 
                     <div className="flex items-center justify-between">
