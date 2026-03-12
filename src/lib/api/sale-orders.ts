@@ -115,7 +115,7 @@ export type CancelSaleOrderPayload = {
 };
 
 export type SetSaleOrderStatusPayload = {
-  status: "PREPARING" | "READY" | "COMPLETED";
+  status: Exclude<SaleOrderStatus, "CANCELLED" | "REJECTED">;
 };
 
 export type ApiError = {

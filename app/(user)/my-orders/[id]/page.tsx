@@ -16,8 +16,8 @@ import {
   createReceiptApi,
   deleteReceiptApi,
   type Receipt,
-  type ReceiptType,
 } from "@/src/lib/api/receipts";
+import { uploadFileApi } from "@/src/lib/api/upload";
 
 function formatMoney(value: string) {
   const n = Number(value);
@@ -51,45 +51,6 @@ function getStatusClasses(status: SaleOrderStatus) {
     case "CANCELLED": return "bg-gray-100 text-gray-600 ring-1 ring-gray-200";
     case "REJECTED": return "bg-red-100 text-red-700 ring-1 ring-red-200";
     default: return "bg-gray-100 text-gray-600 ring-1 ring-gray-200";
-  }
-}
-
-function getReceiptTypeLabel(type: ReceiptType) {
-  switch (type) {
-    case "INVOICE": return "Factura";
-    case "PAYMENT_PROOF": return "Comprobante de Pago";
-    case "DELIVERY_PROOF": return "Comprobante de Entrega";
-    case "OTHER": return "Otro";
-    default: return type;
-  }
-}
-
-function getReceiptTypeIcon(type: ReceiptType) {
-  switch (type) {
-    case "INVOICE":
-      return (
-        <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-        </svg>
-      );
-    case "PAYMENT_PROOF":
-      return (
-        <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
-        </svg>
-      );
-    case "DELIVERY_PROOF":
-      return (
-        <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
-        </svg>
-      );
-    default:
-      return (
-        <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
-        </svg>
-      );
   }
 }
 
@@ -173,22 +134,20 @@ export default function MyOrderDetailPage() {
 
     const formData = new FormData(e.currentTarget);
     const file = formData.get("file") as File;
-    const type = formData.get("type") as ReceiptType;
 
-    if (!file || !type) {
-      toast.error("Error", { description: "Selecciona un archivo y tipo de comprobante" });
+    if (!file) {
+      toast.error("Error", { description: "Selecciona un archivo" });
       return;
     }
 
     try {
       setUploading(true);
 
-      // Aquí deberías subir el archivo a tu storage y obtener la URL
-      // Esto es un ejemplo - adapta según tu implementación real
       const uploadResult = await uploadFileToStorage(file);
-      
+
+      // ✅ Siempre se crea como PAYMENT_PROOF
       await createReceiptApi({
-        type,
+        type: "PAYMENT_PROOF",
         fileUrl: uploadResult.url,
         fileName: file.name,
         fileSize: file.size,
@@ -196,36 +155,32 @@ export default function MyOrderDetailPage() {
         saleOrderId: order.id,
       });
 
-      toast.success("Comprobante subido correctamente");
+      // ✅ Resetear el formulario PRIMERO
+      e.currentTarget?.reset();
+      
+      // ✅ Luego cerrar el modal
       setShowUploadModal(false);
+      
+      // ✅ Recargar la lista
       await loadReceipts();
-      e.currentTarget.reset();
+      
+      // ✅ Mostrar éxito
+      toast.success("Comprobante de pago subido correctamente");
     } catch (e: any) {
+      console.error("Upload error:", e);
       toast.error("Error", {
-        description: e?.error || "No se pudo subir el comprobante",
+        description: e?.error || e?.message || "No se pudo subir el comprobante",
       });
     } finally {
       setUploading(false);
     }
   }
 
-  // Función placeholder - implementa según tu storage (S3, Cloudinary, etc.)
   async function uploadFileToStorage(file: File): Promise<{ url: string }> {
-    // Ejemplo: subir a tu API que maneja el storage
-    const formData = new FormData();
-    formData.append("file", file);
-    
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/upload`, {
-      method: "POST",
-      body: formData,
-      credentials: "include",
-    });
-
-    if (!response.ok) {
-      throw new Error("Error al subir archivo");
-    }
-
-    return response.json();
+    const result = await uploadFileApi(file);
+    return {
+      url: result.data.url,
+    };
   }
 
   async function handleDeleteReceipt(receiptId: string) {
@@ -271,6 +226,8 @@ export default function MyOrderDetailPage() {
     );
   }
 
+  const hasPaymentProof = receipts.length > 0;
+
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
       {/* Header */}
@@ -286,9 +243,9 @@ export default function MyOrderDetailPage() {
             </span>
           </div>
           <p className="text-sm text-gray-600 mt-1">
-            {new Date(order.orderDate).toLocaleString("es-PE", { 
-              dateStyle: 'medium', 
-              timeStyle: 'short' 
+            {new Date(order.orderDate).toLocaleString("es-PE", {
+              dateStyle: 'medium',
+              timeStyle: 'short'
             })}
           </p>
         </div>
@@ -303,6 +260,21 @@ export default function MyOrderDetailPage() {
           Volver
         </Link>
       </div>
+
+      {/* Alerta si no hay comprobante */}
+      {!hasPaymentProof && order.status === "PENDING_REQUEST" && (
+        <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 flex items-start gap-3">
+          <svg className="h-5 w-5 text-amber-600 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+          <div>
+            <p className="text-sm font-medium text-amber-900">Falta comprobante de pago</p>
+            <p className="text-sm text-amber-700 mt-0.5">
+              Sube una imagen del voucher o transferencia para que podamos aprobar tu pedido.
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* Order Summary */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -321,8 +293,14 @@ export default function MyOrderDetailPage() {
           <div className="mt-1 text-lg font-bold text-gray-900">{formatMoney(order.total)}</div>
         </div>
         <div className="rounded-xl border border-gray-200 bg-white p-4">
-          <div className="text-xs font-medium text-gray-500 uppercase tracking-wide">Comprobantes</div>
-          <div className="mt-1 text-sm font-semibold text-gray-900">{receipts.length} archivo(s)</div>
+          <div className="text-xs font-medium text-gray-500 uppercase tracking-wide">Comprobante</div>
+          <div className="mt-1 text-sm font-semibold text-gray-900">
+            {hasPaymentProof ? (
+              <span className="text-emerald-700">✓ Subido</span>
+            ) : (
+              <span className="text-amber-700">⚠ Pendiente</span>
+            )}
+          </div>
         </div>
       </div>
 
@@ -370,47 +348,62 @@ export default function MyOrderDetailPage() {
         </div>
       </div>
 
-      {/* Receipts Section */}
+      {/* Receipts Section - SOLO COMPROBANTE DE PAGO */}
       <div className="rounded-2xl border border-gray-200 bg-white overflow-hidden">
         <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
           <div>
-            <h3 className="font-semibold text-gray-900">Comprobantes</h3>
-            <p className="text-sm text-gray-600 mt-0.5">Sube facturas, comprobantes de pago o entrega</p>
+            <h3 className="font-semibold text-gray-900">Comprobante de Pago</h3>
+            <p className="text-sm text-gray-600 mt-0.5">
+              Sube una foto del voucher, transferencia Yape/Plin o depósito bancario
+            </p>
           </div>
-          <button
-            onClick={() => setShowUploadModal(true)}
-            className="inline-flex items-center gap-2 rounded-xl bg-gray-900 px-4 py-2 text-sm font-medium text-white shadow-sm transition-all hover:bg-gray-800 active:scale-95"
-          >
-            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-            </svg>
-            Subir comprobante
-          </button>
+          {!hasPaymentProof && (
+            <button
+              onClick={() => setShowUploadModal(true)}
+              className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition-all hover:bg-emerald-700 active:scale-95"
+            >
+              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
+              Subir comprobante
+            </button>
+          )}
         </div>
 
         {receipts.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12 text-center">
             <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-gray-100">
               <svg className="h-6 w-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
               </svg>
             </div>
-            <p className="text-sm font-medium text-gray-900">No hay comprobantes</p>
-            <p className="text-sm text-gray-600 mt-1">Sube tus comprobantes para agilizar la aprobación</p>
+            <p className="text-sm font-medium text-gray-900">Sin comprobante de pago</p>
+            <p className="text-sm text-gray-600 mt-1">Sube el voucher para confirmar tu pago</p>
+            <button
+              onClick={() => setShowUploadModal(true)}
+              className="mt-4 inline-flex items-center gap-1.5 text-sm font-medium text-emerald-700 hover:text-emerald-900"
+            >
+              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
+              Subir ahora
+            </button>
           </div>
         ) : (
           <div className="divide-y divide-gray-100">
             {receipts.map((receipt) => (
               <div key={receipt.id} className="p-4 flex items-center justify-between hover:bg-gray-50 transition-colors">
                 <div className="flex items-center gap-4">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gray-100 text-gray-600">
-                    {getReceiptTypeIcon(receipt.type)}
+                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-50 ring-1 ring-emerald-200">
+                    <svg className="h-5 w-5 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
                   </div>
                   <div>
                     <div className="flex items-center gap-2">
                       <span className="font-medium text-gray-900">{receipt.fileName}</span>
-                      <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-600">
-                        {getReceiptTypeLabel(receipt.type)}
+                      <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-700">
+                        Comprobante de Pago
                       </span>
                     </div>
                     <div className="text-xs text-gray-500 mt-0.5">
@@ -429,7 +422,7 @@ export default function MyOrderDetailPage() {
                     <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                     </svg>
-                    Descargar
+                    Ver
                   </a>
                   <button
                     onClick={() => handleDeleteReceipt(receipt.id)}
@@ -483,12 +476,17 @@ export default function MyOrderDetailPage() {
         )}
       </div>
 
-      {/* Upload Modal */}
+      {/* Upload Modal - SOLO PAGO */}
       {showUploadModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
           <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl animate-in fade-in zoom-in duration-200">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-900">Subir Comprobante</h3>
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900">Subir Comprobante de Pago</h3>
+                <p className="text-sm text-gray-600 mt-0.5">
+                  Sube una foto del voucher o captura de transferencia
+                </p>
+              </div>
               <button
                 onClick={() => setShowUploadModal(false)}
                 className="rounded-lg p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
@@ -502,49 +500,38 @@ export default function MyOrderDetailPage() {
             <form onSubmit={handleUpload} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Tipo de comprobante
-                </label>
-                <select
-                  name="type"
-                  required
-                  className="w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm text-gray-900 focus:border-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-400"
-                >
-                  <option value="INVOICE">Factura</option>
-                  <option value="PAYMENT_PROOF">Comprobante de Pago</option>
-                  <option value="DELIVERY_PROOF">Comprobante de Entrega</option>
-                  <option value="OTHER">Otro</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
                   Archivo
                 </label>
-                <div className="rounded-xl border border-dashed border-gray-300 bg-gray-50 p-4 text-center">
+                <div className="rounded-xl border border-dashed border-gray-300 bg-gray-50 p-6 text-center">
                   <input
                     type="file"
                     name="file"
                     required
-                    accept=".pdf,.png,.jpg,.jpeg"
+                    accept="image/*,.pdf"
                     className="hidden"
                     id="file-upload"
                   />
                   <label
                     htmlFor="file-upload"
-                    className="cursor-pointer"
+                    className="cursor-pointer block"
                   >
-                    <svg className="mx-auto h-8 w-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                     </svg>
-                    <p className="mt-2 text-sm text-gray-600">
-                      <span className="font-medium text-gray-900">Haz clic para subir</span> o arrastra
+                    <p className="mt-3 text-sm text-gray-600">
+                      <span className="font-medium text-emerald-700">Haz clic para subir</span> o arrastra
                     </p>
-                    <p className="text-xs text-gray-500 mt-1">PDF, PNG, JPG (max. 10MB)</p>
+                    <p className="text-xs text-gray-500 mt-1">
+                      JPG, PNG o PDF (max. 5MB)
+                    </p>
+                    <p className="text-xs text-amber-600 mt-2">
+                      ⚠️ Asegúrate que se vea claramente el monto y la fecha
+                    </p>
                   </label>
                 </div>
               </div>
 
-              <div className="flex gap-3 pt-4">
+              <div className="flex gap-3 pt-2">
                 <button
                   type="button"
                   onClick={() => setShowUploadModal(false)}
@@ -555,9 +542,9 @@ export default function MyOrderDetailPage() {
                 <button
                   type="submit"
                   disabled={uploading}
-                  className="flex-1 rounded-xl bg-gray-900 px-4 py-2.5 text-sm font-medium text-white hover:bg-gray-800 disabled:opacity-50"
+                  className="flex-1 rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-50"
                 >
-                  {uploading ? "Subiendo..." : "Subir"}
+                  {uploading ? "Subiendo..." : "Subir comprobante"}
                 </button>
               </div>
             </form>

@@ -3,6 +3,7 @@
 import { ok, fail } from "@/src/shared/http/api";
 import { requireAuth } from "@/src/modules/auth/infrastructure/auth.guard";
 
+import { prisma } from "@/src/shared/db/prisma";
 import { PrismaReceiptRepository } from "@/src/modules/receipts/infrastructure/receipt.repo";
 import { CreateReceiptUseCase } from "@/src/modules/receipts/application/createReceipt.usecase";
 import { SearchReceiptsUseCase } from "@/src/modules/receipts/application/searchReceipts.usecase";
@@ -16,9 +17,6 @@ export async function GET(req: Request) {
     const session = await requireAuth();
     const url = new URL(req.url);
 
-    const repo = new PrismaReceiptRepository();
-    const uc = new SearchReceiptsUseCase(repo);
-
     const saleOrderId = url.searchParams.get("saleOrderId") ?? undefined;
     const orderId = url.searchParams.get("orderId") ?? undefined;
     const uploadedById = url.searchParams.get("uploadedById") ?? undefined;
@@ -26,10 +24,33 @@ export async function GET(req: Request) {
     const isPrivileged = hasAnyRole(session.role, ["ADMIN", "WAREHOUSE", "SELLER"]);
 
     if (!isPrivileged) {
-      if (!uploadedById || uploadedById !== session.userId) {
+      // USER: si consulta por saleOrderId, validar que el pedido sea suyo
+      if (saleOrderId) {
+        const saleOrder = await prisma.saleOrder.findUnique({
+          where: { id: saleOrderId },
+          select: { id: true, userId: true },
+        });
+
+        if (!saleOrder) {
+          return fail("Pedido no encontrado", 404);
+        }
+
+        if (!saleOrder.userId || saleOrder.userId !== session.userId) {
+          return fail("No autorizado", 403);
+        }
+      } else if (uploadedById) {
+        // opcional: permitir buscar por uploadedById, pero solo el propio
+        if (uploadedById !== session.userId) {
+          return fail("No autorizado", 403);
+        }
+      } else {
+        // si no manda ni saleOrderId ni uploadedById, no autorizamos
         return fail("No autorizado", 403);
       }
     }
+
+    const repo = new PrismaReceiptRepository();
+    const uc = new SearchReceiptsUseCase(repo);
 
     const result = await uc.execute({
       type: url.searchParams.get("type") ?? undefined,
@@ -56,6 +77,25 @@ export async function POST(req: Request) {
 
     if (!body || typeof body !== "object") {
       return fail("Body inválido", 400);
+    }
+
+    // Si es USER y está subiendo a saleOrderId, validar que el pedido sea suyo
+    const saleOrderId = String((body as any).saleOrderId ?? "").trim();
+    const isPrivileged = hasAnyRole(session.role, ["ADMIN", "WAREHOUSE", "SELLER"]);
+
+    if (!isPrivileged && saleOrderId) {
+      const saleOrder = await prisma.saleOrder.findUnique({
+        where: { id: saleOrderId },
+        select: { id: true, userId: true, status: true },
+      });
+
+      if (!saleOrder) {
+        return fail("Pedido no encontrado", 404);
+      }
+
+      if (!saleOrder.userId || saleOrder.userId !== session.userId) {
+        return fail("No autorizado", 403);
+      }
     }
 
     const repo = new PrismaReceiptRepository();
