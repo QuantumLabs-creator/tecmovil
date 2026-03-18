@@ -127,7 +127,8 @@ exports.Prisma.UserScalarFieldEnum = {
   password: 'password',
   phone: 'phone',
   role: 'role',
-  active: 'active',
+  status: 'status',
+  archivedAt: 'archivedAt',
   lastLogin: 'lastLogin',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
@@ -140,7 +141,8 @@ exports.Prisma.CustomerScalarFieldEnum = {
   phone: 'phone',
   document: 'document',
   customerType: 'customerType',
-  active: 'active',
+  status: 'status',
+  archivedAt: 'archivedAt',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -149,8 +151,10 @@ exports.Prisma.CategoryScalarFieldEnum = {
   id: 'id',
   name: 'name',
   description: 'description',
-  active: 'active',
-  createdAt: 'createdAt'
+  status: 'status',
+  archivedAt: 'archivedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
 };
 
 exports.Prisma.SupplierScalarFieldEnum = {
@@ -160,15 +164,20 @@ exports.Prisma.SupplierScalarFieldEnum = {
   email: 'email',
   phone: 'phone',
   address: 'address',
-  active: 'active',
-  createdAt: 'createdAt'
+  status: 'status',
+  archivedAt: 'archivedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
 };
 
 exports.Prisma.UnitOfMeasureScalarFieldEnum = {
   id: 'id',
   name: 'name',
   symbol: 'symbol',
-  active: 'active'
+  status: 'status',
+  archivedAt: 'archivedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
 };
 
 exports.Prisma.ProductScalarFieldEnum = {
@@ -186,7 +195,8 @@ exports.Prisma.ProductScalarFieldEnum = {
   minStock: 'minStock',
   currentStock: 'currentStock',
   reservedStock: 'reservedStock',
-  active: 'active',
+  status: 'status',
+  archivedAt: 'archivedAt',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
   categoryId: 'categoryId',
@@ -293,8 +303,10 @@ exports.Prisma.RoutePermissionScalarFieldEnum = {
   route: 'route',
   method: 'method',
   roles: 'roles',
-  active: 'active',
-  createdAt: 'createdAt'
+  status: 'status',
+  archivedAt: 'archivedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
 };
 
 exports.Prisma.SortOrder = {
@@ -327,6 +339,12 @@ exports.Role = exports.$Enums.Role = {
   USER: 'USER',
   WAREHOUSE: 'WAREHOUSE',
   SELLER: 'SELLER'
+};
+
+exports.RecordStatus = exports.$Enums.RecordStatus = {
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
+  ARCHIVED: 'ARCHIVED'
 };
 
 exports.CustomerType = exports.$Enums.CustomerType = {

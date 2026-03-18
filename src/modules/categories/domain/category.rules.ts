@@ -1,5 +1,9 @@
 // src/modules/categories/domain/category.rules.ts
 import type { CreateCategoryInput, UpdateCategoryInput } from "./category.repository";
+import {
+  type CategoryStatus,
+  isCategoryStatus,
+} from "./category-status";
 
 function toStr(v: unknown) {
   return String(v ?? "").trim();
@@ -11,23 +15,47 @@ export function normalizeText(v: unknown): string | null {
   return s.length ? s : null;
 }
 
-export function normalizeBoolean(v: unknown, defaultValue = true): boolean {
+export function normalizeCategoryStatus(
+  v: unknown,
+  defaultValue: CategoryStatus = "ACTIVE"
+): CategoryStatus {
   if (v === undefined || v === null || toStr(v) === "") return defaultValue;
-  const s = toStr(v).toLowerCase();
-  if (s === "true" || s === "1" || s === "yes" || s === "si") return true;
-  if (s === "false" || s === "0" || s === "no") return false;
-  return defaultValue;
+
+  const s = toStr(v).toUpperCase();
+
+  if (isCategoryStatus(s)) return s;
+
+  throw new Error("status inválido");
 }
 
-export function assertCreateCategoryInput(input: unknown): asserts input is CreateCategoryInput {
+export function assertCreateCategoryInput(
+  input: unknown
+): asserts input is CreateCategoryInput {
   if (!input || typeof input !== "object") throw new Error("Body inválido");
-  const x = input as any;
+
+  const x = input as Record<string, unknown>;
+
   if (!toStr(x.name)) throw new Error("name requerido");
+
+  if (x.status !== undefined) {
+    normalizeCategoryStatus(x.status);
+  }
 }
 
-export function assertUpdateCategoryInput(input: unknown): asserts input is UpdateCategoryInput {
+export function assertUpdateCategoryInput(
+  input: unknown
+): asserts input is UpdateCategoryInput {
   if (!input || typeof input !== "object") throw new Error("Body inválido");
-  // no obligatorio, se valida cuando venga name vacío
+
+  const x = input as Record<string, unknown>;
+
+  if (x.name !== undefined && !toStr(x.name)) {
+    throw new Error("name inválido");
+  }
+
+  if (x.status !== undefined) {
+    normalizeCategoryStatus(x.status);
+  }
 }
 
 export function normalizeCreateCategory(input: CreateCategoryInput) {
@@ -35,9 +63,9 @@ export function normalizeCreateCategory(input: CreateCategoryInput) {
   if (!name) throw new Error("name requerido");
 
   const description = normalizeText(input.description);
-  const active = normalizeBoolean(input.active, true);
+  const status = normalizeCategoryStatus(input.status, "ACTIVE");
 
-  return { name, description, active };
+  return { name, description, status };
 }
 
 export function normalizeUpdateCategory(dto: UpdateCategoryInput): UpdateCategoryInput {
@@ -49,8 +77,13 @@ export function normalizeUpdateCategory(dto: UpdateCategoryInput): UpdateCategor
     out.name = v;
   }
 
-  if (dto.description !== undefined) out.description = normalizeText(dto.description);
-  if (dto.active !== undefined) out.active = normalizeBoolean(dto.active, true);
+  if (dto.description !== undefined) {
+    out.description = normalizeText(dto.description);
+  }
+
+  if (dto.status !== undefined) {
+    out.status = normalizeCategoryStatus(dto.status);
+  }
 
   return out;
 }

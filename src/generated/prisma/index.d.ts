@@ -98,6 +98,15 @@ export namespace $Enums {
 export type Role = (typeof Role)[keyof typeof Role]
 
 
+export const RecordStatus: {
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
+  ARCHIVED: 'ARCHIVED'
+};
+
+export type RecordStatus = (typeof RecordStatus)[keyof typeof RecordStatus]
+
+
 export const CustomerType: {
   RETAIL: 'RETAIL',
   WHOLESALE: 'WHOLESALE'
@@ -164,6 +173,10 @@ export type ReceiptType = (typeof ReceiptType)[keyof typeof ReceiptType]
 export type Role = $Enums.Role
 
 export const Role: typeof $Enums.Role
+
+export type RecordStatus = $Enums.RecordStatus
+
+export const RecordStatus: typeof $Enums.RecordStatus
 
 export type CustomerType = $Enums.CustomerType
 
@@ -2517,7 +2530,8 @@ export namespace Prisma {
     password: string | null
     phone: string | null
     role: $Enums.Role | null
-    active: boolean | null
+    status: $Enums.RecordStatus | null
+    archivedAt: Date | null
     lastLogin: Date | null
     createdAt: Date | null
     updatedAt: Date | null
@@ -2530,7 +2544,8 @@ export namespace Prisma {
     password: string | null
     phone: string | null
     role: $Enums.Role | null
-    active: boolean | null
+    status: $Enums.RecordStatus | null
+    archivedAt: Date | null
     lastLogin: Date | null
     createdAt: Date | null
     updatedAt: Date | null
@@ -2543,7 +2558,8 @@ export namespace Prisma {
     password: number
     phone: number
     role: number
-    active: number
+    status: number
+    archivedAt: number
     lastLogin: number
     createdAt: number
     updatedAt: number
@@ -2558,7 +2574,8 @@ export namespace Prisma {
     password?: true
     phone?: true
     role?: true
-    active?: true
+    status?: true
+    archivedAt?: true
     lastLogin?: true
     createdAt?: true
     updatedAt?: true
@@ -2571,7 +2588,8 @@ export namespace Prisma {
     password?: true
     phone?: true
     role?: true
-    active?: true
+    status?: true
+    archivedAt?: true
     lastLogin?: true
     createdAt?: true
     updatedAt?: true
@@ -2584,7 +2602,8 @@ export namespace Prisma {
     password?: true
     phone?: true
     role?: true
-    active?: true
+    status?: true
+    archivedAt?: true
     lastLogin?: true
     createdAt?: true
     updatedAt?: true
@@ -2670,7 +2689,8 @@ export namespace Prisma {
     password: string
     phone: string | null
     role: $Enums.Role
-    active: boolean
+    status: $Enums.RecordStatus
+    archivedAt: Date | null
     lastLogin: Date | null
     createdAt: Date
     updatedAt: Date
@@ -2700,7 +2720,8 @@ export namespace Prisma {
     password?: boolean
     phone?: boolean
     role?: boolean
-    active?: boolean
+    status?: boolean
+    archivedAt?: boolean
     lastLogin?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -2720,7 +2741,8 @@ export namespace Prisma {
     password?: boolean
     phone?: boolean
     role?: boolean
-    active?: boolean
+    status?: boolean
+    archivedAt?: boolean
     lastLogin?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -2733,7 +2755,8 @@ export namespace Prisma {
     password?: boolean
     phone?: boolean
     role?: boolean
-    active?: boolean
+    status?: boolean
+    archivedAt?: boolean
     lastLogin?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -2746,13 +2769,14 @@ export namespace Prisma {
     password?: boolean
     phone?: boolean
     role?: boolean
-    active?: boolean
+    status?: boolean
+    archivedAt?: boolean
     lastLogin?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type UserOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "email" | "password" | "phone" | "role" | "active" | "lastLogin" | "createdAt" | "updatedAt", ExtArgs["result"]["user"]>
+  export type UserOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "email" | "password" | "phone" | "role" | "status" | "archivedAt" | "lastLogin" | "createdAt" | "updatedAt", ExtArgs["result"]["user"]>
   export type UserInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     movements?: boolean | User$movementsArgs<ExtArgs>
     purchaseOrders?: boolean | User$purchaseOrdersArgs<ExtArgs>
@@ -2782,7 +2806,8 @@ export namespace Prisma {
       password: string
       phone: string | null
       role: $Enums.Role
-      active: boolean
+      status: $Enums.RecordStatus
+      archivedAt: Date | null
       lastLogin: Date | null
       createdAt: Date
       updatedAt: Date
@@ -3221,7 +3246,8 @@ export namespace Prisma {
     readonly password: FieldRef<"User", 'String'>
     readonly phone: FieldRef<"User", 'String'>
     readonly role: FieldRef<"User", 'Role'>
-    readonly active: FieldRef<"User", 'Boolean'>
+    readonly status: FieldRef<"User", 'RecordStatus'>
+    readonly archivedAt: FieldRef<"User", 'DateTime'>
     readonly lastLogin: FieldRef<"User", 'DateTime'>
     readonly createdAt: FieldRef<"User", 'DateTime'>
     readonly updatedAt: FieldRef<"User", 'DateTime'>
@@ -3792,7 +3818,8 @@ export namespace Prisma {
     phone: string | null
     document: string | null
     customerType: $Enums.CustomerType | null
-    active: boolean | null
+    status: $Enums.RecordStatus | null
+    archivedAt: Date | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -3804,7 +3831,8 @@ export namespace Prisma {
     phone: string | null
     document: string | null
     customerType: $Enums.CustomerType | null
-    active: boolean | null
+    status: $Enums.RecordStatus | null
+    archivedAt: Date | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -3816,7 +3844,8 @@ export namespace Prisma {
     phone: number
     document: number
     customerType: number
-    active: number
+    status: number
+    archivedAt: number
     createdAt: number
     updatedAt: number
     _all: number
@@ -3830,7 +3859,8 @@ export namespace Prisma {
     phone?: true
     document?: true
     customerType?: true
-    active?: true
+    status?: true
+    archivedAt?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -3842,7 +3872,8 @@ export namespace Prisma {
     phone?: true
     document?: true
     customerType?: true
-    active?: true
+    status?: true
+    archivedAt?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -3854,7 +3885,8 @@ export namespace Prisma {
     phone?: true
     document?: true
     customerType?: true
-    active?: true
+    status?: true
+    archivedAt?: true
     createdAt?: true
     updatedAt?: true
     _all?: true
@@ -3939,7 +3971,8 @@ export namespace Prisma {
     phone: string | null
     document: string | null
     customerType: $Enums.CustomerType
-    active: boolean
+    status: $Enums.RecordStatus
+    archivedAt: Date | null
     createdAt: Date
     updatedAt: Date
     _count: CustomerCountAggregateOutputType | null
@@ -3968,7 +4001,8 @@ export namespace Prisma {
     phone?: boolean
     document?: boolean
     customerType?: boolean
-    active?: boolean
+    status?: boolean
+    archivedAt?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     saleOrders?: boolean | Customer$saleOrdersArgs<ExtArgs>
@@ -3982,7 +4016,8 @@ export namespace Prisma {
     phone?: boolean
     document?: boolean
     customerType?: boolean
-    active?: boolean
+    status?: boolean
+    archivedAt?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }, ExtArgs["result"]["customer"]>
@@ -3994,7 +4029,8 @@ export namespace Prisma {
     phone?: boolean
     document?: boolean
     customerType?: boolean
-    active?: boolean
+    status?: boolean
+    archivedAt?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }, ExtArgs["result"]["customer"]>
@@ -4006,12 +4042,13 @@ export namespace Prisma {
     phone?: boolean
     document?: boolean
     customerType?: boolean
-    active?: boolean
+    status?: boolean
+    archivedAt?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type CustomerOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "email" | "phone" | "document" | "customerType" | "active" | "createdAt" | "updatedAt", ExtArgs["result"]["customer"]>
+  export type CustomerOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "email" | "phone" | "document" | "customerType" | "status" | "archivedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["customer"]>
   export type CustomerInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     saleOrders?: boolean | Customer$saleOrdersArgs<ExtArgs>
     _count?: boolean | CustomerCountOutputTypeDefaultArgs<ExtArgs>
@@ -4031,7 +4068,8 @@ export namespace Prisma {
       phone: string | null
       document: string | null
       customerType: $Enums.CustomerType
-      active: boolean
+      status: $Enums.RecordStatus
+      archivedAt: Date | null
       createdAt: Date
       updatedAt: Date
     }, ExtArgs["result"]["customer"]>
@@ -4464,7 +4502,8 @@ export namespace Prisma {
     readonly phone: FieldRef<"Customer", 'String'>
     readonly document: FieldRef<"Customer", 'String'>
     readonly customerType: FieldRef<"Customer", 'CustomerType'>
-    readonly active: FieldRef<"Customer", 'Boolean'>
+    readonly status: FieldRef<"Customer", 'RecordStatus'>
+    readonly archivedAt: FieldRef<"Customer", 'DateTime'>
     readonly createdAt: FieldRef<"Customer", 'DateTime'>
     readonly updatedAt: FieldRef<"Customer", 'DateTime'>
   }
@@ -4911,24 +4950,30 @@ export namespace Prisma {
     id: string | null
     name: string | null
     description: string | null
-    active: boolean | null
+    status: $Enums.RecordStatus | null
+    archivedAt: Date | null
     createdAt: Date | null
+    updatedAt: Date | null
   }
 
   export type CategoryMaxAggregateOutputType = {
     id: string | null
     name: string | null
     description: string | null
-    active: boolean | null
+    status: $Enums.RecordStatus | null
+    archivedAt: Date | null
     createdAt: Date | null
+    updatedAt: Date | null
   }
 
   export type CategoryCountAggregateOutputType = {
     id: number
     name: number
     description: number
-    active: number
+    status: number
+    archivedAt: number
     createdAt: number
+    updatedAt: number
     _all: number
   }
 
@@ -4937,24 +4982,30 @@ export namespace Prisma {
     id?: true
     name?: true
     description?: true
-    active?: true
+    status?: true
+    archivedAt?: true
     createdAt?: true
+    updatedAt?: true
   }
 
   export type CategoryMaxAggregateInputType = {
     id?: true
     name?: true
     description?: true
-    active?: true
+    status?: true
+    archivedAt?: true
     createdAt?: true
+    updatedAt?: true
   }
 
   export type CategoryCountAggregateInputType = {
     id?: true
     name?: true
     description?: true
-    active?: true
+    status?: true
+    archivedAt?: true
     createdAt?: true
+    updatedAt?: true
     _all?: true
   }
 
@@ -5034,8 +5085,10 @@ export namespace Prisma {
     id: string
     name: string
     description: string | null
-    active: boolean
+    status: $Enums.RecordStatus
+    archivedAt: Date | null
     createdAt: Date
+    updatedAt: Date
     _count: CategoryCountAggregateOutputType | null
     _min: CategoryMinAggregateOutputType | null
     _max: CategoryMaxAggregateOutputType | null
@@ -5059,8 +5112,10 @@ export namespace Prisma {
     id?: boolean
     name?: boolean
     description?: boolean
-    active?: boolean
+    status?: boolean
+    archivedAt?: boolean
     createdAt?: boolean
+    updatedAt?: boolean
     products?: boolean | Category$productsArgs<ExtArgs>
     _count?: boolean | CategoryCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["category"]>
@@ -5069,27 +5124,33 @@ export namespace Prisma {
     id?: boolean
     name?: boolean
     description?: boolean
-    active?: boolean
+    status?: boolean
+    archivedAt?: boolean
     createdAt?: boolean
+    updatedAt?: boolean
   }, ExtArgs["result"]["category"]>
 
   export type CategorySelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     name?: boolean
     description?: boolean
-    active?: boolean
+    status?: boolean
+    archivedAt?: boolean
     createdAt?: boolean
+    updatedAt?: boolean
   }, ExtArgs["result"]["category"]>
 
   export type CategorySelectScalar = {
     id?: boolean
     name?: boolean
     description?: boolean
-    active?: boolean
+    status?: boolean
+    archivedAt?: boolean
     createdAt?: boolean
+    updatedAt?: boolean
   }
 
-  export type CategoryOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "description" | "active" | "createdAt", ExtArgs["result"]["category"]>
+  export type CategoryOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "description" | "status" | "archivedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["category"]>
   export type CategoryInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     products?: boolean | Category$productsArgs<ExtArgs>
     _count?: boolean | CategoryCountOutputTypeDefaultArgs<ExtArgs>
@@ -5106,8 +5167,10 @@ export namespace Prisma {
       id: string
       name: string
       description: string | null
-      active: boolean
+      status: $Enums.RecordStatus
+      archivedAt: Date | null
       createdAt: Date
+      updatedAt: Date
     }, ExtArgs["result"]["category"]>
     composites: {}
   }
@@ -5535,8 +5598,10 @@ export namespace Prisma {
     readonly id: FieldRef<"Category", 'String'>
     readonly name: FieldRef<"Category", 'String'>
     readonly description: FieldRef<"Category", 'String'>
-    readonly active: FieldRef<"Category", 'Boolean'>
+    readonly status: FieldRef<"Category", 'RecordStatus'>
+    readonly archivedAt: FieldRef<"Category", 'DateTime'>
     readonly createdAt: FieldRef<"Category", 'DateTime'>
+    readonly updatedAt: FieldRef<"Category", 'DateTime'>
   }
     
 
@@ -5984,8 +6049,10 @@ export namespace Prisma {
     email: string | null
     phone: string | null
     address: string | null
-    active: boolean | null
+    status: $Enums.RecordStatus | null
+    archivedAt: Date | null
     createdAt: Date | null
+    updatedAt: Date | null
   }
 
   export type SupplierMaxAggregateOutputType = {
@@ -5995,8 +6062,10 @@ export namespace Prisma {
     email: string | null
     phone: string | null
     address: string | null
-    active: boolean | null
+    status: $Enums.RecordStatus | null
+    archivedAt: Date | null
     createdAt: Date | null
+    updatedAt: Date | null
   }
 
   export type SupplierCountAggregateOutputType = {
@@ -6006,8 +6075,10 @@ export namespace Prisma {
     email: number
     phone: number
     address: number
-    active: number
+    status: number
+    archivedAt: number
     createdAt: number
+    updatedAt: number
     _all: number
   }
 
@@ -6019,8 +6090,10 @@ export namespace Prisma {
     email?: true
     phone?: true
     address?: true
-    active?: true
+    status?: true
+    archivedAt?: true
     createdAt?: true
+    updatedAt?: true
   }
 
   export type SupplierMaxAggregateInputType = {
@@ -6030,8 +6103,10 @@ export namespace Prisma {
     email?: true
     phone?: true
     address?: true
-    active?: true
+    status?: true
+    archivedAt?: true
     createdAt?: true
+    updatedAt?: true
   }
 
   export type SupplierCountAggregateInputType = {
@@ -6041,8 +6116,10 @@ export namespace Prisma {
     email?: true
     phone?: true
     address?: true
-    active?: true
+    status?: true
+    archivedAt?: true
     createdAt?: true
+    updatedAt?: true
     _all?: true
   }
 
@@ -6125,8 +6202,10 @@ export namespace Prisma {
     email: string | null
     phone: string | null
     address: string | null
-    active: boolean
+    status: $Enums.RecordStatus
+    archivedAt: Date | null
     createdAt: Date
+    updatedAt: Date
     _count: SupplierCountAggregateOutputType | null
     _min: SupplierMinAggregateOutputType | null
     _max: SupplierMaxAggregateOutputType | null
@@ -6153,8 +6232,10 @@ export namespace Prisma {
     email?: boolean
     phone?: boolean
     address?: boolean
-    active?: boolean
+    status?: boolean
+    archivedAt?: boolean
     createdAt?: boolean
+    updatedAt?: boolean
     products?: boolean | Supplier$productsArgs<ExtArgs>
     orders?: boolean | Supplier$ordersArgs<ExtArgs>
     _count?: boolean | SupplierCountOutputTypeDefaultArgs<ExtArgs>
@@ -6167,8 +6248,10 @@ export namespace Prisma {
     email?: boolean
     phone?: boolean
     address?: boolean
-    active?: boolean
+    status?: boolean
+    archivedAt?: boolean
     createdAt?: boolean
+    updatedAt?: boolean
   }, ExtArgs["result"]["supplier"]>
 
   export type SupplierSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
@@ -6178,8 +6261,10 @@ export namespace Prisma {
     email?: boolean
     phone?: boolean
     address?: boolean
-    active?: boolean
+    status?: boolean
+    archivedAt?: boolean
     createdAt?: boolean
+    updatedAt?: boolean
   }, ExtArgs["result"]["supplier"]>
 
   export type SupplierSelectScalar = {
@@ -6189,11 +6274,13 @@ export namespace Prisma {
     email?: boolean
     phone?: boolean
     address?: boolean
-    active?: boolean
+    status?: boolean
+    archivedAt?: boolean
     createdAt?: boolean
+    updatedAt?: boolean
   }
 
-  export type SupplierOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "contact" | "email" | "phone" | "address" | "active" | "createdAt", ExtArgs["result"]["supplier"]>
+  export type SupplierOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "contact" | "email" | "phone" | "address" | "status" | "archivedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["supplier"]>
   export type SupplierInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     products?: boolean | Supplier$productsArgs<ExtArgs>
     orders?: boolean | Supplier$ordersArgs<ExtArgs>
@@ -6215,8 +6302,10 @@ export namespace Prisma {
       email: string | null
       phone: string | null
       address: string | null
-      active: boolean
+      status: $Enums.RecordStatus
+      archivedAt: Date | null
       createdAt: Date
+      updatedAt: Date
     }, ExtArgs["result"]["supplier"]>
     composites: {}
   }
@@ -6648,8 +6737,10 @@ export namespace Prisma {
     readonly email: FieldRef<"Supplier", 'String'>
     readonly phone: FieldRef<"Supplier", 'String'>
     readonly address: FieldRef<"Supplier", 'String'>
-    readonly active: FieldRef<"Supplier", 'Boolean'>
+    readonly status: FieldRef<"Supplier", 'RecordStatus'>
+    readonly archivedAt: FieldRef<"Supplier", 'DateTime'>
     readonly createdAt: FieldRef<"Supplier", 'DateTime'>
+    readonly updatedAt: FieldRef<"Supplier", 'DateTime'>
   }
     
 
@@ -7118,21 +7209,30 @@ export namespace Prisma {
     id: string | null
     name: string | null
     symbol: string | null
-    active: boolean | null
+    status: $Enums.RecordStatus | null
+    archivedAt: Date | null
+    createdAt: Date | null
+    updatedAt: Date | null
   }
 
   export type UnitOfMeasureMaxAggregateOutputType = {
     id: string | null
     name: string | null
     symbol: string | null
-    active: boolean | null
+    status: $Enums.RecordStatus | null
+    archivedAt: Date | null
+    createdAt: Date | null
+    updatedAt: Date | null
   }
 
   export type UnitOfMeasureCountAggregateOutputType = {
     id: number
     name: number
     symbol: number
-    active: number
+    status: number
+    archivedAt: number
+    createdAt: number
+    updatedAt: number
     _all: number
   }
 
@@ -7141,21 +7241,30 @@ export namespace Prisma {
     id?: true
     name?: true
     symbol?: true
-    active?: true
+    status?: true
+    archivedAt?: true
+    createdAt?: true
+    updatedAt?: true
   }
 
   export type UnitOfMeasureMaxAggregateInputType = {
     id?: true
     name?: true
     symbol?: true
-    active?: true
+    status?: true
+    archivedAt?: true
+    createdAt?: true
+    updatedAt?: true
   }
 
   export type UnitOfMeasureCountAggregateInputType = {
     id?: true
     name?: true
     symbol?: true
-    active?: true
+    status?: true
+    archivedAt?: true
+    createdAt?: true
+    updatedAt?: true
     _all?: true
   }
 
@@ -7235,7 +7344,10 @@ export namespace Prisma {
     id: string
     name: string
     symbol: string | null
-    active: boolean
+    status: $Enums.RecordStatus
+    archivedAt: Date | null
+    createdAt: Date
+    updatedAt: Date
     _count: UnitOfMeasureCountAggregateOutputType | null
     _min: UnitOfMeasureMinAggregateOutputType | null
     _max: UnitOfMeasureMaxAggregateOutputType | null
@@ -7259,7 +7371,10 @@ export namespace Prisma {
     id?: boolean
     name?: boolean
     symbol?: boolean
-    active?: boolean
+    status?: boolean
+    archivedAt?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
     products?: boolean | UnitOfMeasure$productsArgs<ExtArgs>
     _count?: boolean | UnitOfMeasureCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["unitOfMeasure"]>
@@ -7268,24 +7383,33 @@ export namespace Prisma {
     id?: boolean
     name?: boolean
     symbol?: boolean
-    active?: boolean
+    status?: boolean
+    archivedAt?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
   }, ExtArgs["result"]["unitOfMeasure"]>
 
   export type UnitOfMeasureSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     name?: boolean
     symbol?: boolean
-    active?: boolean
+    status?: boolean
+    archivedAt?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
   }, ExtArgs["result"]["unitOfMeasure"]>
 
   export type UnitOfMeasureSelectScalar = {
     id?: boolean
     name?: boolean
     symbol?: boolean
-    active?: boolean
+    status?: boolean
+    archivedAt?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
   }
 
-  export type UnitOfMeasureOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "symbol" | "active", ExtArgs["result"]["unitOfMeasure"]>
+  export type UnitOfMeasureOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "symbol" | "status" | "archivedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["unitOfMeasure"]>
   export type UnitOfMeasureInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     products?: boolean | UnitOfMeasure$productsArgs<ExtArgs>
     _count?: boolean | UnitOfMeasureCountOutputTypeDefaultArgs<ExtArgs>
@@ -7302,7 +7426,10 @@ export namespace Prisma {
       id: string
       name: string
       symbol: string | null
-      active: boolean
+      status: $Enums.RecordStatus
+      archivedAt: Date | null
+      createdAt: Date
+      updatedAt: Date
     }, ExtArgs["result"]["unitOfMeasure"]>
     composites: {}
   }
@@ -7730,7 +7857,10 @@ export namespace Prisma {
     readonly id: FieldRef<"UnitOfMeasure", 'String'>
     readonly name: FieldRef<"UnitOfMeasure", 'String'>
     readonly symbol: FieldRef<"UnitOfMeasure", 'String'>
-    readonly active: FieldRef<"UnitOfMeasure", 'Boolean'>
+    readonly status: FieldRef<"UnitOfMeasure", 'RecordStatus'>
+    readonly archivedAt: FieldRef<"UnitOfMeasure", 'DateTime'>
+    readonly createdAt: FieldRef<"UnitOfMeasure", 'DateTime'>
+    readonly updatedAt: FieldRef<"UnitOfMeasure", 'DateTime'>
   }
     
 
@@ -8212,7 +8342,8 @@ export namespace Prisma {
     minStock: number | null
     currentStock: number | null
     reservedStock: number | null
-    active: boolean | null
+    status: $Enums.RecordStatus | null
+    archivedAt: Date | null
     createdAt: Date | null
     updatedAt: Date | null
     categoryId: string | null
@@ -8235,7 +8366,8 @@ export namespace Prisma {
     minStock: number | null
     currentStock: number | null
     reservedStock: number | null
-    active: boolean | null
+    status: $Enums.RecordStatus | null
+    archivedAt: Date | null
     createdAt: Date | null
     updatedAt: Date | null
     categoryId: string | null
@@ -8258,7 +8390,8 @@ export namespace Prisma {
     minStock: number
     currentStock: number
     reservedStock: number
-    active: number
+    status: number
+    archivedAt: number
     createdAt: number
     updatedAt: number
     categoryId: number
@@ -8307,7 +8440,8 @@ export namespace Prisma {
     minStock?: true
     currentStock?: true
     reservedStock?: true
-    active?: true
+    status?: true
+    archivedAt?: true
     createdAt?: true
     updatedAt?: true
     categoryId?: true
@@ -8330,7 +8464,8 @@ export namespace Prisma {
     minStock?: true
     currentStock?: true
     reservedStock?: true
-    active?: true
+    status?: true
+    archivedAt?: true
     createdAt?: true
     updatedAt?: true
     categoryId?: true
@@ -8353,7 +8488,8 @@ export namespace Prisma {
     minStock?: true
     currentStock?: true
     reservedStock?: true
-    active?: true
+    status?: true
+    archivedAt?: true
     createdAt?: true
     updatedAt?: true
     categoryId?: true
@@ -8463,7 +8599,8 @@ export namespace Prisma {
     minStock: number
     currentStock: number
     reservedStock: number
-    active: boolean
+    status: $Enums.RecordStatus
+    archivedAt: Date | null
     createdAt: Date
     updatedAt: Date
     categoryId: string
@@ -8505,7 +8642,8 @@ export namespace Prisma {
     minStock?: boolean
     currentStock?: boolean
     reservedStock?: boolean
-    active?: boolean
+    status?: boolean
+    archivedAt?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     categoryId?: boolean
@@ -8535,7 +8673,8 @@ export namespace Prisma {
     minStock?: boolean
     currentStock?: boolean
     reservedStock?: boolean
-    active?: boolean
+    status?: boolean
+    archivedAt?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     categoryId?: boolean
@@ -8561,7 +8700,8 @@ export namespace Prisma {
     minStock?: boolean
     currentStock?: boolean
     reservedStock?: boolean
-    active?: boolean
+    status?: boolean
+    archivedAt?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     categoryId?: boolean
@@ -8587,7 +8727,8 @@ export namespace Prisma {
     minStock?: boolean
     currentStock?: boolean
     reservedStock?: boolean
-    active?: boolean
+    status?: boolean
+    archivedAt?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     categoryId?: boolean
@@ -8595,7 +8736,7 @@ export namespace Prisma {
     unitId?: boolean
   }
 
-  export type ProductOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "code" | "name" | "description" | "image" | "purchasePrice" | "retailPrice" | "wholesalePrice" | "wholesaleMinQuantity" | "minSalePrice" | "maxSalePrice" | "minStock" | "currentStock" | "reservedStock" | "active" | "createdAt" | "updatedAt" | "categoryId" | "supplierId" | "unitId", ExtArgs["result"]["product"]>
+  export type ProductOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "code" | "name" | "description" | "image" | "purchasePrice" | "retailPrice" | "wholesalePrice" | "wholesaleMinQuantity" | "minSalePrice" | "maxSalePrice" | "minStock" | "currentStock" | "reservedStock" | "status" | "archivedAt" | "createdAt" | "updatedAt" | "categoryId" | "supplierId" | "unitId", ExtArgs["result"]["product"]>
   export type ProductInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     category?: boolean | CategoryDefaultArgs<ExtArgs>
     supplier?: boolean | Product$supplierArgs<ExtArgs>
@@ -8641,7 +8782,8 @@ export namespace Prisma {
       minStock: number
       currentStock: number
       reservedStock: number
-      active: boolean
+      status: $Enums.RecordStatus
+      archivedAt: Date | null
       createdAt: Date
       updatedAt: Date
       categoryId: string
@@ -9090,7 +9232,8 @@ export namespace Prisma {
     readonly minStock: FieldRef<"Product", 'Int'>
     readonly currentStock: FieldRef<"Product", 'Int'>
     readonly reservedStock: FieldRef<"Product", 'Int'>
-    readonly active: FieldRef<"Product", 'Boolean'>
+    readonly status: FieldRef<"Product", 'RecordStatus'>
+    readonly archivedAt: FieldRef<"Product", 'DateTime'>
     readonly createdAt: FieldRef<"Product", 'DateTime'>
     readonly updatedAt: FieldRef<"Product", 'DateTime'>
     readonly categoryId: FieldRef<"Product", 'String'>
@@ -18069,16 +18212,20 @@ export namespace Prisma {
     id: string | null
     route: string | null
     method: string | null
-    active: boolean | null
+    status: $Enums.RecordStatus | null
+    archivedAt: Date | null
     createdAt: Date | null
+    updatedAt: Date | null
   }
 
   export type RoutePermissionMaxAggregateOutputType = {
     id: string | null
     route: string | null
     method: string | null
-    active: boolean | null
+    status: $Enums.RecordStatus | null
+    archivedAt: Date | null
     createdAt: Date | null
+    updatedAt: Date | null
   }
 
   export type RoutePermissionCountAggregateOutputType = {
@@ -18086,8 +18233,10 @@ export namespace Prisma {
     route: number
     method: number
     roles: number
-    active: number
+    status: number
+    archivedAt: number
     createdAt: number
+    updatedAt: number
     _all: number
   }
 
@@ -18096,16 +18245,20 @@ export namespace Prisma {
     id?: true
     route?: true
     method?: true
-    active?: true
+    status?: true
+    archivedAt?: true
     createdAt?: true
+    updatedAt?: true
   }
 
   export type RoutePermissionMaxAggregateInputType = {
     id?: true
     route?: true
     method?: true
-    active?: true
+    status?: true
+    archivedAt?: true
     createdAt?: true
+    updatedAt?: true
   }
 
   export type RoutePermissionCountAggregateInputType = {
@@ -18113,8 +18266,10 @@ export namespace Prisma {
     route?: true
     method?: true
     roles?: true
-    active?: true
+    status?: true
+    archivedAt?: true
     createdAt?: true
+    updatedAt?: true
     _all?: true
   }
 
@@ -18195,8 +18350,10 @@ export namespace Prisma {
     route: string
     method: string
     roles: $Enums.Role[]
-    active: boolean
+    status: $Enums.RecordStatus
+    archivedAt: Date | null
     createdAt: Date
+    updatedAt: Date
     _count: RoutePermissionCountAggregateOutputType | null
     _min: RoutePermissionMinAggregateOutputType | null
     _max: RoutePermissionMaxAggregateOutputType | null
@@ -18221,8 +18378,10 @@ export namespace Prisma {
     route?: boolean
     method?: boolean
     roles?: boolean
-    active?: boolean
+    status?: boolean
+    archivedAt?: boolean
     createdAt?: boolean
+    updatedAt?: boolean
   }, ExtArgs["result"]["routePermission"]>
 
   export type RoutePermissionSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
@@ -18230,8 +18389,10 @@ export namespace Prisma {
     route?: boolean
     method?: boolean
     roles?: boolean
-    active?: boolean
+    status?: boolean
+    archivedAt?: boolean
     createdAt?: boolean
+    updatedAt?: boolean
   }, ExtArgs["result"]["routePermission"]>
 
   export type RoutePermissionSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
@@ -18239,8 +18400,10 @@ export namespace Prisma {
     route?: boolean
     method?: boolean
     roles?: boolean
-    active?: boolean
+    status?: boolean
+    archivedAt?: boolean
     createdAt?: boolean
+    updatedAt?: boolean
   }, ExtArgs["result"]["routePermission"]>
 
   export type RoutePermissionSelectScalar = {
@@ -18248,11 +18411,13 @@ export namespace Prisma {
     route?: boolean
     method?: boolean
     roles?: boolean
-    active?: boolean
+    status?: boolean
+    archivedAt?: boolean
     createdAt?: boolean
+    updatedAt?: boolean
   }
 
-  export type RoutePermissionOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "route" | "method" | "roles" | "active" | "createdAt", ExtArgs["result"]["routePermission"]>
+  export type RoutePermissionOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "route" | "method" | "roles" | "status" | "archivedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["routePermission"]>
 
   export type $RoutePermissionPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "RoutePermission"
@@ -18262,8 +18427,10 @@ export namespace Prisma {
       route: string
       method: string
       roles: $Enums.Role[]
-      active: boolean
+      status: $Enums.RecordStatus
+      archivedAt: Date | null
       createdAt: Date
+      updatedAt: Date
     }, ExtArgs["result"]["routePermission"]>
     composites: {}
   }
@@ -18691,8 +18858,10 @@ export namespace Prisma {
     readonly route: FieldRef<"RoutePermission", 'String'>
     readonly method: FieldRef<"RoutePermission", 'String'>
     readonly roles: FieldRef<"RoutePermission", 'Role[]'>
-    readonly active: FieldRef<"RoutePermission", 'Boolean'>
+    readonly status: FieldRef<"RoutePermission", 'RecordStatus'>
+    readonly archivedAt: FieldRef<"RoutePermission", 'DateTime'>
     readonly createdAt: FieldRef<"RoutePermission", 'DateTime'>
+    readonly updatedAt: FieldRef<"RoutePermission", 'DateTime'>
   }
     
 
@@ -19080,7 +19249,8 @@ export namespace Prisma {
     password: 'password',
     phone: 'phone',
     role: 'role',
-    active: 'active',
+    status: 'status',
+    archivedAt: 'archivedAt',
     lastLogin: 'lastLogin',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
@@ -19096,7 +19266,8 @@ export namespace Prisma {
     phone: 'phone',
     document: 'document',
     customerType: 'customerType',
-    active: 'active',
+    status: 'status',
+    archivedAt: 'archivedAt',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
   };
@@ -19108,8 +19279,10 @@ export namespace Prisma {
     id: 'id',
     name: 'name',
     description: 'description',
-    active: 'active',
-    createdAt: 'createdAt'
+    status: 'status',
+    archivedAt: 'archivedAt',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
   };
 
   export type CategoryScalarFieldEnum = (typeof CategoryScalarFieldEnum)[keyof typeof CategoryScalarFieldEnum]
@@ -19122,8 +19295,10 @@ export namespace Prisma {
     email: 'email',
     phone: 'phone',
     address: 'address',
-    active: 'active',
-    createdAt: 'createdAt'
+    status: 'status',
+    archivedAt: 'archivedAt',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
   };
 
   export type SupplierScalarFieldEnum = (typeof SupplierScalarFieldEnum)[keyof typeof SupplierScalarFieldEnum]
@@ -19133,7 +19308,10 @@ export namespace Prisma {
     id: 'id',
     name: 'name',
     symbol: 'symbol',
-    active: 'active'
+    status: 'status',
+    archivedAt: 'archivedAt',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
   };
 
   export type UnitOfMeasureScalarFieldEnum = (typeof UnitOfMeasureScalarFieldEnum)[keyof typeof UnitOfMeasureScalarFieldEnum]
@@ -19154,7 +19332,8 @@ export namespace Prisma {
     minStock: 'minStock',
     currentStock: 'currentStock',
     reservedStock: 'reservedStock',
-    active: 'active',
+    status: 'status',
+    archivedAt: 'archivedAt',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt',
     categoryId: 'categoryId',
@@ -19285,8 +19464,10 @@ export namespace Prisma {
     route: 'route',
     method: 'method',
     roles: 'roles',
-    active: 'active',
-    createdAt: 'createdAt'
+    status: 'status',
+    archivedAt: 'archivedAt',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
   };
 
   export type RoutePermissionScalarFieldEnum = (typeof RoutePermissionScalarFieldEnum)[keyof typeof RoutePermissionScalarFieldEnum]
@@ -19367,9 +19548,16 @@ export namespace Prisma {
 
 
   /**
-   * Reference to a field of type 'Boolean'
+   * Reference to a field of type 'RecordStatus'
    */
-  export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Boolean'>
+  export type EnumRecordStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'RecordStatus'>
+    
+
+
+  /**
+   * Reference to a field of type 'RecordStatus[]'
+   */
+  export type ListEnumRecordStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'RecordStatus[]'>
     
 
 
@@ -19514,6 +19702,13 @@ export namespace Prisma {
 
 
   /**
+   * Reference to a field of type 'Boolean'
+   */
+  export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Boolean'>
+    
+
+
+  /**
    * Reference to a field of type 'Float'
    */
   export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float'>
@@ -19540,7 +19735,8 @@ export namespace Prisma {
     password?: StringFilter<"User"> | string
     phone?: StringNullableFilter<"User"> | string | null
     role?: EnumRoleFilter<"User"> | $Enums.Role
-    active?: BoolFilter<"User"> | boolean
+    status?: EnumRecordStatusFilter<"User"> | $Enums.RecordStatus
+    archivedAt?: DateTimeNullableFilter<"User"> | Date | string | null
     lastLogin?: DateTimeNullableFilter<"User"> | Date | string | null
     createdAt?: DateTimeFilter<"User"> | Date | string
     updatedAt?: DateTimeFilter<"User"> | Date | string
@@ -19559,7 +19755,8 @@ export namespace Prisma {
     password?: SortOrder
     phone?: SortOrderInput | SortOrder
     role?: SortOrder
-    active?: SortOrder
+    status?: SortOrder
+    archivedAt?: SortOrderInput | SortOrder
     lastLogin?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -19581,7 +19778,8 @@ export namespace Prisma {
     password?: StringFilter<"User"> | string
     phone?: StringNullableFilter<"User"> | string | null
     role?: EnumRoleFilter<"User"> | $Enums.Role
-    active?: BoolFilter<"User"> | boolean
+    status?: EnumRecordStatusFilter<"User"> | $Enums.RecordStatus
+    archivedAt?: DateTimeNullableFilter<"User"> | Date | string | null
     lastLogin?: DateTimeNullableFilter<"User"> | Date | string | null
     createdAt?: DateTimeFilter<"User"> | Date | string
     updatedAt?: DateTimeFilter<"User"> | Date | string
@@ -19600,7 +19798,8 @@ export namespace Prisma {
     password?: SortOrder
     phone?: SortOrderInput | SortOrder
     role?: SortOrder
-    active?: SortOrder
+    status?: SortOrder
+    archivedAt?: SortOrderInput | SortOrder
     lastLogin?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -19619,7 +19818,8 @@ export namespace Prisma {
     password?: StringWithAggregatesFilter<"User"> | string
     phone?: StringNullableWithAggregatesFilter<"User"> | string | null
     role?: EnumRoleWithAggregatesFilter<"User"> | $Enums.Role
-    active?: BoolWithAggregatesFilter<"User"> | boolean
+    status?: EnumRecordStatusWithAggregatesFilter<"User"> | $Enums.RecordStatus
+    archivedAt?: DateTimeNullableWithAggregatesFilter<"User"> | Date | string | null
     lastLogin?: DateTimeNullableWithAggregatesFilter<"User"> | Date | string | null
     createdAt?: DateTimeWithAggregatesFilter<"User"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"User"> | Date | string
@@ -19635,7 +19835,8 @@ export namespace Prisma {
     phone?: StringNullableFilter<"Customer"> | string | null
     document?: StringNullableFilter<"Customer"> | string | null
     customerType?: EnumCustomerTypeFilter<"Customer"> | $Enums.CustomerType
-    active?: BoolFilter<"Customer"> | boolean
+    status?: EnumRecordStatusFilter<"Customer"> | $Enums.RecordStatus
+    archivedAt?: DateTimeNullableFilter<"Customer"> | Date | string | null
     createdAt?: DateTimeFilter<"Customer"> | Date | string
     updatedAt?: DateTimeFilter<"Customer"> | Date | string
     saleOrders?: SaleOrderListRelationFilter
@@ -19648,7 +19849,8 @@ export namespace Prisma {
     phone?: SortOrderInput | SortOrder
     document?: SortOrderInput | SortOrder
     customerType?: SortOrder
-    active?: SortOrder
+    status?: SortOrder
+    archivedAt?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     saleOrders?: SaleOrderOrderByRelationAggregateInput
@@ -19664,7 +19866,8 @@ export namespace Prisma {
     phone?: StringNullableFilter<"Customer"> | string | null
     document?: StringNullableFilter<"Customer"> | string | null
     customerType?: EnumCustomerTypeFilter<"Customer"> | $Enums.CustomerType
-    active?: BoolFilter<"Customer"> | boolean
+    status?: EnumRecordStatusFilter<"Customer"> | $Enums.RecordStatus
+    archivedAt?: DateTimeNullableFilter<"Customer"> | Date | string | null
     createdAt?: DateTimeFilter<"Customer"> | Date | string
     updatedAt?: DateTimeFilter<"Customer"> | Date | string
     saleOrders?: SaleOrderListRelationFilter
@@ -19677,7 +19880,8 @@ export namespace Prisma {
     phone?: SortOrderInput | SortOrder
     document?: SortOrderInput | SortOrder
     customerType?: SortOrder
-    active?: SortOrder
+    status?: SortOrder
+    archivedAt?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     _count?: CustomerCountOrderByAggregateInput
@@ -19695,7 +19899,8 @@ export namespace Prisma {
     phone?: StringNullableWithAggregatesFilter<"Customer"> | string | null
     document?: StringNullableWithAggregatesFilter<"Customer"> | string | null
     customerType?: EnumCustomerTypeWithAggregatesFilter<"Customer"> | $Enums.CustomerType
-    active?: BoolWithAggregatesFilter<"Customer"> | boolean
+    status?: EnumRecordStatusWithAggregatesFilter<"Customer"> | $Enums.RecordStatus
+    archivedAt?: DateTimeNullableWithAggregatesFilter<"Customer"> | Date | string | null
     createdAt?: DateTimeWithAggregatesFilter<"Customer"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Customer"> | Date | string
   }
@@ -19707,8 +19912,10 @@ export namespace Prisma {
     id?: StringFilter<"Category"> | string
     name?: StringFilter<"Category"> | string
     description?: StringNullableFilter<"Category"> | string | null
-    active?: BoolFilter<"Category"> | boolean
+    status?: EnumRecordStatusFilter<"Category"> | $Enums.RecordStatus
+    archivedAt?: DateTimeNullableFilter<"Category"> | Date | string | null
     createdAt?: DateTimeFilter<"Category"> | Date | string
+    updatedAt?: DateTimeFilter<"Category"> | Date | string
     products?: ProductListRelationFilter
   }
 
@@ -19716,8 +19923,10 @@ export namespace Prisma {
     id?: SortOrder
     name?: SortOrder
     description?: SortOrderInput | SortOrder
-    active?: SortOrder
+    status?: SortOrder
+    archivedAt?: SortOrderInput | SortOrder
     createdAt?: SortOrder
+    updatedAt?: SortOrder
     products?: ProductOrderByRelationAggregateInput
   }
 
@@ -19728,8 +19937,10 @@ export namespace Prisma {
     NOT?: CategoryWhereInput | CategoryWhereInput[]
     name?: StringFilter<"Category"> | string
     description?: StringNullableFilter<"Category"> | string | null
-    active?: BoolFilter<"Category"> | boolean
+    status?: EnumRecordStatusFilter<"Category"> | $Enums.RecordStatus
+    archivedAt?: DateTimeNullableFilter<"Category"> | Date | string | null
     createdAt?: DateTimeFilter<"Category"> | Date | string
+    updatedAt?: DateTimeFilter<"Category"> | Date | string
     products?: ProductListRelationFilter
   }, "id">
 
@@ -19737,8 +19948,10 @@ export namespace Prisma {
     id?: SortOrder
     name?: SortOrder
     description?: SortOrderInput | SortOrder
-    active?: SortOrder
+    status?: SortOrder
+    archivedAt?: SortOrderInput | SortOrder
     createdAt?: SortOrder
+    updatedAt?: SortOrder
     _count?: CategoryCountOrderByAggregateInput
     _max?: CategoryMaxOrderByAggregateInput
     _min?: CategoryMinOrderByAggregateInput
@@ -19751,8 +19964,10 @@ export namespace Prisma {
     id?: StringWithAggregatesFilter<"Category"> | string
     name?: StringWithAggregatesFilter<"Category"> | string
     description?: StringNullableWithAggregatesFilter<"Category"> | string | null
-    active?: BoolWithAggregatesFilter<"Category"> | boolean
+    status?: EnumRecordStatusWithAggregatesFilter<"Category"> | $Enums.RecordStatus
+    archivedAt?: DateTimeNullableWithAggregatesFilter<"Category"> | Date | string | null
     createdAt?: DateTimeWithAggregatesFilter<"Category"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"Category"> | Date | string
   }
 
   export type SupplierWhereInput = {
@@ -19765,8 +19980,10 @@ export namespace Prisma {
     email?: StringNullableFilter<"Supplier"> | string | null
     phone?: StringNullableFilter<"Supplier"> | string | null
     address?: StringNullableFilter<"Supplier"> | string | null
-    active?: BoolFilter<"Supplier"> | boolean
+    status?: EnumRecordStatusFilter<"Supplier"> | $Enums.RecordStatus
+    archivedAt?: DateTimeNullableFilter<"Supplier"> | Date | string | null
     createdAt?: DateTimeFilter<"Supplier"> | Date | string
+    updatedAt?: DateTimeFilter<"Supplier"> | Date | string
     products?: ProductListRelationFilter
     orders?: OrderListRelationFilter
   }
@@ -19778,8 +19995,10 @@ export namespace Prisma {
     email?: SortOrderInput | SortOrder
     phone?: SortOrderInput | SortOrder
     address?: SortOrderInput | SortOrder
-    active?: SortOrder
+    status?: SortOrder
+    archivedAt?: SortOrderInput | SortOrder
     createdAt?: SortOrder
+    updatedAt?: SortOrder
     products?: ProductOrderByRelationAggregateInput
     orders?: OrderOrderByRelationAggregateInput
   }
@@ -19794,8 +20013,10 @@ export namespace Prisma {
     email?: StringNullableFilter<"Supplier"> | string | null
     phone?: StringNullableFilter<"Supplier"> | string | null
     address?: StringNullableFilter<"Supplier"> | string | null
-    active?: BoolFilter<"Supplier"> | boolean
+    status?: EnumRecordStatusFilter<"Supplier"> | $Enums.RecordStatus
+    archivedAt?: DateTimeNullableFilter<"Supplier"> | Date | string | null
     createdAt?: DateTimeFilter<"Supplier"> | Date | string
+    updatedAt?: DateTimeFilter<"Supplier"> | Date | string
     products?: ProductListRelationFilter
     orders?: OrderListRelationFilter
   }, "id">
@@ -19807,8 +20028,10 @@ export namespace Prisma {
     email?: SortOrderInput | SortOrder
     phone?: SortOrderInput | SortOrder
     address?: SortOrderInput | SortOrder
-    active?: SortOrder
+    status?: SortOrder
+    archivedAt?: SortOrderInput | SortOrder
     createdAt?: SortOrder
+    updatedAt?: SortOrder
     _count?: SupplierCountOrderByAggregateInput
     _max?: SupplierMaxOrderByAggregateInput
     _min?: SupplierMinOrderByAggregateInput
@@ -19824,8 +20047,10 @@ export namespace Prisma {
     email?: StringNullableWithAggregatesFilter<"Supplier"> | string | null
     phone?: StringNullableWithAggregatesFilter<"Supplier"> | string | null
     address?: StringNullableWithAggregatesFilter<"Supplier"> | string | null
-    active?: BoolWithAggregatesFilter<"Supplier"> | boolean
+    status?: EnumRecordStatusWithAggregatesFilter<"Supplier"> | $Enums.RecordStatus
+    archivedAt?: DateTimeNullableWithAggregatesFilter<"Supplier"> | Date | string | null
     createdAt?: DateTimeWithAggregatesFilter<"Supplier"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"Supplier"> | Date | string
   }
 
   export type UnitOfMeasureWhereInput = {
@@ -19835,7 +20060,10 @@ export namespace Prisma {
     id?: StringFilter<"UnitOfMeasure"> | string
     name?: StringFilter<"UnitOfMeasure"> | string
     symbol?: StringNullableFilter<"UnitOfMeasure"> | string | null
-    active?: BoolFilter<"UnitOfMeasure"> | boolean
+    status?: EnumRecordStatusFilter<"UnitOfMeasure"> | $Enums.RecordStatus
+    archivedAt?: DateTimeNullableFilter<"UnitOfMeasure"> | Date | string | null
+    createdAt?: DateTimeFilter<"UnitOfMeasure"> | Date | string
+    updatedAt?: DateTimeFilter<"UnitOfMeasure"> | Date | string
     products?: ProductListRelationFilter
   }
 
@@ -19843,7 +20071,10 @@ export namespace Prisma {
     id?: SortOrder
     name?: SortOrder
     symbol?: SortOrderInput | SortOrder
-    active?: SortOrder
+    status?: SortOrder
+    archivedAt?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
     products?: ProductOrderByRelationAggregateInput
   }
 
@@ -19854,7 +20085,10 @@ export namespace Prisma {
     OR?: UnitOfMeasureWhereInput[]
     NOT?: UnitOfMeasureWhereInput | UnitOfMeasureWhereInput[]
     symbol?: StringNullableFilter<"UnitOfMeasure"> | string | null
-    active?: BoolFilter<"UnitOfMeasure"> | boolean
+    status?: EnumRecordStatusFilter<"UnitOfMeasure"> | $Enums.RecordStatus
+    archivedAt?: DateTimeNullableFilter<"UnitOfMeasure"> | Date | string | null
+    createdAt?: DateTimeFilter<"UnitOfMeasure"> | Date | string
+    updatedAt?: DateTimeFilter<"UnitOfMeasure"> | Date | string
     products?: ProductListRelationFilter
   }, "id" | "name">
 
@@ -19862,7 +20096,10 @@ export namespace Prisma {
     id?: SortOrder
     name?: SortOrder
     symbol?: SortOrderInput | SortOrder
-    active?: SortOrder
+    status?: SortOrder
+    archivedAt?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
     _count?: UnitOfMeasureCountOrderByAggregateInput
     _max?: UnitOfMeasureMaxOrderByAggregateInput
     _min?: UnitOfMeasureMinOrderByAggregateInput
@@ -19875,7 +20112,10 @@ export namespace Prisma {
     id?: StringWithAggregatesFilter<"UnitOfMeasure"> | string
     name?: StringWithAggregatesFilter<"UnitOfMeasure"> | string
     symbol?: StringNullableWithAggregatesFilter<"UnitOfMeasure"> | string | null
-    active?: BoolWithAggregatesFilter<"UnitOfMeasure"> | boolean
+    status?: EnumRecordStatusWithAggregatesFilter<"UnitOfMeasure"> | $Enums.RecordStatus
+    archivedAt?: DateTimeNullableWithAggregatesFilter<"UnitOfMeasure"> | Date | string | null
+    createdAt?: DateTimeWithAggregatesFilter<"UnitOfMeasure"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"UnitOfMeasure"> | Date | string
   }
 
   export type ProductWhereInput = {
@@ -19896,7 +20136,8 @@ export namespace Prisma {
     minStock?: IntFilter<"Product"> | number
     currentStock?: IntFilter<"Product"> | number
     reservedStock?: IntFilter<"Product"> | number
-    active?: BoolFilter<"Product"> | boolean
+    status?: EnumRecordStatusFilter<"Product"> | $Enums.RecordStatus
+    archivedAt?: DateTimeNullableFilter<"Product"> | Date | string | null
     createdAt?: DateTimeFilter<"Product"> | Date | string
     updatedAt?: DateTimeFilter<"Product"> | Date | string
     categoryId?: StringFilter<"Product"> | string
@@ -19925,7 +20166,8 @@ export namespace Prisma {
     minStock?: SortOrder
     currentStock?: SortOrder
     reservedStock?: SortOrder
-    active?: SortOrder
+    status?: SortOrder
+    archivedAt?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     categoryId?: SortOrder
@@ -19957,7 +20199,8 @@ export namespace Prisma {
     minStock?: IntFilter<"Product"> | number
     currentStock?: IntFilter<"Product"> | number
     reservedStock?: IntFilter<"Product"> | number
-    active?: BoolFilter<"Product"> | boolean
+    status?: EnumRecordStatusFilter<"Product"> | $Enums.RecordStatus
+    archivedAt?: DateTimeNullableFilter<"Product"> | Date | string | null
     createdAt?: DateTimeFilter<"Product"> | Date | string
     updatedAt?: DateTimeFilter<"Product"> | Date | string
     categoryId?: StringFilter<"Product"> | string
@@ -19986,7 +20229,8 @@ export namespace Prisma {
     minStock?: SortOrder
     currentStock?: SortOrder
     reservedStock?: SortOrder
-    active?: SortOrder
+    status?: SortOrder
+    archivedAt?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     categoryId?: SortOrder
@@ -20017,7 +20261,8 @@ export namespace Prisma {
     minStock?: IntWithAggregatesFilter<"Product"> | number
     currentStock?: IntWithAggregatesFilter<"Product"> | number
     reservedStock?: IntWithAggregatesFilter<"Product"> | number
-    active?: BoolWithAggregatesFilter<"Product"> | boolean
+    status?: EnumRecordStatusWithAggregatesFilter<"Product"> | $Enums.RecordStatus
+    archivedAt?: DateTimeNullableWithAggregatesFilter<"Product"> | Date | string | null
     createdAt?: DateTimeWithAggregatesFilter<"Product"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Product"> | Date | string
     categoryId?: StringWithAggregatesFilter<"Product"> | string
@@ -20662,8 +20907,10 @@ export namespace Prisma {
     route?: StringFilter<"RoutePermission"> | string
     method?: StringFilter<"RoutePermission"> | string
     roles?: EnumRoleNullableListFilter<"RoutePermission">
-    active?: BoolFilter<"RoutePermission"> | boolean
+    status?: EnumRecordStatusFilter<"RoutePermission"> | $Enums.RecordStatus
+    archivedAt?: DateTimeNullableFilter<"RoutePermission"> | Date | string | null
     createdAt?: DateTimeFilter<"RoutePermission"> | Date | string
+    updatedAt?: DateTimeFilter<"RoutePermission"> | Date | string
   }
 
   export type RoutePermissionOrderByWithRelationInput = {
@@ -20671,8 +20918,10 @@ export namespace Prisma {
     route?: SortOrder
     method?: SortOrder
     roles?: SortOrder
-    active?: SortOrder
+    status?: SortOrder
+    archivedAt?: SortOrderInput | SortOrder
     createdAt?: SortOrder
+    updatedAt?: SortOrder
   }
 
   export type RoutePermissionWhereUniqueInput = Prisma.AtLeast<{
@@ -20683,8 +20932,10 @@ export namespace Prisma {
     NOT?: RoutePermissionWhereInput | RoutePermissionWhereInput[]
     method?: StringFilter<"RoutePermission"> | string
     roles?: EnumRoleNullableListFilter<"RoutePermission">
-    active?: BoolFilter<"RoutePermission"> | boolean
+    status?: EnumRecordStatusFilter<"RoutePermission"> | $Enums.RecordStatus
+    archivedAt?: DateTimeNullableFilter<"RoutePermission"> | Date | string | null
     createdAt?: DateTimeFilter<"RoutePermission"> | Date | string
+    updatedAt?: DateTimeFilter<"RoutePermission"> | Date | string
   }, "id" | "route">
 
   export type RoutePermissionOrderByWithAggregationInput = {
@@ -20692,8 +20943,10 @@ export namespace Prisma {
     route?: SortOrder
     method?: SortOrder
     roles?: SortOrder
-    active?: SortOrder
+    status?: SortOrder
+    archivedAt?: SortOrderInput | SortOrder
     createdAt?: SortOrder
+    updatedAt?: SortOrder
     _count?: RoutePermissionCountOrderByAggregateInput
     _max?: RoutePermissionMaxOrderByAggregateInput
     _min?: RoutePermissionMinOrderByAggregateInput
@@ -20707,8 +20960,10 @@ export namespace Prisma {
     route?: StringWithAggregatesFilter<"RoutePermission"> | string
     method?: StringWithAggregatesFilter<"RoutePermission"> | string
     roles?: EnumRoleNullableListFilter<"RoutePermission">
-    active?: BoolWithAggregatesFilter<"RoutePermission"> | boolean
+    status?: EnumRecordStatusWithAggregatesFilter<"RoutePermission"> | $Enums.RecordStatus
+    archivedAt?: DateTimeNullableWithAggregatesFilter<"RoutePermission"> | Date | string | null
     createdAt?: DateTimeWithAggregatesFilter<"RoutePermission"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"RoutePermission"> | Date | string
   }
 
   export type UserCreateInput = {
@@ -20718,7 +20973,8 @@ export namespace Prisma {
     password: string
     phone?: string | null
     role?: $Enums.Role
-    active?: boolean
+    status?: $Enums.RecordStatus
+    archivedAt?: Date | string | null
     lastLogin?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -20737,7 +20993,8 @@ export namespace Prisma {
     password: string
     phone?: string | null
     role?: $Enums.Role
-    active?: boolean
+    status?: $Enums.RecordStatus
+    archivedAt?: Date | string | null
     lastLogin?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -20756,7 +21013,8 @@ export namespace Prisma {
     password?: StringFieldUpdateOperationsInput | string
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
-    active?: BoolFieldUpdateOperationsInput | boolean
+    status?: EnumRecordStatusFieldUpdateOperationsInput | $Enums.RecordStatus
+    archivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     lastLogin?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -20775,7 +21033,8 @@ export namespace Prisma {
     password?: StringFieldUpdateOperationsInput | string
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
-    active?: BoolFieldUpdateOperationsInput | boolean
+    status?: EnumRecordStatusFieldUpdateOperationsInput | $Enums.RecordStatus
+    archivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     lastLogin?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -20794,7 +21053,8 @@ export namespace Prisma {
     password: string
     phone?: string | null
     role?: $Enums.Role
-    active?: boolean
+    status?: $Enums.RecordStatus
+    archivedAt?: Date | string | null
     lastLogin?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -20807,7 +21067,8 @@ export namespace Prisma {
     password?: StringFieldUpdateOperationsInput | string
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
-    active?: BoolFieldUpdateOperationsInput | boolean
+    status?: EnumRecordStatusFieldUpdateOperationsInput | $Enums.RecordStatus
+    archivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     lastLogin?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -20820,7 +21081,8 @@ export namespace Prisma {
     password?: StringFieldUpdateOperationsInput | string
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
-    active?: BoolFieldUpdateOperationsInput | boolean
+    status?: EnumRecordStatusFieldUpdateOperationsInput | $Enums.RecordStatus
+    archivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     lastLogin?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -20833,7 +21095,8 @@ export namespace Prisma {
     phone?: string | null
     document?: string | null
     customerType?: $Enums.CustomerType
-    active?: boolean
+    status?: $Enums.RecordStatus
+    archivedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     saleOrders?: SaleOrderCreateNestedManyWithoutCustomerInput
@@ -20846,7 +21109,8 @@ export namespace Prisma {
     phone?: string | null
     document?: string | null
     customerType?: $Enums.CustomerType
-    active?: boolean
+    status?: $Enums.RecordStatus
+    archivedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     saleOrders?: SaleOrderUncheckedCreateNestedManyWithoutCustomerInput
@@ -20859,7 +21123,8 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     document?: NullableStringFieldUpdateOperationsInput | string | null
     customerType?: EnumCustomerTypeFieldUpdateOperationsInput | $Enums.CustomerType
-    active?: BoolFieldUpdateOperationsInput | boolean
+    status?: EnumRecordStatusFieldUpdateOperationsInput | $Enums.RecordStatus
+    archivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     saleOrders?: SaleOrderUpdateManyWithoutCustomerNestedInput
@@ -20872,7 +21137,8 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     document?: NullableStringFieldUpdateOperationsInput | string | null
     customerType?: EnumCustomerTypeFieldUpdateOperationsInput | $Enums.CustomerType
-    active?: BoolFieldUpdateOperationsInput | boolean
+    status?: EnumRecordStatusFieldUpdateOperationsInput | $Enums.RecordStatus
+    archivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     saleOrders?: SaleOrderUncheckedUpdateManyWithoutCustomerNestedInput
@@ -20885,7 +21151,8 @@ export namespace Prisma {
     phone?: string | null
     document?: string | null
     customerType?: $Enums.CustomerType
-    active?: boolean
+    status?: $Enums.RecordStatus
+    archivedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -20897,7 +21164,8 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     document?: NullableStringFieldUpdateOperationsInput | string | null
     customerType?: EnumCustomerTypeFieldUpdateOperationsInput | $Enums.CustomerType
-    active?: BoolFieldUpdateOperationsInput | boolean
+    status?: EnumRecordStatusFieldUpdateOperationsInput | $Enums.RecordStatus
+    archivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -20909,7 +21177,8 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     document?: NullableStringFieldUpdateOperationsInput | string | null
     customerType?: EnumCustomerTypeFieldUpdateOperationsInput | $Enums.CustomerType
-    active?: BoolFieldUpdateOperationsInput | boolean
+    status?: EnumRecordStatusFieldUpdateOperationsInput | $Enums.RecordStatus
+    archivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -20918,8 +21187,10 @@ export namespace Prisma {
     id?: string
     name: string
     description?: string | null
-    active?: boolean
+    status?: $Enums.RecordStatus
+    archivedAt?: Date | string | null
     createdAt?: Date | string
+    updatedAt?: Date | string
     products?: ProductCreateNestedManyWithoutCategoryInput
   }
 
@@ -20927,8 +21198,10 @@ export namespace Prisma {
     id?: string
     name: string
     description?: string | null
-    active?: boolean
+    status?: $Enums.RecordStatus
+    archivedAt?: Date | string | null
     createdAt?: Date | string
+    updatedAt?: Date | string
     products?: ProductUncheckedCreateNestedManyWithoutCategoryInput
   }
 
@@ -20936,8 +21209,10 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
-    active?: BoolFieldUpdateOperationsInput | boolean
+    status?: EnumRecordStatusFieldUpdateOperationsInput | $Enums.RecordStatus
+    archivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     products?: ProductUpdateManyWithoutCategoryNestedInput
   }
 
@@ -20945,8 +21220,10 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
-    active?: BoolFieldUpdateOperationsInput | boolean
+    status?: EnumRecordStatusFieldUpdateOperationsInput | $Enums.RecordStatus
+    archivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     products?: ProductUncheckedUpdateManyWithoutCategoryNestedInput
   }
 
@@ -20954,24 +21231,30 @@ export namespace Prisma {
     id?: string
     name: string
     description?: string | null
-    active?: boolean
+    status?: $Enums.RecordStatus
+    archivedAt?: Date | string | null
     createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type CategoryUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
-    active?: BoolFieldUpdateOperationsInput | boolean
+    status?: EnumRecordStatusFieldUpdateOperationsInput | $Enums.RecordStatus
+    archivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type CategoryUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
-    active?: BoolFieldUpdateOperationsInput | boolean
+    status?: EnumRecordStatusFieldUpdateOperationsInput | $Enums.RecordStatus
+    archivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type SupplierCreateInput = {
@@ -20981,8 +21264,10 @@ export namespace Prisma {
     email?: string | null
     phone?: string | null
     address?: string | null
-    active?: boolean
+    status?: $Enums.RecordStatus
+    archivedAt?: Date | string | null
     createdAt?: Date | string
+    updatedAt?: Date | string
     products?: ProductCreateNestedManyWithoutSupplierInput
     orders?: OrderCreateNestedManyWithoutSupplierInput
   }
@@ -20994,8 +21279,10 @@ export namespace Prisma {
     email?: string | null
     phone?: string | null
     address?: string | null
-    active?: boolean
+    status?: $Enums.RecordStatus
+    archivedAt?: Date | string | null
     createdAt?: Date | string
+    updatedAt?: Date | string
     products?: ProductUncheckedCreateNestedManyWithoutSupplierInput
     orders?: OrderUncheckedCreateNestedManyWithoutSupplierInput
   }
@@ -21007,8 +21294,10 @@ export namespace Prisma {
     email?: NullableStringFieldUpdateOperationsInput | string | null
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     address?: NullableStringFieldUpdateOperationsInput | string | null
-    active?: BoolFieldUpdateOperationsInput | boolean
+    status?: EnumRecordStatusFieldUpdateOperationsInput | $Enums.RecordStatus
+    archivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     products?: ProductUpdateManyWithoutSupplierNestedInput
     orders?: OrderUpdateManyWithoutSupplierNestedInput
   }
@@ -21020,8 +21309,10 @@ export namespace Prisma {
     email?: NullableStringFieldUpdateOperationsInput | string | null
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     address?: NullableStringFieldUpdateOperationsInput | string | null
-    active?: BoolFieldUpdateOperationsInput | boolean
+    status?: EnumRecordStatusFieldUpdateOperationsInput | $Enums.RecordStatus
+    archivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     products?: ProductUncheckedUpdateManyWithoutSupplierNestedInput
     orders?: OrderUncheckedUpdateManyWithoutSupplierNestedInput
   }
@@ -21033,8 +21324,10 @@ export namespace Prisma {
     email?: string | null
     phone?: string | null
     address?: string | null
-    active?: boolean
+    status?: $Enums.RecordStatus
+    archivedAt?: Date | string | null
     createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type SupplierUpdateManyMutationInput = {
@@ -21044,8 +21337,10 @@ export namespace Prisma {
     email?: NullableStringFieldUpdateOperationsInput | string | null
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     address?: NullableStringFieldUpdateOperationsInput | string | null
-    active?: BoolFieldUpdateOperationsInput | boolean
+    status?: EnumRecordStatusFieldUpdateOperationsInput | $Enums.RecordStatus
+    archivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type SupplierUncheckedUpdateManyInput = {
@@ -21055,15 +21350,20 @@ export namespace Prisma {
     email?: NullableStringFieldUpdateOperationsInput | string | null
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     address?: NullableStringFieldUpdateOperationsInput | string | null
-    active?: BoolFieldUpdateOperationsInput | boolean
+    status?: EnumRecordStatusFieldUpdateOperationsInput | $Enums.RecordStatus
+    archivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type UnitOfMeasureCreateInput = {
     id?: string
     name: string
     symbol?: string | null
-    active?: boolean
+    status?: $Enums.RecordStatus
+    archivedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
     products?: ProductCreateNestedManyWithoutUnitInput
   }
 
@@ -21071,7 +21371,10 @@ export namespace Prisma {
     id?: string
     name: string
     symbol?: string | null
-    active?: boolean
+    status?: $Enums.RecordStatus
+    archivedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
     products?: ProductUncheckedCreateNestedManyWithoutUnitInput
   }
 
@@ -21079,7 +21382,10 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     symbol?: NullableStringFieldUpdateOperationsInput | string | null
-    active?: BoolFieldUpdateOperationsInput | boolean
+    status?: EnumRecordStatusFieldUpdateOperationsInput | $Enums.RecordStatus
+    archivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     products?: ProductUpdateManyWithoutUnitNestedInput
   }
 
@@ -21087,7 +21393,10 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     symbol?: NullableStringFieldUpdateOperationsInput | string | null
-    active?: BoolFieldUpdateOperationsInput | boolean
+    status?: EnumRecordStatusFieldUpdateOperationsInput | $Enums.RecordStatus
+    archivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     products?: ProductUncheckedUpdateManyWithoutUnitNestedInput
   }
 
@@ -21095,21 +21404,30 @@ export namespace Prisma {
     id?: string
     name: string
     symbol?: string | null
-    active?: boolean
+    status?: $Enums.RecordStatus
+    archivedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type UnitOfMeasureUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     symbol?: NullableStringFieldUpdateOperationsInput | string | null
-    active?: BoolFieldUpdateOperationsInput | boolean
+    status?: EnumRecordStatusFieldUpdateOperationsInput | $Enums.RecordStatus
+    archivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type UnitOfMeasureUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     symbol?: NullableStringFieldUpdateOperationsInput | string | null
-    active?: BoolFieldUpdateOperationsInput | boolean
+    status?: EnumRecordStatusFieldUpdateOperationsInput | $Enums.RecordStatus
+    archivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type ProductCreateInput = {
@@ -21127,7 +21445,8 @@ export namespace Prisma {
     minStock?: number
     currentStock?: number
     reservedStock?: number
-    active?: boolean
+    status?: $Enums.RecordStatus
+    archivedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     category: CategoryCreateNestedOneWithoutProductsInput
@@ -21153,7 +21472,8 @@ export namespace Prisma {
     minStock?: number
     currentStock?: number
     reservedStock?: number
-    active?: boolean
+    status?: $Enums.RecordStatus
+    archivedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     categoryId: string
@@ -21179,7 +21499,8 @@ export namespace Prisma {
     minStock?: IntFieldUpdateOperationsInput | number
     currentStock?: IntFieldUpdateOperationsInput | number
     reservedStock?: IntFieldUpdateOperationsInput | number
-    active?: BoolFieldUpdateOperationsInput | boolean
+    status?: EnumRecordStatusFieldUpdateOperationsInput | $Enums.RecordStatus
+    archivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     category?: CategoryUpdateOneRequiredWithoutProductsNestedInput
@@ -21205,7 +21526,8 @@ export namespace Prisma {
     minStock?: IntFieldUpdateOperationsInput | number
     currentStock?: IntFieldUpdateOperationsInput | number
     reservedStock?: IntFieldUpdateOperationsInput | number
-    active?: BoolFieldUpdateOperationsInput | boolean
+    status?: EnumRecordStatusFieldUpdateOperationsInput | $Enums.RecordStatus
+    archivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     categoryId?: StringFieldUpdateOperationsInput | string
@@ -21231,7 +21553,8 @@ export namespace Prisma {
     minStock?: number
     currentStock?: number
     reservedStock?: number
-    active?: boolean
+    status?: $Enums.RecordStatus
+    archivedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     categoryId: string
@@ -21254,7 +21577,8 @@ export namespace Prisma {
     minStock?: IntFieldUpdateOperationsInput | number
     currentStock?: IntFieldUpdateOperationsInput | number
     reservedStock?: IntFieldUpdateOperationsInput | number
-    active?: BoolFieldUpdateOperationsInput | boolean
+    status?: EnumRecordStatusFieldUpdateOperationsInput | $Enums.RecordStatus
+    archivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -21274,7 +21598,8 @@ export namespace Prisma {
     minStock?: IntFieldUpdateOperationsInput | number
     currentStock?: IntFieldUpdateOperationsInput | number
     reservedStock?: IntFieldUpdateOperationsInput | number
-    active?: BoolFieldUpdateOperationsInput | boolean
+    status?: EnumRecordStatusFieldUpdateOperationsInput | $Enums.RecordStatus
+    archivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     categoryId?: StringFieldUpdateOperationsInput | string
@@ -21949,8 +22274,10 @@ export namespace Prisma {
     route: string
     method?: string
     roles?: RoutePermissionCreaterolesInput | $Enums.Role[]
-    active?: boolean
+    status?: $Enums.RecordStatus
+    archivedAt?: Date | string | null
     createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type RoutePermissionUncheckedCreateInput = {
@@ -21958,8 +22285,10 @@ export namespace Prisma {
     route: string
     method?: string
     roles?: RoutePermissionCreaterolesInput | $Enums.Role[]
-    active?: boolean
+    status?: $Enums.RecordStatus
+    archivedAt?: Date | string | null
     createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type RoutePermissionUpdateInput = {
@@ -21967,8 +22296,10 @@ export namespace Prisma {
     route?: StringFieldUpdateOperationsInput | string
     method?: StringFieldUpdateOperationsInput | string
     roles?: RoutePermissionUpdaterolesInput | $Enums.Role[]
-    active?: BoolFieldUpdateOperationsInput | boolean
+    status?: EnumRecordStatusFieldUpdateOperationsInput | $Enums.RecordStatus
+    archivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type RoutePermissionUncheckedUpdateInput = {
@@ -21976,8 +22307,10 @@ export namespace Prisma {
     route?: StringFieldUpdateOperationsInput | string
     method?: StringFieldUpdateOperationsInput | string
     roles?: RoutePermissionUpdaterolesInput | $Enums.Role[]
-    active?: BoolFieldUpdateOperationsInput | boolean
+    status?: EnumRecordStatusFieldUpdateOperationsInput | $Enums.RecordStatus
+    archivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type RoutePermissionCreateManyInput = {
@@ -21985,8 +22318,10 @@ export namespace Prisma {
     route: string
     method?: string
     roles?: RoutePermissionCreaterolesInput | $Enums.Role[]
-    active?: boolean
+    status?: $Enums.RecordStatus
+    archivedAt?: Date | string | null
     createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type RoutePermissionUpdateManyMutationInput = {
@@ -21994,8 +22329,10 @@ export namespace Prisma {
     route?: StringFieldUpdateOperationsInput | string
     method?: StringFieldUpdateOperationsInput | string
     roles?: RoutePermissionUpdaterolesInput | $Enums.Role[]
-    active?: BoolFieldUpdateOperationsInput | boolean
+    status?: EnumRecordStatusFieldUpdateOperationsInput | $Enums.RecordStatus
+    archivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type RoutePermissionUncheckedUpdateManyInput = {
@@ -22003,8 +22340,10 @@ export namespace Prisma {
     route?: StringFieldUpdateOperationsInput | string
     method?: StringFieldUpdateOperationsInput | string
     roles?: RoutePermissionUpdaterolesInput | $Enums.Role[]
-    active?: BoolFieldUpdateOperationsInput | boolean
+    status?: EnumRecordStatusFieldUpdateOperationsInput | $Enums.RecordStatus
+    archivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type StringFilter<$PrismaModel = never> = {
@@ -22044,9 +22383,11 @@ export namespace Prisma {
     not?: NestedEnumRoleFilter<$PrismaModel> | $Enums.Role
   }
 
-  export type BoolFilter<$PrismaModel = never> = {
-    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
-    not?: NestedBoolFilter<$PrismaModel> | boolean
+  export type EnumRecordStatusFilter<$PrismaModel = never> = {
+    equals?: $Enums.RecordStatus | EnumRecordStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.RecordStatus[] | ListEnumRecordStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.RecordStatus[] | ListEnumRecordStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumRecordStatusFilter<$PrismaModel> | $Enums.RecordStatus
   }
 
   export type DateTimeNullableFilter<$PrismaModel = never> = {
@@ -22133,7 +22474,8 @@ export namespace Prisma {
     password?: SortOrder
     phone?: SortOrder
     role?: SortOrder
-    active?: SortOrder
+    status?: SortOrder
+    archivedAt?: SortOrder
     lastLogin?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -22146,7 +22488,8 @@ export namespace Prisma {
     password?: SortOrder
     phone?: SortOrder
     role?: SortOrder
-    active?: SortOrder
+    status?: SortOrder
+    archivedAt?: SortOrder
     lastLogin?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -22159,7 +22502,8 @@ export namespace Prisma {
     password?: SortOrder
     phone?: SortOrder
     role?: SortOrder
-    active?: SortOrder
+    status?: SortOrder
+    archivedAt?: SortOrder
     lastLogin?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -22211,12 +22555,14 @@ export namespace Prisma {
     _max?: NestedEnumRoleFilter<$PrismaModel>
   }
 
-  export type BoolWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
-    not?: NestedBoolWithAggregatesFilter<$PrismaModel> | boolean
+  export type EnumRecordStatusWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.RecordStatus | EnumRecordStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.RecordStatus[] | ListEnumRecordStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.RecordStatus[] | ListEnumRecordStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumRecordStatusWithAggregatesFilter<$PrismaModel> | $Enums.RecordStatus
     _count?: NestedIntFilter<$PrismaModel>
-    _min?: NestedBoolFilter<$PrismaModel>
-    _max?: NestedBoolFilter<$PrismaModel>
+    _min?: NestedEnumRecordStatusFilter<$PrismaModel>
+    _max?: NestedEnumRecordStatusFilter<$PrismaModel>
   }
 
   export type DateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
@@ -22261,7 +22607,8 @@ export namespace Prisma {
     phone?: SortOrder
     document?: SortOrder
     customerType?: SortOrder
-    active?: SortOrder
+    status?: SortOrder
+    archivedAt?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -22273,7 +22620,8 @@ export namespace Prisma {
     phone?: SortOrder
     document?: SortOrder
     customerType?: SortOrder
-    active?: SortOrder
+    status?: SortOrder
+    archivedAt?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -22285,7 +22633,8 @@ export namespace Prisma {
     phone?: SortOrder
     document?: SortOrder
     customerType?: SortOrder
-    active?: SortOrder
+    status?: SortOrder
+    archivedAt?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -22314,24 +22663,30 @@ export namespace Prisma {
     id?: SortOrder
     name?: SortOrder
     description?: SortOrder
-    active?: SortOrder
+    status?: SortOrder
+    archivedAt?: SortOrder
     createdAt?: SortOrder
+    updatedAt?: SortOrder
   }
 
   export type CategoryMaxOrderByAggregateInput = {
     id?: SortOrder
     name?: SortOrder
     description?: SortOrder
-    active?: SortOrder
+    status?: SortOrder
+    archivedAt?: SortOrder
     createdAt?: SortOrder
+    updatedAt?: SortOrder
   }
 
   export type CategoryMinOrderByAggregateInput = {
     id?: SortOrder
     name?: SortOrder
     description?: SortOrder
-    active?: SortOrder
+    status?: SortOrder
+    archivedAt?: SortOrder
     createdAt?: SortOrder
+    updatedAt?: SortOrder
   }
 
   export type SupplierCountOrderByAggregateInput = {
@@ -22341,8 +22696,10 @@ export namespace Prisma {
     email?: SortOrder
     phone?: SortOrder
     address?: SortOrder
-    active?: SortOrder
+    status?: SortOrder
+    archivedAt?: SortOrder
     createdAt?: SortOrder
+    updatedAt?: SortOrder
   }
 
   export type SupplierMaxOrderByAggregateInput = {
@@ -22352,8 +22709,10 @@ export namespace Prisma {
     email?: SortOrder
     phone?: SortOrder
     address?: SortOrder
-    active?: SortOrder
+    status?: SortOrder
+    archivedAt?: SortOrder
     createdAt?: SortOrder
+    updatedAt?: SortOrder
   }
 
   export type SupplierMinOrderByAggregateInput = {
@@ -22363,29 +22722,40 @@ export namespace Prisma {
     email?: SortOrder
     phone?: SortOrder
     address?: SortOrder
-    active?: SortOrder
+    status?: SortOrder
+    archivedAt?: SortOrder
     createdAt?: SortOrder
+    updatedAt?: SortOrder
   }
 
   export type UnitOfMeasureCountOrderByAggregateInput = {
     id?: SortOrder
     name?: SortOrder
     symbol?: SortOrder
-    active?: SortOrder
+    status?: SortOrder
+    archivedAt?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
   }
 
   export type UnitOfMeasureMaxOrderByAggregateInput = {
     id?: SortOrder
     name?: SortOrder
     symbol?: SortOrder
-    active?: SortOrder
+    status?: SortOrder
+    archivedAt?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
   }
 
   export type UnitOfMeasureMinOrderByAggregateInput = {
     id?: SortOrder
     name?: SortOrder
     symbol?: SortOrder
-    active?: SortOrder
+    status?: SortOrder
+    archivedAt?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
   }
 
   export type DecimalFilter<$PrismaModel = never> = {
@@ -22471,7 +22841,8 @@ export namespace Prisma {
     minStock?: SortOrder
     currentStock?: SortOrder
     reservedStock?: SortOrder
-    active?: SortOrder
+    status?: SortOrder
+    archivedAt?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     categoryId?: SortOrder
@@ -22506,7 +22877,8 @@ export namespace Prisma {
     minStock?: SortOrder
     currentStock?: SortOrder
     reservedStock?: SortOrder
-    active?: SortOrder
+    status?: SortOrder
+    archivedAt?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     categoryId?: SortOrder
@@ -22529,7 +22901,8 @@ export namespace Prisma {
     minStock?: SortOrder
     currentStock?: SortOrder
     reservedStock?: SortOrder
-    active?: SortOrder
+    status?: SortOrder
+    archivedAt?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     categoryId?: SortOrder
@@ -23000,6 +23373,11 @@ export namespace Prisma {
     not?: NestedEnumReceiptTypeFilter<$PrismaModel> | $Enums.ReceiptType
   }
 
+  export type BoolFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolFilter<$PrismaModel> | boolean
+  }
+
   export type OrderNullableScalarRelationFilter = {
     is?: OrderWhereInput | null
     isNot?: OrderWhereInput | null
@@ -23079,6 +23457,14 @@ export namespace Prisma {
     _max?: NestedEnumReceiptTypeFilter<$PrismaModel>
   }
 
+  export type BoolWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolWithAggregatesFilter<$PrismaModel> | boolean
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedBoolFilter<$PrismaModel>
+    _max?: NestedBoolFilter<$PrismaModel>
+  }
+
   export type AuditLogCountOrderByAggregateInput = {
     id?: SortOrder
     action?: SortOrder
@@ -23129,24 +23515,30 @@ export namespace Prisma {
     route?: SortOrder
     method?: SortOrder
     roles?: SortOrder
-    active?: SortOrder
+    status?: SortOrder
+    archivedAt?: SortOrder
     createdAt?: SortOrder
+    updatedAt?: SortOrder
   }
 
   export type RoutePermissionMaxOrderByAggregateInput = {
     id?: SortOrder
     route?: SortOrder
     method?: SortOrder
-    active?: SortOrder
+    status?: SortOrder
+    archivedAt?: SortOrder
     createdAt?: SortOrder
+    updatedAt?: SortOrder
   }
 
   export type RoutePermissionMinOrderByAggregateInput = {
     id?: SortOrder
     route?: SortOrder
     method?: SortOrder
-    active?: SortOrder
+    status?: SortOrder
+    archivedAt?: SortOrder
     createdAt?: SortOrder
+    updatedAt?: SortOrder
   }
 
   export type MovementCreateNestedManyWithoutUserInput = {
@@ -23245,8 +23637,8 @@ export namespace Prisma {
     set?: $Enums.Role
   }
 
-  export type BoolFieldUpdateOperationsInput = {
-    set?: boolean
+  export type EnumRecordStatusFieldUpdateOperationsInput = {
+    set?: $Enums.RecordStatus
   }
 
   export type NullableDateTimeFieldUpdateOperationsInput = {
@@ -24241,6 +24633,10 @@ export namespace Prisma {
     set?: $Enums.ReceiptType
   }
 
+  export type BoolFieldUpdateOperationsInput = {
+    set?: boolean
+  }
+
   export type OrderUpdateOneWithoutReceiptsNestedInput = {
     create?: XOR<OrderCreateWithoutReceiptsInput, OrderUncheckedCreateWithoutReceiptsInput>
     connectOrCreate?: OrderCreateOrConnectWithoutReceiptsInput
@@ -24343,9 +24739,11 @@ export namespace Prisma {
     not?: NestedEnumRoleFilter<$PrismaModel> | $Enums.Role
   }
 
-  export type NestedBoolFilter<$PrismaModel = never> = {
-    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
-    not?: NestedBoolFilter<$PrismaModel> | boolean
+  export type NestedEnumRecordStatusFilter<$PrismaModel = never> = {
+    equals?: $Enums.RecordStatus | EnumRecordStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.RecordStatus[] | ListEnumRecordStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.RecordStatus[] | ListEnumRecordStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumRecordStatusFilter<$PrismaModel> | $Enums.RecordStatus
   }
 
   export type NestedDateTimeNullableFilter<$PrismaModel = never> = {
@@ -24436,12 +24834,14 @@ export namespace Prisma {
     _max?: NestedEnumRoleFilter<$PrismaModel>
   }
 
-  export type NestedBoolWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
-    not?: NestedBoolWithAggregatesFilter<$PrismaModel> | boolean
+  export type NestedEnumRecordStatusWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.RecordStatus | EnumRecordStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.RecordStatus[] | ListEnumRecordStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.RecordStatus[] | ListEnumRecordStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumRecordStatusWithAggregatesFilter<$PrismaModel> | $Enums.RecordStatus
     _count?: NestedIntFilter<$PrismaModel>
-    _min?: NestedBoolFilter<$PrismaModel>
-    _max?: NestedBoolFilter<$PrismaModel>
+    _min?: NestedEnumRecordStatusFilter<$PrismaModel>
+    _max?: NestedEnumRecordStatusFilter<$PrismaModel>
   }
 
   export type NestedDateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
@@ -24668,6 +25068,11 @@ export namespace Prisma {
     not?: NestedEnumReceiptTypeFilter<$PrismaModel> | $Enums.ReceiptType
   }
 
+  export type NestedBoolFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolFilter<$PrismaModel> | boolean
+  }
+
   export type NestedEnumReceiptTypeWithAggregatesFilter<$PrismaModel = never> = {
     equals?: $Enums.ReceiptType | EnumReceiptTypeFieldRefInput<$PrismaModel>
     in?: $Enums.ReceiptType[] | ListEnumReceiptTypeFieldRefInput<$PrismaModel>
@@ -24676,6 +25081,14 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumReceiptTypeFilter<$PrismaModel>
     _max?: NestedEnumReceiptTypeFilter<$PrismaModel>
+  }
+
+  export type NestedBoolWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolWithAggregatesFilter<$PrismaModel> | boolean
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedBoolFilter<$PrismaModel>
+    _max?: NestedBoolFilter<$PrismaModel>
   }
 
   export type MovementCreateWithoutUserInput = {
@@ -25191,7 +25604,8 @@ export namespace Prisma {
     minStock?: number
     currentStock?: number
     reservedStock?: number
-    active?: boolean
+    status?: $Enums.RecordStatus
+    archivedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     supplier?: SupplierCreateNestedOneWithoutProductsInput
@@ -25216,7 +25630,8 @@ export namespace Prisma {
     minStock?: number
     currentStock?: number
     reservedStock?: number
-    active?: boolean
+    status?: $Enums.RecordStatus
+    archivedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     supplierId?: string | null
@@ -25270,7 +25685,8 @@ export namespace Prisma {
     minStock?: IntFilter<"Product"> | number
     currentStock?: IntFilter<"Product"> | number
     reservedStock?: IntFilter<"Product"> | number
-    active?: BoolFilter<"Product"> | boolean
+    status?: EnumRecordStatusFilter<"Product"> | $Enums.RecordStatus
+    archivedAt?: DateTimeNullableFilter<"Product"> | Date | string | null
     createdAt?: DateTimeFilter<"Product"> | Date | string
     updatedAt?: DateTimeFilter<"Product"> | Date | string
     categoryId?: StringFilter<"Product"> | string
@@ -25293,7 +25709,8 @@ export namespace Prisma {
     minStock?: number
     currentStock?: number
     reservedStock?: number
-    active?: boolean
+    status?: $Enums.RecordStatus
+    archivedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     category: CategoryCreateNestedOneWithoutProductsInput
@@ -25318,7 +25735,8 @@ export namespace Prisma {
     minStock?: number
     currentStock?: number
     reservedStock?: number
-    active?: boolean
+    status?: $Enums.RecordStatus
+    archivedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     categoryId: string
@@ -25425,7 +25843,8 @@ export namespace Prisma {
     minStock?: number
     currentStock?: number
     reservedStock?: number
-    active?: boolean
+    status?: $Enums.RecordStatus
+    archivedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     category: CategoryCreateNestedOneWithoutProductsInput
@@ -25450,7 +25869,8 @@ export namespace Prisma {
     minStock?: number
     currentStock?: number
     reservedStock?: number
-    active?: boolean
+    status?: $Enums.RecordStatus
+    archivedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     categoryId: string
@@ -25490,16 +25910,20 @@ export namespace Prisma {
     id?: string
     name: string
     description?: string | null
-    active?: boolean
+    status?: $Enums.RecordStatus
+    archivedAt?: Date | string | null
     createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type CategoryUncheckedCreateWithoutProductsInput = {
     id?: string
     name: string
     description?: string | null
-    active?: boolean
+    status?: $Enums.RecordStatus
+    archivedAt?: Date | string | null
     createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type CategoryCreateOrConnectWithoutProductsInput = {
@@ -25514,8 +25938,10 @@ export namespace Prisma {
     email?: string | null
     phone?: string | null
     address?: string | null
-    active?: boolean
+    status?: $Enums.RecordStatus
+    archivedAt?: Date | string | null
     createdAt?: Date | string
+    updatedAt?: Date | string
     orders?: OrderCreateNestedManyWithoutSupplierInput
   }
 
@@ -25526,8 +25952,10 @@ export namespace Prisma {
     email?: string | null
     phone?: string | null
     address?: string | null
-    active?: boolean
+    status?: $Enums.RecordStatus
+    archivedAt?: Date | string | null
     createdAt?: Date | string
+    updatedAt?: Date | string
     orders?: OrderUncheckedCreateNestedManyWithoutSupplierInput
   }
 
@@ -25540,14 +25968,20 @@ export namespace Prisma {
     id?: string
     name: string
     symbol?: string | null
-    active?: boolean
+    status?: $Enums.RecordStatus
+    archivedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type UnitOfMeasureUncheckedCreateWithoutProductsInput = {
     id?: string
     name: string
     symbol?: string | null
-    active?: boolean
+    status?: $Enums.RecordStatus
+    archivedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type UnitOfMeasureCreateOrConnectWithoutProductsInput = {
@@ -25660,16 +26094,20 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
-    active?: BoolFieldUpdateOperationsInput | boolean
+    status?: EnumRecordStatusFieldUpdateOperationsInput | $Enums.RecordStatus
+    archivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type CategoryUncheckedUpdateWithoutProductsInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
-    active?: BoolFieldUpdateOperationsInput | boolean
+    status?: EnumRecordStatusFieldUpdateOperationsInput | $Enums.RecordStatus
+    archivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type SupplierUpsertWithoutProductsInput = {
@@ -25690,8 +26128,10 @@ export namespace Prisma {
     email?: NullableStringFieldUpdateOperationsInput | string | null
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     address?: NullableStringFieldUpdateOperationsInput | string | null
-    active?: BoolFieldUpdateOperationsInput | boolean
+    status?: EnumRecordStatusFieldUpdateOperationsInput | $Enums.RecordStatus
+    archivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     orders?: OrderUpdateManyWithoutSupplierNestedInput
   }
 
@@ -25702,8 +26142,10 @@ export namespace Prisma {
     email?: NullableStringFieldUpdateOperationsInput | string | null
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     address?: NullableStringFieldUpdateOperationsInput | string | null
-    active?: BoolFieldUpdateOperationsInput | boolean
+    status?: EnumRecordStatusFieldUpdateOperationsInput | $Enums.RecordStatus
+    archivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     orders?: OrderUncheckedUpdateManyWithoutSupplierNestedInput
   }
 
@@ -25722,14 +26164,20 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     symbol?: NullableStringFieldUpdateOperationsInput | string | null
-    active?: BoolFieldUpdateOperationsInput | boolean
+    status?: EnumRecordStatusFieldUpdateOperationsInput | $Enums.RecordStatus
+    archivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type UnitOfMeasureUncheckedUpdateWithoutProductsInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     symbol?: NullableStringFieldUpdateOperationsInput | string | null
-    active?: BoolFieldUpdateOperationsInput | boolean
+    status?: EnumRecordStatusFieldUpdateOperationsInput | $Enums.RecordStatus
+    archivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type MovementUpsertWithWhereUniqueWithoutProductInput = {
@@ -25820,7 +26268,8 @@ export namespace Prisma {
     minStock?: number
     currentStock?: number
     reservedStock?: number
-    active?: boolean
+    status?: $Enums.RecordStatus
+    archivedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     category: CategoryCreateNestedOneWithoutProductsInput
@@ -25845,7 +26294,8 @@ export namespace Prisma {
     minStock?: number
     currentStock?: number
     reservedStock?: number
-    active?: boolean
+    status?: $Enums.RecordStatus
+    archivedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     categoryId: string
@@ -25867,7 +26317,8 @@ export namespace Prisma {
     password: string
     phone?: string | null
     role?: $Enums.Role
-    active?: boolean
+    status?: $Enums.RecordStatus
+    archivedAt?: Date | string | null
     lastLogin?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -25885,7 +26336,8 @@ export namespace Prisma {
     password: string
     phone?: string | null
     role?: $Enums.Role
-    active?: boolean
+    status?: $Enums.RecordStatus
+    archivedAt?: Date | string | null
     lastLogin?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -25927,7 +26379,8 @@ export namespace Prisma {
     minStock?: IntFieldUpdateOperationsInput | number
     currentStock?: IntFieldUpdateOperationsInput | number
     reservedStock?: IntFieldUpdateOperationsInput | number
-    active?: BoolFieldUpdateOperationsInput | boolean
+    status?: EnumRecordStatusFieldUpdateOperationsInput | $Enums.RecordStatus
+    archivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     category?: CategoryUpdateOneRequiredWithoutProductsNestedInput
@@ -25952,7 +26405,8 @@ export namespace Prisma {
     minStock?: IntFieldUpdateOperationsInput | number
     currentStock?: IntFieldUpdateOperationsInput | number
     reservedStock?: IntFieldUpdateOperationsInput | number
-    active?: BoolFieldUpdateOperationsInput | boolean
+    status?: EnumRecordStatusFieldUpdateOperationsInput | $Enums.RecordStatus
+    archivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     categoryId?: StringFieldUpdateOperationsInput | string
@@ -25980,7 +26434,8 @@ export namespace Prisma {
     password?: StringFieldUpdateOperationsInput | string
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
-    active?: BoolFieldUpdateOperationsInput | boolean
+    status?: EnumRecordStatusFieldUpdateOperationsInput | $Enums.RecordStatus
+    archivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     lastLogin?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -25998,7 +26453,8 @@ export namespace Prisma {
     password?: StringFieldUpdateOperationsInput | string
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
-    active?: BoolFieldUpdateOperationsInput | boolean
+    status?: EnumRecordStatusFieldUpdateOperationsInput | $Enums.RecordStatus
+    archivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     lastLogin?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -26016,8 +26472,10 @@ export namespace Prisma {
     email?: string | null
     phone?: string | null
     address?: string | null
-    active?: boolean
+    status?: $Enums.RecordStatus
+    archivedAt?: Date | string | null
     createdAt?: Date | string
+    updatedAt?: Date | string
     products?: ProductCreateNestedManyWithoutSupplierInput
   }
 
@@ -26028,8 +26486,10 @@ export namespace Prisma {
     email?: string | null
     phone?: string | null
     address?: string | null
-    active?: boolean
+    status?: $Enums.RecordStatus
+    archivedAt?: Date | string | null
     createdAt?: Date | string
+    updatedAt?: Date | string
     products?: ProductUncheckedCreateNestedManyWithoutSupplierInput
   }
 
@@ -26045,7 +26505,8 @@ export namespace Prisma {
     password: string
     phone?: string | null
     role?: $Enums.Role
-    active?: boolean
+    status?: $Enums.RecordStatus
+    archivedAt?: Date | string | null
     lastLogin?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -26063,7 +26524,8 @@ export namespace Prisma {
     password: string
     phone?: string | null
     role?: $Enums.Role
-    active?: boolean
+    status?: $Enums.RecordStatus
+    archivedAt?: Date | string | null
     lastLogin?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -26165,8 +26627,10 @@ export namespace Prisma {
     email?: NullableStringFieldUpdateOperationsInput | string | null
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     address?: NullableStringFieldUpdateOperationsInput | string | null
-    active?: BoolFieldUpdateOperationsInput | boolean
+    status?: EnumRecordStatusFieldUpdateOperationsInput | $Enums.RecordStatus
+    archivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     products?: ProductUpdateManyWithoutSupplierNestedInput
   }
 
@@ -26177,8 +26641,10 @@ export namespace Prisma {
     email?: NullableStringFieldUpdateOperationsInput | string | null
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     address?: NullableStringFieldUpdateOperationsInput | string | null
-    active?: BoolFieldUpdateOperationsInput | boolean
+    status?: EnumRecordStatusFieldUpdateOperationsInput | $Enums.RecordStatus
+    archivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     products?: ProductUncheckedUpdateManyWithoutSupplierNestedInput
   }
 
@@ -26200,7 +26666,8 @@ export namespace Prisma {
     password?: StringFieldUpdateOperationsInput | string
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
-    active?: BoolFieldUpdateOperationsInput | boolean
+    status?: EnumRecordStatusFieldUpdateOperationsInput | $Enums.RecordStatus
+    archivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     lastLogin?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -26218,7 +26685,8 @@ export namespace Prisma {
     password?: StringFieldUpdateOperationsInput | string
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
-    active?: BoolFieldUpdateOperationsInput | boolean
+    status?: EnumRecordStatusFieldUpdateOperationsInput | $Enums.RecordStatus
+    archivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     lastLogin?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -26311,7 +26779,8 @@ export namespace Prisma {
     minStock?: number
     currentStock?: number
     reservedStock?: number
-    active?: boolean
+    status?: $Enums.RecordStatus
+    archivedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     category: CategoryCreateNestedOneWithoutProductsInput
@@ -26336,7 +26805,8 @@ export namespace Prisma {
     minStock?: number
     currentStock?: number
     reservedStock?: number
-    active?: boolean
+    status?: $Enums.RecordStatus
+    archivedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     categoryId: string
@@ -26418,7 +26888,8 @@ export namespace Prisma {
     minStock?: IntFieldUpdateOperationsInput | number
     currentStock?: IntFieldUpdateOperationsInput | number
     reservedStock?: IntFieldUpdateOperationsInput | number
-    active?: BoolFieldUpdateOperationsInput | boolean
+    status?: EnumRecordStatusFieldUpdateOperationsInput | $Enums.RecordStatus
+    archivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     category?: CategoryUpdateOneRequiredWithoutProductsNestedInput
@@ -26443,7 +26914,8 @@ export namespace Prisma {
     minStock?: IntFieldUpdateOperationsInput | number
     currentStock?: IntFieldUpdateOperationsInput | number
     reservedStock?: IntFieldUpdateOperationsInput | number
-    active?: BoolFieldUpdateOperationsInput | boolean
+    status?: EnumRecordStatusFieldUpdateOperationsInput | $Enums.RecordStatus
+    archivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     categoryId?: StringFieldUpdateOperationsInput | string
@@ -26460,7 +26932,8 @@ export namespace Prisma {
     password: string
     phone?: string | null
     role?: $Enums.Role
-    active?: boolean
+    status?: $Enums.RecordStatus
+    archivedAt?: Date | string | null
     lastLogin?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -26478,7 +26951,8 @@ export namespace Prisma {
     password: string
     phone?: string | null
     role?: $Enums.Role
-    active?: boolean
+    status?: $Enums.RecordStatus
+    archivedAt?: Date | string | null
     lastLogin?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -26501,7 +26975,8 @@ export namespace Prisma {
     phone?: string | null
     document?: string | null
     customerType?: $Enums.CustomerType
-    active?: boolean
+    status?: $Enums.RecordStatus
+    archivedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -26513,7 +26988,8 @@ export namespace Prisma {
     phone?: string | null
     document?: string | null
     customerType?: $Enums.CustomerType
-    active?: boolean
+    status?: $Enums.RecordStatus
+    archivedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -26530,7 +27006,8 @@ export namespace Prisma {
     password: string
     phone?: string | null
     role?: $Enums.Role
-    active?: boolean
+    status?: $Enums.RecordStatus
+    archivedAt?: Date | string | null
     lastLogin?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -26548,7 +27025,8 @@ export namespace Prisma {
     password: string
     phone?: string | null
     role?: $Enums.Role
-    active?: boolean
+    status?: $Enums.RecordStatus
+    archivedAt?: Date | string | null
     lastLogin?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -26686,7 +27164,8 @@ export namespace Prisma {
     password?: StringFieldUpdateOperationsInput | string
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
-    active?: BoolFieldUpdateOperationsInput | boolean
+    status?: EnumRecordStatusFieldUpdateOperationsInput | $Enums.RecordStatus
+    archivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     lastLogin?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -26704,7 +27183,8 @@ export namespace Prisma {
     password?: StringFieldUpdateOperationsInput | string
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
-    active?: BoolFieldUpdateOperationsInput | boolean
+    status?: EnumRecordStatusFieldUpdateOperationsInput | $Enums.RecordStatus
+    archivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     lastLogin?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -26733,7 +27213,8 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     document?: NullableStringFieldUpdateOperationsInput | string | null
     customerType?: EnumCustomerTypeFieldUpdateOperationsInput | $Enums.CustomerType
-    active?: BoolFieldUpdateOperationsInput | boolean
+    status?: EnumRecordStatusFieldUpdateOperationsInput | $Enums.RecordStatus
+    archivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -26745,7 +27226,8 @@ export namespace Prisma {
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     document?: NullableStringFieldUpdateOperationsInput | string | null
     customerType?: EnumCustomerTypeFieldUpdateOperationsInput | $Enums.CustomerType
-    active?: BoolFieldUpdateOperationsInput | boolean
+    status?: EnumRecordStatusFieldUpdateOperationsInput | $Enums.RecordStatus
+    archivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -26768,7 +27250,8 @@ export namespace Prisma {
     password?: StringFieldUpdateOperationsInput | string
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
-    active?: BoolFieldUpdateOperationsInput | boolean
+    status?: EnumRecordStatusFieldUpdateOperationsInput | $Enums.RecordStatus
+    archivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     lastLogin?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -26786,7 +27269,8 @@ export namespace Prisma {
     password?: StringFieldUpdateOperationsInput | string
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
-    active?: BoolFieldUpdateOperationsInput | boolean
+    status?: EnumRecordStatusFieldUpdateOperationsInput | $Enums.RecordStatus
+    archivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     lastLogin?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -26903,7 +27387,8 @@ export namespace Prisma {
     minStock?: number
     currentStock?: number
     reservedStock?: number
-    active?: boolean
+    status?: $Enums.RecordStatus
+    archivedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     category: CategoryCreateNestedOneWithoutProductsInput
@@ -26928,7 +27413,8 @@ export namespace Prisma {
     minStock?: number
     currentStock?: number
     reservedStock?: number
-    active?: boolean
+    status?: $Enums.RecordStatus
+    archivedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     categoryId: string
@@ -27018,7 +27504,8 @@ export namespace Prisma {
     minStock?: IntFieldUpdateOperationsInput | number
     currentStock?: IntFieldUpdateOperationsInput | number
     reservedStock?: IntFieldUpdateOperationsInput | number
-    active?: BoolFieldUpdateOperationsInput | boolean
+    status?: EnumRecordStatusFieldUpdateOperationsInput | $Enums.RecordStatus
+    archivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     category?: CategoryUpdateOneRequiredWithoutProductsNestedInput
@@ -27043,7 +27530,8 @@ export namespace Prisma {
     minStock?: IntFieldUpdateOperationsInput | number
     currentStock?: IntFieldUpdateOperationsInput | number
     reservedStock?: IntFieldUpdateOperationsInput | number
-    active?: BoolFieldUpdateOperationsInput | boolean
+    status?: EnumRecordStatusFieldUpdateOperationsInput | $Enums.RecordStatus
+    archivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     categoryId?: StringFieldUpdateOperationsInput | string
@@ -27138,7 +27626,8 @@ export namespace Prisma {
     password: string
     phone?: string | null
     role?: $Enums.Role
-    active?: boolean
+    status?: $Enums.RecordStatus
+    archivedAt?: Date | string | null
     lastLogin?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -27156,7 +27645,8 @@ export namespace Prisma {
     password: string
     phone?: string | null
     role?: $Enums.Role
-    active?: boolean
+    status?: $Enums.RecordStatus
+    archivedAt?: Date | string | null
     lastLogin?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -27280,7 +27770,8 @@ export namespace Prisma {
     password?: StringFieldUpdateOperationsInput | string
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
-    active?: BoolFieldUpdateOperationsInput | boolean
+    status?: EnumRecordStatusFieldUpdateOperationsInput | $Enums.RecordStatus
+    archivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     lastLogin?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -27298,7 +27789,8 @@ export namespace Prisma {
     password?: StringFieldUpdateOperationsInput | string
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
-    active?: BoolFieldUpdateOperationsInput | boolean
+    status?: EnumRecordStatusFieldUpdateOperationsInput | $Enums.RecordStatus
+    archivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     lastLogin?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -27316,7 +27808,8 @@ export namespace Prisma {
     password: string
     phone?: string | null
     role?: $Enums.Role
-    active?: boolean
+    status?: $Enums.RecordStatus
+    archivedAt?: Date | string | null
     lastLogin?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -27334,7 +27827,8 @@ export namespace Prisma {
     password: string
     phone?: string | null
     role?: $Enums.Role
-    active?: boolean
+    status?: $Enums.RecordStatus
+    archivedAt?: Date | string | null
     lastLogin?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -27411,7 +27905,8 @@ export namespace Prisma {
     password?: StringFieldUpdateOperationsInput | string
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
-    active?: BoolFieldUpdateOperationsInput | boolean
+    status?: EnumRecordStatusFieldUpdateOperationsInput | $Enums.RecordStatus
+    archivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     lastLogin?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -27429,7 +27924,8 @@ export namespace Prisma {
     password?: StringFieldUpdateOperationsInput | string
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
-    active?: BoolFieldUpdateOperationsInput | boolean
+    status?: EnumRecordStatusFieldUpdateOperationsInput | $Enums.RecordStatus
+    archivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     lastLogin?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -27934,7 +28430,8 @@ export namespace Prisma {
     minStock?: number
     currentStock?: number
     reservedStock?: number
-    active?: boolean
+    status?: $Enums.RecordStatus
+    archivedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     supplierId?: string | null
@@ -27956,7 +28453,8 @@ export namespace Prisma {
     minStock?: IntFieldUpdateOperationsInput | number
     currentStock?: IntFieldUpdateOperationsInput | number
     reservedStock?: IntFieldUpdateOperationsInput | number
-    active?: BoolFieldUpdateOperationsInput | boolean
+    status?: EnumRecordStatusFieldUpdateOperationsInput | $Enums.RecordStatus
+    archivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     supplier?: SupplierUpdateOneWithoutProductsNestedInput
@@ -27981,7 +28479,8 @@ export namespace Prisma {
     minStock?: IntFieldUpdateOperationsInput | number
     currentStock?: IntFieldUpdateOperationsInput | number
     reservedStock?: IntFieldUpdateOperationsInput | number
-    active?: BoolFieldUpdateOperationsInput | boolean
+    status?: EnumRecordStatusFieldUpdateOperationsInput | $Enums.RecordStatus
+    archivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     supplierId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -28006,7 +28505,8 @@ export namespace Prisma {
     minStock?: IntFieldUpdateOperationsInput | number
     currentStock?: IntFieldUpdateOperationsInput | number
     reservedStock?: IntFieldUpdateOperationsInput | number
-    active?: BoolFieldUpdateOperationsInput | boolean
+    status?: EnumRecordStatusFieldUpdateOperationsInput | $Enums.RecordStatus
+    archivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     supplierId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -28028,7 +28528,8 @@ export namespace Prisma {
     minStock?: number
     currentStock?: number
     reservedStock?: number
-    active?: boolean
+    status?: $Enums.RecordStatus
+    archivedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     categoryId: string
@@ -28063,7 +28564,8 @@ export namespace Prisma {
     minStock?: IntFieldUpdateOperationsInput | number
     currentStock?: IntFieldUpdateOperationsInput | number
     reservedStock?: IntFieldUpdateOperationsInput | number
-    active?: BoolFieldUpdateOperationsInput | boolean
+    status?: EnumRecordStatusFieldUpdateOperationsInput | $Enums.RecordStatus
+    archivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     category?: CategoryUpdateOneRequiredWithoutProductsNestedInput
@@ -28088,7 +28590,8 @@ export namespace Prisma {
     minStock?: IntFieldUpdateOperationsInput | number
     currentStock?: IntFieldUpdateOperationsInput | number
     reservedStock?: IntFieldUpdateOperationsInput | number
-    active?: BoolFieldUpdateOperationsInput | boolean
+    status?: EnumRecordStatusFieldUpdateOperationsInput | $Enums.RecordStatus
+    archivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     categoryId?: StringFieldUpdateOperationsInput | string
@@ -28113,7 +28616,8 @@ export namespace Prisma {
     minStock?: IntFieldUpdateOperationsInput | number
     currentStock?: IntFieldUpdateOperationsInput | number
     reservedStock?: IntFieldUpdateOperationsInput | number
-    active?: BoolFieldUpdateOperationsInput | boolean
+    status?: EnumRecordStatusFieldUpdateOperationsInput | $Enums.RecordStatus
+    archivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     categoryId?: StringFieldUpdateOperationsInput | string
@@ -28178,7 +28682,8 @@ export namespace Prisma {
     minStock?: number
     currentStock?: number
     reservedStock?: number
-    active?: boolean
+    status?: $Enums.RecordStatus
+    archivedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     categoryId: string
@@ -28200,7 +28705,8 @@ export namespace Prisma {
     minStock?: IntFieldUpdateOperationsInput | number
     currentStock?: IntFieldUpdateOperationsInput | number
     reservedStock?: IntFieldUpdateOperationsInput | number
-    active?: BoolFieldUpdateOperationsInput | boolean
+    status?: EnumRecordStatusFieldUpdateOperationsInput | $Enums.RecordStatus
+    archivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     category?: CategoryUpdateOneRequiredWithoutProductsNestedInput
@@ -28225,7 +28731,8 @@ export namespace Prisma {
     minStock?: IntFieldUpdateOperationsInput | number
     currentStock?: IntFieldUpdateOperationsInput | number
     reservedStock?: IntFieldUpdateOperationsInput | number
-    active?: BoolFieldUpdateOperationsInput | boolean
+    status?: EnumRecordStatusFieldUpdateOperationsInput | $Enums.RecordStatus
+    archivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     categoryId?: StringFieldUpdateOperationsInput | string
@@ -28250,7 +28757,8 @@ export namespace Prisma {
     minStock?: IntFieldUpdateOperationsInput | number
     currentStock?: IntFieldUpdateOperationsInput | number
     reservedStock?: IntFieldUpdateOperationsInput | number
-    active?: BoolFieldUpdateOperationsInput | boolean
+    status?: EnumRecordStatusFieldUpdateOperationsInput | $Enums.RecordStatus
+    archivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     categoryId?: StringFieldUpdateOperationsInput | string

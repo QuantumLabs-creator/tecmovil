@@ -1,11 +1,14 @@
 // src/modules/categories/domain/category.repository.ts
+import type { CategoryStatus } from "./category-status";
 
 export type CategoryRecord = {
   id: string;
   name: string;
   description: string | null;
-  active: boolean;
+  status: CategoryStatus;
+  archivedAt: Date | null;
   createdAt: Date;
+  updatedAt: Date;
 };
 
 export type CategoryListResult = {
@@ -15,7 +18,7 @@ export type CategoryListResult = {
 
 export type CategoryListParams = {
   q?: string;
-  active?: string; // "true" | "false"
+  status?: CategoryStatus;
   page?: number;
   pageSize?: number;
 };
@@ -23,7 +26,7 @@ export type CategoryListParams = {
 export type CreateCategoryInput = {
   name: string;
   description?: unknown;
-  active?: unknown;
+  status?: unknown;
 };
 
 export type UpdateCategoryInput = Partial<CreateCategoryInput>;
@@ -34,5 +37,5 @@ export interface CategoryRepository {
   list(params: CategoryListParams): Promise<CategoryListResult>;
   create(input: CreateCategoryInput): Promise<CategoryRecord>;
   update(id: string, input: UpdateCategoryInput): Promise<CategoryRecord>;
-  delete(id: string): Promise<void>;
+  archive(id: string): Promise<void>;
 }

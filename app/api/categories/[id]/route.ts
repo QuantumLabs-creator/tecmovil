@@ -4,7 +4,7 @@ import { NextRequest } from "next/server";
 import { PrismaCategoryRepository } from "@/src/modules/categories/infrastructure/category.repo";
 import { GetCategoryUseCase } from "@/src/modules/categories/application/getCategory.usecase";
 import { UpdateCategoryUseCase } from "@/src/modules/categories/application/updateCategory.usecase";
-import { DeleteCategoryUseCase } from "@/src/modules/categories/application/deleteCategory.usecase";
+import { DeleteCategoryUseCase } from "@/src/modules/categories/application/archiveCategory.usecase";
 import { fail, ok } from "@/src/shared/http/api";
 
 const repo = new PrismaCategoryRepository();

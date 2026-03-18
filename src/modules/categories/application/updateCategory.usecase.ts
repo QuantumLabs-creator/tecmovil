@@ -1,7 +1,13 @@
 // src/modules/categories/application/updateCategory.usecase.ts
 import type { CategoryRepository } from "../domain/category.repository";
-import { assertUpdateCategoryDTO, type UpdateCategoryDTO } from "./dtos/category.dto";
-import { normalizeText, normalizeBoolean } from "../domain/category.rules";
+import {
+  assertUpdateCategoryDTO,
+  type UpdateCategoryDTO,
+} from "./dtos/category.dto";
+import {
+  normalizeText,
+  normalizeCategoryStatus,
+} from "../domain/category.rules";
 
 export class UpdateCategoryUseCase {
   constructor(private readonly repo: CategoryRepository) {}
@@ -25,8 +31,8 @@ export class UpdateCategoryUseCase {
       patch.description = normalizeText(dto.description) ?? null;
     }
 
-    if (dto.active !== undefined) {
-      patch.active = normalizeBoolean(dto.active, true);
+    if (dto.status !== undefined) {
+      patch.status = normalizeCategoryStatus(dto.status);
     }
 
     return this.repo.update(cid, patch);

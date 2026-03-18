@@ -1,13 +1,13 @@
-// src/modules/categories/application/deleteCategory.usecase.ts
+// src/modules/categories/application/archiveCategory.usecase.ts
 import type { CategoryRepository } from "../domain/category.repository";
 
-export class DeleteCategoryUseCase {
+export class ArchiveCategoryUseCase {
   constructor(private readonly repo: CategoryRepository) {}
 
   async execute(id: string) {
     const cid = String(id ?? "").trim();
     if (!cid) throw new Error("id requerido");
 
-    await this.repo.delete(cid);
+    await this.repo.archive(cid);
   }
 }

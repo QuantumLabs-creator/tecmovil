@@ -12,16 +12,20 @@ datasource db {
 // ============================================
 
 model User {
-  id        String    @id @default(cuid())
-  name      String
-  email     String    @unique
-  password  String // Hashed with bcrypt
-  phone     String?
-  role      Role      @default(USER)
-  active    Boolean   @default(true)
+  id       String  @id @default(cuid())
+  name     String
+  email    String  @unique
+  password String // Hashed with bcrypt
+  phone    String?
+  role     Role    @default(USER)
+
+  status     RecordStatus @default(ACTIVE)
+  archivedAt DateTime?
+
   lastLogin DateTime?
   createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+
+  updatedAt DateTime @default(now()) @updatedAt
 
   // Relations
   movements      Movement[]
@@ -33,6 +37,7 @@ model User {
   receipts   Receipt[]
   auditLogs  AuditLog[]
 
+  @@index([status])
   @@map("users")
 }
 
@@ -41,6 +46,12 @@ enum Role {
   USER // Solicitar pedidos, ver historial
   WAREHOUSE // Gestionar inventario, recibir pedidos
   SELLER // Vender, crear pedidos de venta
+}
+
+enum RecordStatus {
+  ACTIVE
+  INACTIVE
+  ARCHIVED
 }
 
 // ============================================
@@ -54,12 +65,16 @@ model Customer {
   phone        String?
   document     String? // DNI/RUC
   customerType CustomerType @default(RETAIL)
-  active       Boolean      @default(true)
-  createdAt    DateTime     @default(now())
-  updatedAt    DateTime     @updatedAt
+
+  status     RecordStatus @default(ACTIVE)
+  archivedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
 
   saleOrders SaleOrder[]
 
+  @@index([status])
   @@map("customers")
 }
 
@@ -73,40 +88,57 @@ enum CustomerType {
 // ============================================
 
 model Category {
-  id          String   @id @default(cuid())
+  id          String  @id @default(cuid())
   name        String
   description String?
-  active      Boolean  @default(true)
-  createdAt   DateTime @default(now())
+
+  status     RecordStatus @default(ACTIVE)
+  archivedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
 
   products Product[]
 
+  @@index([status])
   @@map("categories")
 }
 
 model Supplier {
-  id        String   @id @default(cuid())
-  name      String
-  contact   String?
-  email     String?
-  phone     String?
-  address   String?
-  active    Boolean  @default(true)
+  id      String  @id @default(cuid())
+  name    String
+  contact String?
+  email   String?
+  phone   String?
+  address String?
+
+  status     RecordStatus @default(ACTIVE)
+  archivedAt DateTime?
+
   createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
 
   products Product[]
   orders   Order[] // Purchase orders
 
+  @@index([status])
   @@map("suppliers")
 }
 
 model UnitOfMeasure {
-  id       String    @id @default(cuid())
-  name     String    @unique
-  symbol   String?
-  active   Boolean   @default(true)
+  id     String  @id @default(cuid())
+  name   String  @unique
+  symbol String?
+
+  status     RecordStatus @default(ACTIVE)
+  archivedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
   products Product[]
 
+  @@index([status])
   @@map("units_of_measure")
 }
 
@@ -136,9 +168,11 @@ model Product {
   currentStock  Int @default(0)
   reservedStock Int @default(0) // Stock reservado en pedidos pendientes
 
-  active    Boolean  @default(true)
+  status     RecordStatus @default(ACTIVE)
+  archivedAt DateTime?
+
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  updatedAt DateTime @default(now()) @updatedAt
 
   // Relaciones
   categoryId String
@@ -154,6 +188,7 @@ model Product {
   purchaseOrderDetails OrderDetail[]
   saleOrderDetails     SaleOrderDetail[]
 
+  @@index([status])
   @@index([code]) // 🔲 Índice para búsqueda rápida por código de barras
   @@index([categoryId])
   @@index([supplierId])
@@ -400,8 +435,12 @@ model RoutePermission {
   method String @default("GET") // GET, POST, PUT, DELETE
   roles  Role[] // Roles permitidos
 
-  active    Boolean  @default(true)
-  createdAt DateTime @default(now())
+  status     RecordStatus @default(ACTIVE)
+  archivedAt DateTime?
 
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  @@index([status])
   @@map("route_permissions")
 }
