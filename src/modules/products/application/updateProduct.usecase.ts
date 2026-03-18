@@ -1,17 +1,17 @@
 // src/modules/products/application/updateProduct.usecase.ts
 import type { ProductRepository, ProductRecord } from "../domain/product.repository";
 import { normalizeUpdateProduct } from "../domain/product.rules";
-import type { UpdateProductDTO } from "./dtos/product.dto";
+import { assertUpdateProductDTO, type UpdateProductDTO } from "./dtos/product.dto";
 
 export class UpdateProductUseCase {
   constructor(private readonly repo: ProductRepository) {}
 
-  async execute(id: string, dto: UpdateProductDTO): Promise<ProductRecord> {
+  async execute(id: string, dto: unknown): Promise<ProductRecord> {
     const pid = String(id ?? "").trim();
     if (!pid) throw new Error("id requerido");
 
-    // ✅ normaliza y convierte money/ints/bools
-    const input = normalizeUpdateProduct(dto);
+    assertUpdateProductDTO(dto);
+    const input = normalizeUpdateProduct(dto as UpdateProductDTO);
 
     return this.repo.update(pid, input);
   }

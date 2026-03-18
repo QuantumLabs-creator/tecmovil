@@ -1,6 +1,5 @@
 // src/modules/products/domain/product.repository.ts
-
-import type { Prisma } from "@/src/generated/prisma/client";
+import type { ProductStatus } from "./product-status";
 
 export type ProductRecord = {
   id: string;
@@ -10,19 +9,20 @@ export type ProductRecord = {
   description: string | null;
   image: string | null;
 
-  purchasePrice: Prisma.Decimal;
-  retailPrice: Prisma.Decimal;
-  wholesalePrice: Prisma.Decimal | null;
+  purchasePrice: string;
+  retailPrice: string;
+  wholesalePrice: string | null;
   wholesaleMinQuantity: number;
 
-  minSalePrice: Prisma.Decimal | null;
-  maxSalePrice: Prisma.Decimal | null;
+  minSalePrice: string | null;
+  maxSalePrice: string | null;
 
   minStock: number;
   currentStock: number;
   reservedStock: number;
 
-  active: boolean;
+  status: ProductStatus;
+  archivedAt: Date | null;
   createdAt: Date;
   updatedAt: Date;
 
@@ -42,7 +42,7 @@ export type ProductListResult = {
 
 export type ProductListParams = {
   q?: string;
-  active?: string;
+  status?: ProductStatus;
   categoryId?: string;
   supplierId?: string;
   unitId?: string;
@@ -71,7 +71,7 @@ export type CreateProductInput = {
   currentStock?: unknown;
   reservedStock?: unknown;
 
-  active?: unknown;
+  status?: unknown;
 
   categoryId: string;
   supplierId?: string | null;
@@ -84,7 +84,7 @@ export interface ProductRepository {
   getById(id: string): Promise<ProductRecord | null>;
   getByCode(code: string): Promise<ProductRecord | null>;
   list(params: ProductListParams): Promise<ProductListResult>;
-  create(input: any): Promise<ProductRecord>;
-  update(id: string, input: any): Promise<ProductRecord>;
-  delete(id: string): Promise<void>;
+  create(input: CreateProductInput): Promise<ProductRecord>;
+  update(id: string, input: UpdateProductInput): Promise<ProductRecord>;
+  archive(id: string): Promise<void>;
 }

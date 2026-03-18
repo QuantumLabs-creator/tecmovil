@@ -5,10 +5,13 @@ export class GetProductUseCase {
   constructor(private readonly repo: ProductRepository) {}
 
   async execute(id: string): Promise<ProductRecord> {
-    if (!id?.trim()) throw new Error("id requerido");
+    const pid = String(id ?? "").trim();
+    if (!pid) throw new Error("id requerido");
 
-    const product = await this.repo.getById(id.trim());
-    if (!product) throw new Error("Producto no encontrado");
+    const product = await this.repo.getById(pid);
+    if (!product || product.status === "ARCHIVED") {
+      throw new Error("Producto no encontrado");
+    }
 
     return product;
   }

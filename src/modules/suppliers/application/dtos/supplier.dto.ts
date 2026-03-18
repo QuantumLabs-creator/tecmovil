@@ -1,4 +1,5 @@
 // src/modules/suppliers/application/dtos/supplier.dto.ts
+import { isSupplierStatus, SupplierStatus } from "../../domain/supplier-status";
 
 function toStr(v: unknown) {
   return String(v ?? "").trim();
@@ -11,8 +12,10 @@ export type SupplierDTO = {
   email: string | null;
   phone: string | null;
   address: string | null;
-  active: boolean;
-  createdAt: string; // ISO recomendado para UI
+  status: SupplierStatus;
+  archivedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
 };
 
 export type CreateSupplierDTO = {
@@ -21,24 +24,38 @@ export type CreateSupplierDTO = {
   email?: string | null;
   phone?: string | null;
   address?: string | null;
-  active?: boolean;
+  status?: SupplierStatus;
 };
 
 export type UpdateSupplierDTO = Partial<CreateSupplierDTO>;
 
 export type SupplierQueryDTO = {
   q?: string;
-  active?: string; // "true" | "false"
+  status?: SupplierStatus;
   page?: number;
   pageSize?: number;
 };
 
 export function assertCreateSupplierDTO(input: unknown): asserts input is CreateSupplierDTO {
   if (!input || typeof input !== "object") throw new Error("Body inválido");
-  const x = input as any;
+  const x = input as Record<string, unknown>;
+
   if (!toStr(x.name)) throw new Error("name requerido");
+
+  if (x.status !== undefined && !isSupplierStatus(x.status)) {
+    throw new Error("status inválido");
+  }
 }
 
 export function assertUpdateSupplierDTO(input: unknown): asserts input is UpdateSupplierDTO {
   if (!input || typeof input !== "object") throw new Error("Body inválido");
+  const x = input as Record<string, unknown>;
+
+  if (x.name !== undefined && !toStr(x.name)) {
+    throw new Error("name inválido");
+  }
+
+  if (x.status !== undefined && !isSupplierStatus(x.status)) {
+    throw new Error("status inválido");
+  }
 }

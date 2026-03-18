@@ -9,7 +9,9 @@ export class GetSupplierUseCase {
     if (!sid) throw new Error("id requerido");
 
     const row = await this.repo.getById(sid);
-    if (!row) throw new Error("Proveedor no encontrado");
+    if (!row || row.status === "ARCHIVED") {
+      throw new Error("Proveedor no encontrado");
+    }
 
     return row;
   }

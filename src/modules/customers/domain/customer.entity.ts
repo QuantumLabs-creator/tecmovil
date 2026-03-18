@@ -1,6 +1,7 @@
 // src/modules/customers/domain/customer.entity.ts
 
-import type { CustomerType } from "@/src/generated/prisma/client";
+import type { CustomerStatus, CustomerType } from "./customer-status";
+import { isCustomerStatus, isCustomerType } from "./customer-status";
 
 export class CustomerEntity {
   static create(input: {
@@ -8,11 +9,29 @@ export class CustomerEntity {
     email: string | null;
     phone: string | null;
     document: string | null;
-
-    customerType: CustomerType;
-    active: boolean;
+    customerType?: CustomerType;
+    status?: CustomerStatus;
   }) {
-    if (!String(input.name ?? "").trim()) throw new Error("name requerido");
-    return { ...input };
+    const name = String(input.name ?? "").trim();
+    if (!name) throw new Error("name requerido");
+
+    const customerType = input.customerType ?? "RETAIL";
+    if (!isCustomerType(customerType)) {
+      throw new Error("customerType inválido");
+    }
+
+    const status = input.status ?? "ACTIVE";
+    if (!isCustomerStatus(status)) {
+      throw new Error("status inválido");
+    }
+
+    return {
+      name,
+      email: input.email ?? null,
+      phone: input.phone ?? null,
+      document: input.document ?? null,
+      customerType,
+      status,
+    };
   }
 }

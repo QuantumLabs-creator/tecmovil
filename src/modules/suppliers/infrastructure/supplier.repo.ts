@@ -13,9 +13,10 @@ import type {
 
 import {
   normalizeText,
-  normalizeBoolean,
   normalizeEmail,
+  normalizeSupplierStatus,
 } from "../domain/supplier.rules";
+import { isSupplierStatus, type SupplierStatus } from "../domain/supplier-status";
 
 /** ===================== Helpers ===================== */
 
@@ -27,30 +28,40 @@ function mapSupplier(s: Prisma.SupplierGetPayload<{}>): SupplierRecord {
     email: s.email ?? null,
     phone: s.phone ?? null,
     address: s.address ?? null,
-    active: s.active,
+    status: s.status as SupplierStatus,
+    archivedAt: s.archivedAt ?? null,
     createdAt: s.createdAt,
+    updatedAt: s.updatedAt,
   };
 }
 
-function parseActiveFilter(v?: string): boolean | undefined {
+function parseStatusFilter(v?: string): SupplierStatus | undefined {
   if (!v || !String(v).trim()) return undefined;
-  return String(v).toLowerCase() === "true";
+
+  const s = String(v).trim().toUpperCase();
+  if (!isSupplierStatus(s)) throw new Error("status inválido");
+  if (s === "ARCHIVED") throw new Error("No se permite buscar proveedores archivados");
+
+  return s;
 }
 
 /** ===================== Repository ===================== */
 
 export class PrismaSupplierRepository implements SupplierRepository {
-  async getById(id: string) {
+  async getById(id: string): Promise<SupplierRecord | null> {
     const s = await prisma.supplier.findUnique({ where: { id } });
     return s ? mapSupplier(s) : null;
   }
 
-  async getByName(name: string) {
+  async getByName(name: string): Promise<SupplierRecord | null> {
     const n = String(name ?? "").trim();
     if (!n) return null;
 
     const s = await prisma.supplier.findFirst({
-      where: { name: { equals: n, mode: "insensitive" } },
+      where: {
+        name: { equals: n, mode: "insensitive" },
+        status: { in: ["ACTIVE", "INACTIVE"] },
+      },
     });
 
     return s ? mapSupplier(s) : null;
@@ -63,10 +74,14 @@ export class PrismaSupplierRepository implements SupplierRepository {
 
     const where: Prisma.SupplierWhereInput = {};
 
-    const active = parseActiveFilter(params.active);
-    if (active !== undefined) where.active = active;
+    const status = parseStatusFilter(params.status as string | undefined);
+    if (status) {
+      where.status = status;
+    } else {
+      where.status = { in: ["ACTIVE", "INACTIVE"] };
+    }
 
-    const q = (params.q ?? "").trim();
+    const q = String(params.q ?? "").trim();
     if (q) {
       where.OR = [
         { name: { contains: q, mode: "insensitive" } },
@@ -98,25 +113,29 @@ export class PrismaSupplierRepository implements SupplierRepository {
     };
   }
 
-  async create(input: CreateSupplierInput) {
+  async create(input: CreateSupplierInput): Promise<SupplierRecord> {
     const name = normalizeText(input.name);
     if (!name) throw new Error("name requerido");
+
+    const email = normalizeEmail(input.email);
+    const status = normalizeSupplierStatus(input.status, "ACTIVE");
 
     const created = await prisma.supplier.create({
       data: {
         name,
         contact: normalizeText(input.contact) ?? null,
-        email: normalizeEmail(input.email),
+        email,
         phone: normalizeText(input.phone) ?? null,
         address: normalizeText(input.address) ?? null,
-        active: normalizeBoolean(input.active, true),
+        status,
+        archivedAt: status === "ARCHIVED" ? new Date() : null,
       },
     });
 
     return mapSupplier(created);
   }
 
-  async update(id: string, input: UpdateSupplierInput) {
+  async update(id: string, input: UpdateSupplierInput): Promise<SupplierRecord> {
     return prisma.$transaction(async (tx) => {
       const existing = await tx.supplier.findUnique({ where: { id } });
       if (!existing) throw new Error("Proveedor no encontrado");
@@ -145,8 +164,10 @@ export class PrismaSupplierRepository implements SupplierRepository {
         data.address = normalizeText(input.address) ?? null;
       }
 
-      if (input.active !== undefined) {
-        data.active = normalizeBoolean(input.active, true);
+      if (input.status !== undefined) {
+        const status = normalizeSupplierStatus(input.status);
+        data.status = status;
+        data.archivedAt = status === "ARCHIVED" ? new Date() : null;
       }
 
       const updated = await tx.supplier.update({ where: { id }, data });
@@ -154,10 +175,18 @@ export class PrismaSupplierRepository implements SupplierRepository {
     });
   }
 
-  async delete(id: string) {
+  async archive(id: string): Promise<void> {
+    const s = await prisma.supplier.findUnique({ where: { id } });
+    if (!s) return;
+
+    if (s.status === "ARCHIVED") return;
+
     await prisma.supplier.update({
       where: { id },
-      data: { active: false }, // soft delete
+      data: {
+        status: "ARCHIVED",
+        archivedAt: new Date(),
+      },
     });
   }
 }

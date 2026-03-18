@@ -1,6 +1,5 @@
 // src/modules/products/domain/product.entity.ts
-
-import type { Prisma } from "@/src/generated/prisma/client";
+import { isProductStatus, ProductStatus } from "./product-status";
 
 export class ProductEntity {
   static create(input: {
@@ -10,20 +9,20 @@ export class ProductEntity {
     description: string | null;
     image: string | null;
 
-    purchasePrice: Prisma.Decimal;
-    retailPrice: Prisma.Decimal;
+    purchasePrice: string;
+    retailPrice: string;
 
-    wholesalePrice: Prisma.Decimal | null;
+    wholesalePrice: string | null;
     wholesaleMinQuantity: number;
 
-    minSalePrice: Prisma.Decimal | null;
-    maxSalePrice: Prisma.Decimal | null;
+    minSalePrice: string | null;
+    maxSalePrice: string | null;
 
     minStock: number;
     currentStock: number;
     reservedStock: number;
 
-    active: boolean;
+    status?: ProductStatus;
 
     categoryId: string;
     supplierId: string | null;
@@ -33,6 +32,12 @@ export class ProductEntity {
     if (!String(input.categoryId ?? "").trim()) throw new Error("categoryId requerido");
     if (!String(input.unitId ?? "").trim()) throw new Error("unitId requerido");
 
-    return { ...input };
+    const status = input.status ?? "ACTIVE";
+    if (!isProductStatus(status)) throw new Error("status inválido");
+
+    return {
+      ...input,
+      status,
+    };
   }
 }

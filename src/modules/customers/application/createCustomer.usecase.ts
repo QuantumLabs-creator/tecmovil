@@ -20,7 +20,7 @@ export class CreateCustomerUseCase {
       phone: normalized.phone,
       document: normalized.document,
       customerType: normalized.customerType,
-      active: normalized.active,
+      status: normalized.status,
     });
 
     return this.repo.create(entity);

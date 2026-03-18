@@ -5,7 +5,9 @@ export class DeleteProductUseCase {
   constructor(private readonly repo: ProductRepository) {}
 
   async execute(id: string) {
-    if (!id?.trim()) throw new Error("id requerido");
-    await this.repo.delete(id.trim());
+    const pid = String(id ?? "").trim();
+    if (!pid) throw new Error("id requerido");
+
+    await this.repo.archive(pid);
   }
 }

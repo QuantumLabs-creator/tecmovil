@@ -8,6 +8,6 @@ export class DeleteSupplierUseCase {
     const sid = String(id ?? "").trim();
     if (!sid) throw new Error("id requerido");
 
-    await this.repo.delete(sid);
+    await this.repo.archive(sid);
   }
 }

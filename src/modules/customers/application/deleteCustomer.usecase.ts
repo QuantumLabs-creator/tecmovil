@@ -8,6 +8,7 @@ export class DeleteCustomerUseCase {
   async execute(id: string) {
     const cid = String(id ?? "").trim();
     if (!cid) throw new Error("id requerido");
-    await this.repo.delete(cid);
+
+    await this.repo.archive(cid);
   }
 }

@@ -1,4 +1,5 @@
 // src/modules/suppliers/domain/supplier.repository.ts
+import type { SupplierStatus } from "./supplier-status";
 
 export type SupplierRecord = {
   id: string;
@@ -7,8 +8,10 @@ export type SupplierRecord = {
   email: string | null;
   phone: string | null;
   address: string | null;
-  active: boolean;
+  status: SupplierStatus;
+  archivedAt: Date | null;
   createdAt: Date;
+  updatedAt: Date;
 };
 
 export type SupplierListResult = {
@@ -18,7 +21,7 @@ export type SupplierListResult = {
 
 export type SupplierListParams = {
   q?: string;
-  active?: string; // "true" | "false"
+  status?: SupplierStatus;
   page: number;
   pageSize: number;
 };
@@ -29,7 +32,7 @@ export type CreateSupplierInput = {
   email?: unknown;
   phone?: unknown;
   address?: unknown;
-  active?: unknown;
+  status?: unknown;
 };
 
 export type UpdateSupplierInput = Partial<CreateSupplierInput>;
@@ -40,5 +43,5 @@ export interface SupplierRepository {
   list(params: SupplierListParams): Promise<SupplierListResult>;
   create(input: CreateSupplierInput): Promise<SupplierRecord>;
   update(id: string, input: UpdateSupplierInput): Promise<SupplierRecord>;
-  delete(id: string): Promise<void>;
+  archive(id: string): Promise<void>;
 }

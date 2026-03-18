@@ -10,7 +10,10 @@ export class GetCustomerUseCase {
     if (!cid) throw new Error("id requerido");
 
     const c = await this.repo.getById(cid);
-    if (!c) throw new Error("Cliente no encontrado");
+
+    if (!c || c.status === "ARCHIVED") {
+      throw new Error("Cliente no encontrado");
+    }
 
     return c;
   }

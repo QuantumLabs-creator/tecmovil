@@ -1,7 +1,11 @@
 // src/modules/suppliers/application/createSupplier.usecase.ts
 import type { SupplierRepository } from "../domain/supplier.repository";
 import { SupplierEntity } from "../domain/supplier.entity";
-import { normalizeText, normalizeBoolean, normalizeEmail } from "../domain/supplier.rules";
+import {
+  normalizeText,
+  normalizeEmail,
+  normalizeSupplierStatus,
+} from "../domain/supplier.rules";
 import { assertCreateSupplierDTO, type CreateSupplierDTO } from "./dtos/supplier.dto";
 
 export class CreateSupplierUseCase {
@@ -20,7 +24,7 @@ export class CreateSupplierUseCase {
       email: normalizeEmail(dto.email),
       phone: normalizeText(dto.phone) ?? null,
       address: normalizeText(dto.address) ?? null,
-      active: normalizeBoolean(dto.active, true),
+      status: normalizeSupplierStatus(dto.status, "ACTIVE"),
     });
 
     return this.repo.create(entity);

@@ -1,6 +1,10 @@
 // src/modules/suppliers/application/updateSupplier.usecase.ts
 import type { SupplierRepository } from "../domain/supplier.repository";
-import { normalizeText, normalizeBoolean, normalizeEmail } from "../domain/supplier.rules";
+import {
+  normalizeText,
+  normalizeEmail,
+  normalizeSupplierStatus,
+} from "../domain/supplier.rules";
 import { assertUpdateSupplierDTO, type UpdateSupplierDTO } from "./dtos/supplier.dto";
 
 export class UpdateSupplierUseCase {
@@ -37,8 +41,8 @@ export class UpdateSupplierUseCase {
       patch.address = normalizeText(dto.address) ?? null;
     }
 
-    if (dto.active !== undefined) {
-      patch.active = normalizeBoolean(dto.active, true);
+    if (dto.status !== undefined) {
+      patch.status = normalizeSupplierStatus(dto.status);
     }
 
     return this.repo.update(sid, patch);

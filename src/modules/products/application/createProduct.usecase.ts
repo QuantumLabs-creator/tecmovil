@@ -30,7 +30,7 @@ export class CreateProductUseCase {
       currentStock: normalized.currentStock,
       reservedStock: normalized.reservedStock,
 
-      active: normalized.active,
+      status: normalized.status,
 
       categoryId: normalized.categoryId,
       supplierId: normalized.supplierId,

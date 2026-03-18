@@ -1,16 +1,17 @@
 // src/modules/products/application/searchProducts.usecase.ts
 import type { ProductRepository, ProductListResult } from "../domain/product.repository";
+import { isProductStatus } from "../domain/product-status";
 
 export class SearchProductsUseCase {
   constructor(private readonly repo: ProductRepository) {}
 
   async execute(params: {
     q?: string;
-    active?: string;      // true|false
+    status?: string;
     categoryId?: string;
     supplierId?: string;
     unitId?: string;
-    lowStock?: boolean;    // true|false
+    lowStock?: boolean | string;
     page: number;
     pageSize: number;
   }): Promise<ProductListResult> {
@@ -22,9 +23,22 @@ export class SearchProductsUseCase {
         ? undefined
         : String(params.lowStock).toLowerCase() === "true";
 
+    const rawStatus = String(params.status ?? "").trim().toUpperCase();
+    let status: "ACTIVE" | "INACTIVE" | undefined;
+
+    if (rawStatus) {
+      if (!isProductStatus(rawStatus)) {
+        throw new Error("status inválido");
+      }
+      if (rawStatus === "ARCHIVED") {
+        throw new Error("No se permite buscar productos archivados");
+      }
+      status = rawStatus;
+    }
+
     return this.repo.list({
       q: params.q?.trim() || undefined,
-      active: params.active?.trim() || undefined,
+      status,
       categoryId: params.categoryId?.trim() || undefined,
       supplierId: params.supplierId?.trim() || undefined,
       unitId: params.unitId?.trim() || undefined,

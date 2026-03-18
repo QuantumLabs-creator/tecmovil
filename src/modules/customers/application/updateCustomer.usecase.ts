@@ -2,7 +2,7 @@
 
 import type { CustomerRepository, CustomerRecord } from "../domain/customer.repository";
 import { normalizeUpdateCustomer } from "../domain/customer.rules";
-import { assertUpdateCustomerDTO, type UpdateCustomerDTO } from "./dtos/customer.dto";
+import { assertUpdateCustomerDTO } from "./dtos/customer.dto";
 
 export class UpdateCustomerUseCase {
   constructor(private readonly repo: CustomerRepository) {}

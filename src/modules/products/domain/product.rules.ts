@@ -1,6 +1,5 @@
 // src/modules/products/domain/product.rules.ts
-
-import { Prisma } from "@/src/generated/prisma/client";
+import { isProductStatus, ProductStatus } from "./product-status";
 
 function toStr(v: unknown) {
   return String(v ?? "").trim();
@@ -12,14 +11,6 @@ export function normalizeText(v: unknown): string | null {
   return s.length ? s : null;
 }
 
-export function normalizeBoolean(v: unknown, defaultValue = true): boolean {
-  if (v === undefined || v === null || toStr(v) === "") return defaultValue;
-  const s = toStr(v).toLowerCase();
-  if (s === "true" || s === "1" || s === "yes" || s === "si") return true;
-  if (s === "false" || s === "0" || s === "no") return false;
-  return defaultValue;
-}
-
 export function normalizeInt(v: unknown, defaultValue = 0): number {
   if (v === undefined || v === null || toStr(v) === "") return defaultValue;
   const n = Number(v);
@@ -27,23 +18,60 @@ export function normalizeInt(v: unknown, defaultValue = 0): number {
   return Math.trunc(n);
 }
 
-export function normalizeMoney(v: unknown, fieldName: string): Prisma.Decimal {
+export function normalizeProductStatus(
+  v: unknown,
+  defaultValue: ProductStatus = "ACTIVE"
+): ProductStatus {
+  const s = toStr(v).toUpperCase();
+  if (!s) return defaultValue;
+  if (isProductStatus(s)) return s;
+  throw new Error("status inválido");
+}
+
+export function normalizeMoney(v: unknown, fieldName: string): string {
   const s = toStr(v);
   if (!s) throw new Error(`${fieldName} requerido`);
 
   const cleaned = s.replace(",", ".");
   const n = Number(cleaned);
+
   if (!Number.isFinite(n)) throw new Error(`${fieldName} inválido`);
   if (n < 0) throw new Error(`${fieldName} no puede ser negativo`);
 
-  return new (Prisma.Decimal as any)(cleaned) as Prisma.Decimal;
+  return cleaned;
 }
 
 function isBlank(v: unknown) {
   return v === undefined || v === null || toStr(v) === "";
 }
 
-export function normalizeCreateProduct(input: any) {
+type CreateProductLike = {
+  code?: unknown;
+  name: unknown;
+  description?: unknown;
+  image?: unknown;
+
+  purchasePrice: unknown;
+  retailPrice: unknown;
+
+  wholesalePrice?: unknown;
+  wholesaleMinQuantity?: unknown;
+
+  minSalePrice?: unknown;
+  maxSalePrice?: unknown;
+
+  minStock?: unknown;
+  currentStock?: unknown;
+  reservedStock?: unknown;
+
+  status?: unknown;
+
+  categoryId: unknown;
+  supplierId?: unknown;
+  unitId: unknown;
+};
+
+export function normalizeCreateProduct(input: CreateProductLike) {
   const name = toStr(input.name);
   if (!name) throw new Error("name requerido");
 
@@ -65,23 +93,21 @@ export function normalizeCreateProduct(input: any) {
   const minSalePrice = isBlank(input.minSalePrice) ? null : normalizeMoney(input.minSalePrice, "minSalePrice");
   const maxSalePrice = isBlank(input.maxSalePrice) ? null : normalizeMoney(input.maxSalePrice, "maxSalePrice");
 
-  // reglas de rango (sobre retailPrice como referencia)
-  if (minSalePrice && minSalePrice.greaterThan(retailPrice)) {
+  if (minSalePrice && Number(minSalePrice) > Number(retailPrice)) {
     throw new Error("minSalePrice no puede ser mayor que retailPrice");
   }
-  if (maxSalePrice && maxSalePrice.lessThan(retailPrice)) {
+  if (maxSalePrice && Number(maxSalePrice) < Number(retailPrice)) {
     throw new Error("maxSalePrice no puede ser menor que retailPrice");
   }
-  if (minSalePrice && maxSalePrice && minSalePrice.greaterThan(maxSalePrice)) {
+  if (minSalePrice && maxSalePrice && Number(minSalePrice) > Number(maxSalePrice)) {
     throw new Error("minSalePrice no puede ser mayor que maxSalePrice");
   }
 
-  // si hay wholesalePrice, también valida contra límites si existen
   if (wholesalePrice) {
-    if (minSalePrice && minSalePrice.greaterThan(wholesalePrice)) {
+    if (minSalePrice && Number(minSalePrice) > Number(wholesalePrice)) {
       throw new Error("minSalePrice no puede ser mayor que wholesalePrice");
     }
-    if (maxSalePrice && maxSalePrice.lessThan(wholesalePrice)) {
+    if (maxSalePrice && Number(maxSalePrice) < Number(wholesalePrice)) {
       throw new Error("maxSalePrice no puede ser menor que wholesalePrice");
     }
   }
@@ -89,18 +115,19 @@ export function normalizeCreateProduct(input: any) {
   const minStock = Math.max(0, normalizeInt(input.minStock, 0));
   const currentStock = Math.max(0, normalizeInt(input.currentStock, 0));
   const reservedStock = Math.max(0, normalizeInt(input.reservedStock, 0));
-  if (reservedStock > currentStock) throw new Error("reservedStock no puede ser mayor que currentStock");
+  if (reservedStock > currentStock) {
+    throw new Error("reservedStock no puede ser mayor que currentStock");
+  }
 
-  const active = normalizeBoolean(input.active, true);
+  const status = normalizeProductStatus(input.status, "ACTIVE");
 
   const supplierId = normalizeText(input.supplierId) ?? null;
   const description = normalizeText(input.description);
   const image = normalizeText(input.image);
-
-  const code = normalizeText(input.code); // opcional, si lo mandas debe venir limpio
+  const code = normalizeText(input.code);
 
   return {
-    code, // string | null
+    code,
     name,
     description,
     image,
@@ -113,17 +140,22 @@ export function normalizeCreateProduct(input: any) {
     minStock,
     currentStock,
     reservedStock,
-    active,
+    status,
     categoryId,
     supplierId,
     unitId,
   };
 }
 
-export function normalizeUpdateProduct(dto: any) {
-  const out: any = {};
+export function normalizeUpdateProduct(dto: Record<string, unknown>) {
+  const out: Record<string, unknown> = {};
 
-  if (dto.name !== undefined) out.name = toStr(dto.name);
+  if (dto.name !== undefined) {
+    const v = toStr(dto.name);
+    if (!v) throw new Error("name inválido");
+    out.name = v;
+  }
+
   if (dto.description !== undefined) out.description = normalizeText(dto.description);
   if (dto.image !== undefined) out.image = normalizeText(dto.image);
 
@@ -148,17 +180,17 @@ export function normalizeUpdateProduct(dto: any) {
   if (dto.currentStock !== undefined) out.currentStock = Math.max(0, normalizeInt(dto.currentStock, 0));
   if (dto.reservedStock !== undefined) out.reservedStock = Math.max(0, normalizeInt(dto.reservedStock, 0));
 
-  if (dto.active !== undefined) out.active = normalizeBoolean(dto.active, true);
+  if (dto.status !== undefined) out.status = normalizeProductStatus(dto.status);
 
   if (dto.categoryId !== undefined) out.categoryId = toStr(dto.categoryId);
   if (dto.unitId !== undefined) out.unitId = toStr(dto.unitId);
   if (dto.supplierId !== undefined) out.supplierId = normalizeText(dto.supplierId) ?? null;
-
   if (dto.code !== undefined) out.code = toStr(dto.code);
 
-  // regla final si ambos vienen
   if (out.currentStock !== undefined && out.reservedStock !== undefined) {
-    if (out.reservedStock > out.currentStock) throw new Error("reservedStock no puede ser mayor que currentStock");
+    if (Number(out.reservedStock) > Number(out.currentStock)) {
+      throw new Error("reservedStock no puede ser mayor que currentStock");
+    }
   }
 
   return out;

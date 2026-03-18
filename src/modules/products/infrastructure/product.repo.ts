@@ -1,6 +1,7 @@
 // src/modules/products/infrastructure/product.repo.ts
 import { prisma } from "@/src/shared/db/prisma";
-import type { Prisma } from "@/src/generated/prisma/client";
+import { Prisma } from "@/src/generated/prisma/client";
+import type { Prisma as PrismaTypes } from "@/src/generated/prisma/client";
 
 import type {
   ProductRepository,
@@ -13,14 +14,15 @@ import type {
 
 import {
   normalizeText,
-  normalizeBoolean,
   normalizeInt,
   normalizeMoney,
+  normalizeProductStatus,
 } from "../domain/product.rules";
+import { isProductStatus, type ProductStatus } from "../domain/product-status";
 
 /** ===================== Helpers ===================== */
 
-async function generateProductCode(tx: Prisma.TransactionClient) {
+async function generateProductCode(tx: PrismaTypes.TransactionClient) {
   const last = await tx.product.findFirst({
     orderBy: { createdAt: "desc" },
     select: { code: true },
@@ -35,9 +37,14 @@ async function generateProductCode(tx: Prisma.TransactionClient) {
   return `PROD-${String(next).padStart(4, "0")}`;
 }
 
+function toDecimal(value: string | null): Prisma.Decimal | null {
+  if (value === null) return null;
+  return new Prisma.Decimal(value);
+}
+
 function mapProduct(
-  p: Prisma.ProductGetPayload<{ include: { category: true; supplier: true; unit: true } }>
-) {
+  p: PrismaTypes.ProductGetPayload<{ include: { category: true; supplier: true; unit: true } }>
+): ProductRecord {
   return {
     id: p.id,
     code: p.code,
@@ -45,19 +52,20 @@ function mapProduct(
     description: p.description ?? null,
     image: p.image ?? null,
 
-    purchasePrice: p.purchasePrice,
-    retailPrice: p.retailPrice,
-    wholesalePrice: p.wholesalePrice ?? null,
+    purchasePrice: p.purchasePrice.toString(),
+    retailPrice: p.retailPrice.toString(),
+    wholesalePrice: p.wholesalePrice?.toString() ?? null,
     wholesaleMinQuantity: p.wholesaleMinQuantity,
 
-    minSalePrice: p.minSalePrice ?? null,
-    maxSalePrice: p.maxSalePrice ?? null,
+    minSalePrice: p.minSalePrice?.toString() ?? null,
+    maxSalePrice: p.maxSalePrice?.toString() ?? null,
 
     minStock: p.minStock,
     currentStock: p.currentStock,
     reservedStock: p.reservedStock,
 
-    active: p.active,
+    status: p.status as ProductStatus,
+    archivedAt: p.archivedAt ?? null,
     createdAt: p.createdAt,
     updatedAt: p.updatedAt,
 
@@ -76,9 +84,14 @@ function safeStr(v?: string | null) {
   return s.length ? s : undefined;
 }
 
-function parseActiveFilter(v?: string): boolean | undefined {
+function parseStatusFilter(v?: string): ProductStatus | undefined {
   if (v === undefined || v === null || String(v).trim() === "") return undefined;
-  return normalizeBoolean(v, true);
+
+  const s = String(v).trim().toUpperCase();
+  if (!isProductStatus(s)) throw new Error("status inválido");
+  if (s === "ARCHIVED") throw new Error("No se permite buscar productos archivados");
+
+  return s;
 }
 
 function isBlank(v: unknown) {
@@ -109,15 +122,19 @@ export class PrismaProductRepository implements ProductRepository {
   }
 
   async list(params: ProductListParams): Promise<ProductListResult> {
-    const q = (params.q ?? "").trim();
+    const q = String(params.q ?? "").trim();
     const page = Math.max(1, Number(params.page ?? 1));
     const pageSize = Math.min(500, Math.max(5, Number(params.pageSize ?? 10)));
     const skip = (page - 1) * pageSize;
 
-    const where: Prisma.ProductWhereInput = {};
+    const where: PrismaTypes.ProductWhereInput = {};
 
-    const active = parseActiveFilter(params.active);
-    if (active !== undefined) where.active = active;
+    const status = parseStatusFilter(params.status as string | undefined);
+    if (status) {
+      where.status = status;
+    } else {
+      where.status = { in: ["ACTIVE", "INACTIVE"] };
+    }
 
     const categoryId = safeStr(params.categoryId);
     if (categoryId) where.categoryId = categoryId;
@@ -167,219 +184,260 @@ export class PrismaProductRepository implements ProductRepository {
   }
 
   async create(input: CreateProductInput): Promise<ProductRecord> {
-  return prisma.$transaction(async (tx) => {
-    const code = input.code?.trim() || (await generateProductCode(tx));
+    return prisma.$transaction(async (tx) => {
+      const code = String(input.code ?? "").trim() || (await generateProductCode(tx));
 
-    const name = normalizeText(input.name);
-    if (!name) throw new Error("name requerido");
+      const name = normalizeText(input.name);
+      if (!name) throw new Error("name requerido");
 
-    const categoryId = String(input.categoryId ?? "").trim();
-    const unitId = String(input.unitId ?? "").trim();
-    if (!categoryId) throw new Error("categoryId requerido");
-    if (!unitId) throw new Error("unitId requerido");
+      const categoryId = String(input.categoryId ?? "").trim();
+      const unitId = String(input.unitId ?? "").trim();
+      if (!categoryId) throw new Error("categoryId requerido");
+      if (!unitId) throw new Error("unitId requerido");
 
-    const purchasePrice = normalizeMoney(input.purchasePrice, "purchasePrice");
-    const retailPrice = normalizeMoney(input.retailPrice, "retailPrice");
+      const purchasePrice = normalizeMoney(input.purchasePrice, "purchasePrice");
+      const retailPrice = normalizeMoney(input.retailPrice, "retailPrice");
 
-    const wholesalePrice = isBlank(input.wholesalePrice)
-      ? null
-      : normalizeMoney(input.wholesalePrice, "wholesalePrice");
+      const wholesalePrice = isBlank(input.wholesalePrice)
+        ? null
+        : normalizeMoney(input.wholesalePrice, "wholesalePrice");
 
-    const wholesaleMinQuantity =
-      input.wholesaleMinQuantity === undefined
-        ? 10
-        : Math.max(1, normalizeInt(input.wholesaleMinQuantity, 10));
+      const wholesaleMinQuantity =
+        input.wholesaleMinQuantity === undefined
+          ? 10
+          : Math.max(1, normalizeInt(input.wholesaleMinQuantity, 10));
 
-    const minSalePrice = isBlank(input.minSalePrice)
-      ? null
-      : normalizeMoney(input.minSalePrice, "minSalePrice");
+      const minSalePrice = isBlank(input.minSalePrice)
+        ? null
+        : normalizeMoney(input.minSalePrice, "minSalePrice");
 
-    const maxSalePrice = isBlank(input.maxSalePrice)
-      ? null
-      : normalizeMoney(input.maxSalePrice, "maxSalePrice");
+      const maxSalePrice = isBlank(input.maxSalePrice)
+        ? null
+        : normalizeMoney(input.maxSalePrice, "maxSalePrice");
 
-    // ✅ reglas: min/max contra retail y wholesale si existe
-    if (minSalePrice && minSalePrice.greaterThan(retailPrice)) {
-      throw new Error("minSalePrice no puede ser mayor que retailPrice");
-    }
-    if (maxSalePrice && maxSalePrice.lessThan(retailPrice)) {
-      throw new Error("maxSalePrice no puede ser menor que retailPrice");
-    }
-    if (minSalePrice && maxSalePrice && minSalePrice.greaterThan(maxSalePrice)) {
-      throw new Error("minSalePrice no puede ser mayor que maxSalePrice");
-    }
-
-    if (wholesalePrice) {
-      if (minSalePrice && minSalePrice.greaterThan(wholesalePrice)) {
-        throw new Error("minSalePrice no puede ser mayor que wholesalePrice");
+      if (minSalePrice && Number(minSalePrice) > Number(retailPrice)) {
+        throw new Error("minSalePrice no puede ser mayor que retailPrice");
       }
-      if (maxSalePrice && maxSalePrice.lessThan(wholesalePrice)) {
-        throw new Error("maxSalePrice no puede ser menor que wholesalePrice");
+      if (maxSalePrice && Number(maxSalePrice) < Number(retailPrice)) {
+        throw new Error("maxSalePrice no puede ser menor que retailPrice");
       }
-    }
+      if (minSalePrice && maxSalePrice && Number(minSalePrice) > Number(maxSalePrice)) {
+        throw new Error("minSalePrice no puede ser mayor que maxSalePrice");
+      }
 
-    const minStock = Math.max(0, normalizeInt(input.minStock, 0));
-    const currentStock = Math.max(0, normalizeInt(input.currentStock, 0));
-    const reservedStock = Math.max(0, normalizeInt(input.reservedStock, 0));
+      if (wholesalePrice) {
+        if (minSalePrice && Number(minSalePrice) > Number(wholesalePrice)) {
+          throw new Error("minSalePrice no puede ser mayor que wholesalePrice");
+        }
+        if (maxSalePrice && Number(maxSalePrice) < Number(wholesalePrice)) {
+          throw new Error("maxSalePrice no puede ser menor que wholesalePrice");
+        }
+      }
 
-    // ✅ regla stock
-    if (reservedStock > currentStock) {
-      throw new Error("reservedStock no puede ser mayor que currentStock");
-    }
+      const minStock = Math.max(0, normalizeInt(input.minStock, 0));
+      const currentStock = Math.max(0, normalizeInt(input.currentStock, 0));
+      const reservedStock = Math.max(0, normalizeInt(input.reservedStock, 0));
 
-    const created = await tx.product.create({
-      data: {
-        code,
-        name,
-        description: normalizeText(input.description) ?? null,
-        image: normalizeText(input.image) ?? null,
+      if (reservedStock > currentStock) {
+        throw new Error("reservedStock no puede ser mayor que currentStock");
+      }
 
-        purchasePrice,
-        retailPrice,
-        wholesalePrice,
-        wholesaleMinQuantity,
+      const status = normalizeProductStatus(input.status, "ACTIVE");
 
-        minSalePrice,
-        maxSalePrice,
+      const created = await tx.product.create({
+        data: {
+          code,
+          name,
+          description: normalizeText(input.description) ?? null,
+          image: normalizeText(input.image) ?? null,
 
-        minStock,
-        currentStock,
-        reservedStock,
+          purchasePrice: new Prisma.Decimal(purchasePrice),
+          retailPrice: new Prisma.Decimal(retailPrice),
+          wholesalePrice: toDecimal(wholesalePrice),
+          wholesaleMinQuantity,
 
-        active: normalizeBoolean(input.active, true),
+          minSalePrice: toDecimal(minSalePrice),
+          maxSalePrice: toDecimal(maxSalePrice),
 
-        categoryId,
-        unitId,
-        supplierId: normalizeText(input.supplierId) ?? null,
-      },
-      include: { category: true, supplier: true, unit: true },
+          minStock,
+          currentStock,
+          reservedStock,
+
+          status,
+          archivedAt: status === "ARCHIVED" ? new Date() : null,
+
+          categoryId,
+          unitId,
+          supplierId: normalizeText(input.supplierId) ?? null,
+        },
+        include: { category: true, supplier: true, unit: true },
+      });
+
+      return mapProduct(created);
     });
+  }
 
-    return mapProduct(created);
-  });
-}
+  async update(id: string, input: UpdateProductInput): Promise<ProductRecord> {
+    return prisma.$transaction(async (tx) => {
+      const existing = await tx.product.findUnique({
+        where: { id },
+        include: { category: true, supplier: true, unit: true },
+      });
+      if (!existing) throw new Error("Producto no encontrado");
 
-  async update(id: string, input: any): Promise<ProductRecord> {
-  return prisma.$transaction(async (tx) => {
-    const existing = await tx.product.findUnique({
-      where: { id },
-      include: { category: true, supplier: true, unit: true },
-    });
-    if (!existing) throw new Error("Producto no encontrado");
+      const data: PrismaTypes.ProductUpdateInput = {};
 
-    const data: Prisma.ProductUpdateInput = {};
-
-    // ===== Textos
-    if (input.name !== undefined) {
-      const v = String(input.name ?? "").trim();
-      if (!v) throw new Error("name inválido");
-      data.name = v;
-    }
-    if (input.description !== undefined) data.description = input.description ?? null;
-    if (input.image !== undefined) data.image = input.image ?? null;
-
-    // ===== Stocks (rule: reserved <= current)
-    const nextCurrent =
-      input.currentStock !== undefined ? Number(input.currentStock) : existing.currentStock;
-
-    const nextReserved =
-      input.reservedStock !== undefined ? Number(input.reservedStock) : existing.reservedStock;
-
-    if (nextReserved > nextCurrent) {
-      throw new Error("reservedStock no puede ser mayor que currentStock");
-    }
-
-    if (input.minStock !== undefined) data.minStock = Math.max(0, Number(input.minStock));
-    if (input.currentStock !== undefined) data.currentStock = Math.max(0, Number(input.currentStock));
-    if (input.reservedStock !== undefined) data.reservedStock = Math.max(0, Number(input.reservedStock));
-
-    // ===== Precios (validación cruzada final)
-    const nextRetail =
-      input.retailPrice !== undefined ? input.retailPrice : existing.retailPrice;
-
-    const nextWholesale =
-      input.wholesalePrice !== undefined ? input.wholesalePrice : (existing.wholesalePrice ?? null);
-
-    const nextMinSale =
-      input.minSalePrice !== undefined ? input.minSalePrice : (existing.minSalePrice ?? null);
-
-    const nextMaxSale =
-      input.maxSalePrice !== undefined ? input.maxSalePrice : (existing.maxSalePrice ?? null);
-
-    // Reglas: minSale <= retail y <= wholesale (si existe)
-    if (nextMinSale && nextMinSale.greaterThan(nextRetail)) {
-      throw new Error("minSalePrice no puede ser mayor que retailPrice");
-    }
-    if (nextMaxSale && nextMaxSale.lessThan(nextRetail)) {
-      throw new Error("maxSalePrice no puede ser menor que retailPrice");
-    }
-    if (nextMinSale && nextMaxSale && nextMinSale.greaterThan(nextMaxSale)) {
-      throw new Error("minSalePrice no puede ser mayor que maxSalePrice");
-    }
-
-    if (nextWholesale) {
-      if (nextMinSale && nextMinSale.greaterThan(nextWholesale)) {
-        throw new Error("minSalePrice no puede ser mayor que wholesalePrice");
+      if (input.name !== undefined) {
+        const v = String(input.name ?? "").trim();
+        if (!v) throw new Error("name inválido");
+        data.name = v;
       }
-      if (nextMaxSale && nextMaxSale.lessThan(nextWholesale)) {
-        throw new Error("maxSalePrice no puede ser menor que wholesalePrice");
+      if (input.description !== undefined) data.description = normalizeText(input.description) ?? null;
+      if (input.image !== undefined) data.image = normalizeText(input.image) ?? null;
+
+      const nextCurrent =
+        input.currentStock !== undefined
+          ? Math.max(0, Number(input.currentStock))
+          : existing.currentStock;
+
+      const nextReserved =
+        input.reservedStock !== undefined
+          ? Math.max(0, Number(input.reservedStock))
+          : existing.reservedStock;
+
+      if (nextReserved > nextCurrent) {
+        throw new Error("reservedStock no puede ser mayor que currentStock");
       }
-    }
 
-    // Aplicar precios
-    if (input.purchasePrice !== undefined) data.purchasePrice = input.purchasePrice;
-    if (input.retailPrice !== undefined) data.retailPrice = input.retailPrice;
+      if (input.minStock !== undefined) data.minStock = Math.max(0, Number(input.minStock));
+      if (input.currentStock !== undefined) data.currentStock = Math.max(0, Number(input.currentStock));
+      if (input.reservedStock !== undefined) data.reservedStock = Math.max(0, Number(input.reservedStock));
 
-    if (input.wholesalePrice !== undefined) data.wholesalePrice = input.wholesalePrice; // Decimal|null
-    if (input.wholesaleMinQuantity !== undefined) {
-      data.wholesaleMinQuantity = Math.max(1, Number(input.wholesaleMinQuantity));
-    }
+      const nextRetail =
+        input.retailPrice !== undefined
+          ? new Prisma.Decimal(normalizeMoney(input.retailPrice, "retailPrice"))
+          : existing.retailPrice;
 
-    if (input.minSalePrice !== undefined) data.minSalePrice = input.minSalePrice; // Decimal|null
-    if (input.maxSalePrice !== undefined) data.maxSalePrice = input.maxSalePrice; // Decimal|null
+      const nextWholesale =
+        input.wholesalePrice !== undefined
+          ? (isBlank(input.wholesalePrice)
+              ? null
+              : new Prisma.Decimal(normalizeMoney(input.wholesalePrice, "wholesalePrice")))
+          : (existing.wholesalePrice ?? null);
 
-    // ===== Relaciones
-    if (input.categoryId !== undefined) {
-      const v = String(input.categoryId ?? "").trim();
-      if (!v) throw new Error("categoryId inválido");
-      data.category = { connect: { id: v } };
-    }
+      const nextMinSale =
+        input.minSalePrice !== undefined
+          ? (isBlank(input.minSalePrice)
+              ? null
+              : new Prisma.Decimal(normalizeMoney(input.minSalePrice, "minSalePrice")))
+          : (existing.minSalePrice ?? null);
 
-    if (input.unitId !== undefined) {
-      const v = String(input.unitId ?? "").trim();
-      if (!v) throw new Error("unitId inválido");
-      data.unit = { connect: { id: v } };
-    }
+      const nextMaxSale =
+        input.maxSalePrice !== undefined
+          ? (isBlank(input.maxSalePrice)
+              ? null
+              : new Prisma.Decimal(normalizeMoney(input.maxSalePrice, "maxSalePrice")))
+          : (existing.maxSalePrice ?? null);
 
-    if (input.supplierId !== undefined) {
-      const v = input.supplierId; // string|null (ya normalizado)
-      data.supplier = v ? { connect: { id: v } } : { disconnect: true };
-    }
+      if (nextMinSale && nextMinSale.greaterThan(nextRetail)) {
+        throw new Error("minSalePrice no puede ser mayor que retailPrice");
+      }
+      if (nextMaxSale && nextMaxSale.lessThan(nextRetail)) {
+        throw new Error("maxSalePrice no puede ser menor que retailPrice");
+      }
+      if (nextMinSale && nextMaxSale && nextMinSale.greaterThan(nextMaxSale)) {
+        throw new Error("minSalePrice no puede ser mayor que maxSalePrice");
+      }
 
-    // (opcional) si permites cambiar code manual:
-    if (input.code !== undefined) {
-      const v = String(input.code ?? "").trim();
-      if (!v) throw new Error("code inválido");
-      data.code = v;
-    }
+      if (nextWholesale) {
+        if (nextMinSale && nextMinSale.greaterThan(nextWholesale)) {
+          throw new Error("minSalePrice no puede ser mayor que wholesalePrice");
+        }
+        if (nextMaxSale && nextMaxSale.lessThan(nextWholesale)) {
+          throw new Error("maxSalePrice no puede ser menor que wholesalePrice");
+        }
+      }
 
-    const updated = await tx.product.update({
-      where: { id },
-      data,
-      include: { category: true, supplier: true, unit: true },
+      if (input.purchasePrice !== undefined) {
+        data.purchasePrice = new Prisma.Decimal(normalizeMoney(input.purchasePrice, "purchasePrice"));
+      }
+      if (input.retailPrice !== undefined) {
+        data.retailPrice = new Prisma.Decimal(normalizeMoney(input.retailPrice, "retailPrice"));
+      }
+
+      if (input.wholesalePrice !== undefined) {
+        data.wholesalePrice = isBlank(input.wholesalePrice)
+          ? null
+          : new Prisma.Decimal(normalizeMoney(input.wholesalePrice, "wholesalePrice"));
+      }
+
+      if (input.wholesaleMinQuantity !== undefined) {
+        data.wholesaleMinQuantity = Math.max(1, Number(input.wholesaleMinQuantity));
+      }
+
+      if (input.minSalePrice !== undefined) {
+        data.minSalePrice = isBlank(input.minSalePrice)
+          ? null
+          : new Prisma.Decimal(normalizeMoney(input.minSalePrice, "minSalePrice"));
+      }
+
+      if (input.maxSalePrice !== undefined) {
+        data.maxSalePrice = isBlank(input.maxSalePrice)
+          ? null
+          : new Prisma.Decimal(normalizeMoney(input.maxSalePrice, "maxSalePrice"));
+      }
+
+      if (input.status !== undefined) {
+        const status = normalizeProductStatus(input.status);
+        data.status = status;
+        data.archivedAt = status === "ARCHIVED" ? new Date() : null;
+      }
+
+      if (input.categoryId !== undefined) {
+        const v = String(input.categoryId ?? "").trim();
+        if (!v) throw new Error("categoryId inválido");
+        data.category = { connect: { id: v } };
+      }
+
+      if (input.unitId !== undefined) {
+        const v = String(input.unitId ?? "").trim();
+        if (!v) throw new Error("unitId inválido");
+        data.unit = { connect: { id: v } };
+      }
+
+      if (input.supplierId !== undefined) {
+        const v = normalizeText(input.supplierId);
+        data.supplier = v ? { connect: { id: v } } : { disconnect: true };
+      }
+
+      if (input.code !== undefined) {
+        const v = String(input.code ?? "").trim();
+        if (!v) throw new Error("code inválido");
+        data.code = v;
+      }
+
+      const updated = await tx.product.update({
+        where: { id },
+        data,
+        include: { category: true, supplier: true, unit: true },
+      });
+
+      return mapProduct(updated);
     });
+  }
 
-    return mapProduct(updated);
-  });
-}
-
-  async delete(id: string): Promise<void> {
+  async archive(id: string): Promise<void> {
     const p = await prisma.product.findUnique({ where: { id } });
     if (!p) return;
 
+    if (p.status === "ARCHIVED") return;
+
     await prisma.product.update({
       where: { id },
-      data: { active: false },
+      data: {
+        status: "ARCHIVED",
+        archivedAt: new Date(),
+      },
     });
   }
 }

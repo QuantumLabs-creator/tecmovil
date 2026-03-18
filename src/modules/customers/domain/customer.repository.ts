@@ -1,42 +1,44 @@
 // src/modules/customers/domain/customer.repository.ts
-
-import type { CustomerType } from "@/src/generated/prisma/client";
+import type { CustomerStatus } from "./customer-status";
 
 export type CustomerRecord = {
   id: string;
-
   name: string;
   email: string | null;
   phone: string | null;
   document: string | null;
-
-  customerType: CustomerType;
-  active: boolean;
-
+  customerType: "RETAIL" | "WHOLESALE";
+  status: CustomerStatus;
+  archivedAt: Date | null;
   createdAt: Date;
   updatedAt: Date;
 };
 
 export type CustomerListResult = {
   items: CustomerRecord[];
-  meta: { total: number; page: number; pageSize: number; totalPages: number };
+  meta: {
+    total: number;
+    page: number;
+    pageSize: number;
+    totalPages: number;
+  };
 };
 
 export type CustomerListParams = {
   q?: string;
-  active?: string;       // "true" | "false"
-  customerType?: string; // "RETAIL" | "WHOLESALE"
-  page: number;
-  pageSize: number;
+  status?: CustomerStatus;
+  customerType?: "RETAIL" | "WHOLESALE";
+  page?: number;
+  pageSize?: number;
 };
 
 export type CreateCustomerInput = {
   name: string;
-  email?: string | null;
-  phone?: string | null;
-  document?: string | null;
+  email?: unknown;
+  phone?: unknown;
+  document?: unknown;
   customerType?: unknown;
-  active?: unknown;
+  status?: unknown;
 };
 
 export type UpdateCustomerInput = Partial<CreateCustomerInput>;
@@ -44,8 +46,9 @@ export type UpdateCustomerInput = Partial<CreateCustomerInput>;
 export interface CustomerRepository {
   getById(id: string): Promise<CustomerRecord | null>;
   getByEmail(email: string): Promise<CustomerRecord | null>;
+  getByDocument(document: string): Promise<CustomerRecord | null>;
   list(params: CustomerListParams): Promise<CustomerListResult>;
-  create(input: any): Promise<CustomerRecord>;
-  update(id: string, input: any): Promise<CustomerRecord>;
-  delete(id: string): Promise<void>; // soft
+  create(input: CreateCustomerInput): Promise<CustomerRecord>;
+  update(id: string, input: UpdateCustomerInput): Promise<CustomerRecord>;
+  archive(id: string): Promise<void>;
 }

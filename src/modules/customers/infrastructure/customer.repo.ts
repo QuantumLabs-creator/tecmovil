@@ -1,7 +1,7 @@
 // src/modules/customers/infrastructure/customer.repo.ts
 
 import { prisma } from "@/src/shared/db/prisma";
-import type { Prisma, CustomerType } from "@/src/generated/prisma/client";
+import type { Prisma } from "@/src/generated/prisma/client";
 
 import type {
   CustomerRepository,
@@ -12,7 +12,12 @@ import type {
   UpdateCustomerInput,
 } from "../domain/customer.repository";
 
-import { normalizeBoolean, normalizeCreateCustomer, normalizeUpdateCustomer, normalizeText } from "../domain/customer.rules";
+import {
+  normalizeCreateCustomer,
+  normalizeUpdateCustomer,
+} from "../domain/customer.rules";
+import { type CustomerType, isCustomerType } from "../domain/customer-status";
+import { type CustomerStatus, isCustomerStatus } from "../domain/customer-status";
 
 /** ===================== Helpers ===================== */
 
@@ -24,7 +29,8 @@ function mapCustomer(c: Prisma.CustomerGetPayload<{}>): CustomerRecord {
     phone: c.phone ?? null,
     document: c.document ?? null,
     customerType: c.customerType as CustomerType,
-    active: c.active,
+    status: c.status as CustomerStatus,
+    archivedAt: c.archivedAt ?? null,
     createdAt: c.createdAt,
     updatedAt: c.updatedAt,
   };
@@ -35,9 +41,21 @@ function safeStr(v?: string | null) {
   return s.length ? s : undefined;
 }
 
-function parseActiveFilter(v?: string): boolean | undefined {
+function parseStatusFilter(v?: string): CustomerStatus | undefined {
   if (v === undefined || v === null || String(v).trim() === "") return undefined;
-  return normalizeBoolean(v, true);
+
+  const s = String(v).trim().toUpperCase();
+  if (!isCustomerStatus(s)) throw new Error("status inválido");
+  if (s === "ARCHIVED") throw new Error("No se permite buscar clientes archivados");
+
+  return s;
+}
+
+function parseCustomerTypeFilter(v?: string): CustomerType | undefined {
+  const s = safeStr(v)?.toUpperCase();
+  if (!s) return undefined;
+  if (!isCustomerType(s)) throw new Error("customerType inválido");
+  return s;
 }
 
 /** ===================== Repository ===================== */
@@ -56,20 +74,35 @@ export class PrismaCustomerRepository implements CustomerRepository {
     return c ? mapCustomer(c) : null;
   }
 
+  async getByDocument(document: string): Promise<CustomerRecord | null> {
+    const d = String(document ?? "").trim();
+    if (!d) return null;
+
+    const c = await prisma.customer.findFirst({
+      where: { document: d },
+    });
+
+    return c ? mapCustomer(c) : null;
+  }
+
   async list(params: CustomerListParams): Promise<CustomerListResult> {
-    const q = (params.q ?? "").trim();
+    const q = String(params.q ?? "").trim();
     const page = Math.max(1, Number(params.page ?? 1));
     const pageSize = Math.min(500, Math.max(5, Number(params.pageSize ?? 10)));
     const skip = (page - 1) * pageSize;
 
     const where: Prisma.CustomerWhereInput = {};
 
-    const active = parseActiveFilter(params.active);
-    if (active !== undefined) where.active = active;
+    const status = parseStatusFilter(params.status as string | undefined);
+    if (status) {
+      where.status = status;
+    } else {
+      where.status = { in: ["ACTIVE", "INACTIVE"] };
+    }
 
-    const ct = safeStr(params.customerType)?.toUpperCase();
-    if (ct === "RETAIL" || ct === "WHOLESALE") {
-      where.customerType = ct as any;
+    const customerType = parseCustomerTypeFilter(params.customerType as string | undefined);
+    if (customerType) {
+      where.customerType = customerType;
     }
 
     if (q) {
@@ -103,13 +136,21 @@ export class PrismaCustomerRepository implements CustomerRepository {
   }
 
   async create(input: CreateCustomerInput): Promise<CustomerRecord> {
-    // Reutilizamos normalización de dominio
     const normalized = normalizeCreateCustomer(input);
 
-    // Validación: si email viene, evita colisión con unique
     if (normalized.email) {
-      const exists = await prisma.customer.findUnique({ where: { email: normalized.email } });
+      const exists = await prisma.customer.findUnique({
+        where: { email: normalized.email },
+      });
       if (exists) throw new Error("Ya existe un cliente con ese email");
+    }
+
+    if (normalized.document) {
+      const exists = await prisma.customer.findFirst({
+        where: { document: normalized.document },
+        select: { id: true },
+      });
+      if (exists) throw new Error("Ya existe un cliente con ese documento");
     }
 
     const created = await prisma.customer.create({
@@ -119,7 +160,8 @@ export class PrismaCustomerRepository implements CustomerRepository {
         phone: normalized.phone,
         document: normalized.document,
         customerType: normalized.customerType,
-        active: normalized.active,
+        status: normalized.status,
+        archivedAt: normalized.status === "ARCHIVED" ? new Date() : null,
       },
     });
 
@@ -132,10 +174,23 @@ export class PrismaCustomerRepository implements CustomerRepository {
 
     const normalized = normalizeUpdateCustomer(input);
 
-    // Si intenta setear email, validar unique
     if (normalized.email !== undefined && normalized.email) {
-      const exists = await prisma.customer.findUnique({ where: { email: normalized.email } });
-      if (exists && exists.id !== id) throw new Error("Ya existe un cliente con ese email");
+      const exists = await prisma.customer.findUnique({
+        where: { email: normalized.email },
+      });
+      if (exists && exists.id !== id) {
+        throw new Error("Ya existe un cliente con ese email");
+      }
+    }
+
+    if (normalized.document !== undefined && normalized.document) {
+      const exists = await prisma.customer.findFirst({
+        where: { document: normalized.document },
+        select: { id: true },
+      });
+      if (exists && exists.id !== id) {
+        throw new Error("Ya existe un cliente con ese documento");
+      }
     }
 
     const updated = await prisma.customer.update({
@@ -145,21 +200,34 @@ export class PrismaCustomerRepository implements CustomerRepository {
         ...(normalized.email !== undefined ? { email: normalized.email } : {}),
         ...(normalized.phone !== undefined ? { phone: normalized.phone } : {}),
         ...(normalized.document !== undefined ? { document: normalized.document } : {}),
-        ...(normalized.customerType !== undefined ? { customerType: normalized.customerType } : {}),
-        ...(normalized.active !== undefined ? { active: normalized.active } : {}),
+        ...(normalized.customerType !== undefined
+          ? { customerType: normalized.customerType }
+          : {}),
+        ...(normalized.status !== undefined
+          ? {
+              status: normalized.status,
+              archivedAt:
+                normalized.status === "ARCHIVED" ? new Date() : null,
+            }
+          : {}),
       },
     });
 
     return mapCustomer(updated);
   }
 
-  async delete(id: string): Promise<void> {
+  async archive(id: string): Promise<void> {
     const c = await prisma.customer.findUnique({ where: { id } });
     if (!c) return;
 
+    if (c.status === "ARCHIVED") return;
+
     await prisma.customer.update({
       where: { id },
-      data: { active: false },
+      data: {
+        status: "ARCHIVED",
+        archivedAt: new Date(),
+      },
     });
   }
 }
