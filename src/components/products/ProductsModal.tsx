@@ -1,33 +1,160 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import type { ProductDraft, ProductOption } from "./types";
+import { useEffect, useMemo, useState, useRef } from "react";
+import type { ProductDraft, ProductOption, ProductStatus } from "./types";
 import { emptyProductDraft } from "./types";
 import { uploadFileApi } from "@/src/lib/api/upload";
+
+export type ProductRecommendationItem = {
+  id: string;
+  recommendedProductId: string;
+  priority: number;
+  recommendedProduct: {
+    id: string;
+    code: string;
+    name: string;
+  };
+};
+
+// ✅ NUEVO: Componente Combobox con búsqueda integrada
+function ProductCombobox({
+  options,
+  value,
+  onChange,
+  placeholder,
+  disabled,
+}: {
+  options: ProductOption[];
+  value: string;
+  onChange: (value: string) => void;
+  placeholder?: string;
+  disabled?: boolean;
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [search, setSearch] = useState("");
+  const wrapperRef = useRef<HTMLDivElement>(null);
+
+  const selectedOption = options.find((o) => o.id === value);
+
+  const filteredOptions = useMemo(() => {
+    if (!search.trim()) return options;
+    const searchLower = search.toLowerCase();
+    return options.filter((o) => o.name.toLowerCase().includes(searchLower));
+  }, [options, search]);
+
+  // Cerrar al hacer click fuera
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // Resetear búsqueda al seleccionar
+  useEffect(() => {
+    if (value) {
+      setSearch(selectedOption?.name ?? "");
+    }
+  }, [value, selectedOption]);
+
+  const inputCls =
+    "w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-black/10";
+
+  return (
+    <div ref={wrapperRef} className="relative">
+      {/* Input con búsqueda */}
+      <div className="relative">
+        <input
+          type="text"
+          className={inputCls}
+          value={isOpen ? search : selectedOption?.name ?? ""}
+          onChange={(e) => {
+            setSearch(e.target.value);
+            setIsOpen(true);
+            onChange(""); // Limpiar selección mientras escribe
+          }}
+          onFocus={() => setIsOpen(true)}
+          placeholder={placeholder ?? "Buscar..."}
+          disabled={disabled}
+        />
+        {/* Ícono de flecha */}
+        <svg
+          className="absolute right-3 top-2.5 h-4 w-4 text-gray-400 pointer-events-none"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+        </svg>
+      </div>
+
+      {/* Dropdown con resultados */}
+      {isOpen && (
+        <div className="absolute z-50 mt-1 w-full max-h-60 overflow-y-auto rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] shadow-lg">
+          {filteredOptions.length === 0 ? (
+            <div className="px-3 py-2 text-sm text-gray-500">No se encontraron productos</div>
+          ) : (
+            filteredOptions.map((option) => (
+              <button
+                key={option.id}
+                type="button"
+                className="w-full px-3 py-2 text-left text-sm hover:bg-[var(--color-muted)]"
+                onClick={() => {
+                  onChange(option.id);
+                  setSearch(option.name);
+                  setIsOpen(false);
+                }}
+              >
+                {option.name}
+              </button>
+            ))
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function ProductsModal({
   open,
   mode,
+  productId,
   initial,
   categories,
   suppliers,
   units,
+  productOptions,
+  recommendations,
   onClose,
   onSubmit,
+  onAddRecommendation,
+  onRemoveRecommendation,
 }: {
   open: boolean;
   mode: "create" | "edit";
+  productId?: string | null;
   initial?: Partial<ProductDraft>;
   categories: ProductOption[];
   suppliers: ProductOption[];
   units: ProductOption[];
+  productOptions: ProductOption[];
+  recommendations?: ProductRecommendationItem[];
   onClose: () => void;
   onSubmit: (draft: ProductDraft) => void;
+  onAddRecommendation?: (recommendedProductId: string, priority?: number) => Promise<void> | void;
+  onRemoveRecommendation?: (recommendationId: string) => Promise<void> | void;
 }) {
   const [draft, setDraft] = useState<ProductDraft>(emptyProductDraft);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>("");
   const [uploading, setUploading] = useState(false);
+
+  const [selectedRecommendedId, setSelectedRecommendedId] = useState("");
+  const [recommendationPriority, setRecommendationPriority] = useState(0);
+  const [savingRecommendation, setSavingRecommendation] = useState(false);
 
   useEffect(() => {
     if (!open) return;
@@ -37,27 +164,60 @@ export default function ProductsModal({
       ...(initial ?? {}),
       code: String((initial as any)?.code ?? emptyProductDraft.code ?? ""),
       name: String((initial as any)?.name ?? emptyProductDraft.name ?? ""),
-      description: String((initial as any)?.description ?? emptyProductDraft.description ?? ""),
-      image: String((initial as any)?.image ?? emptyProductDraft.image ?? ""),
+      description: (initial as any)?.description ?? null,
+      image: (initial as any)?.image ?? null,
+
       purchasePrice: String((initial as any)?.purchasePrice ?? emptyProductDraft.purchasePrice ?? ""),
       retailPrice: String((initial as any)?.retailPrice ?? emptyProductDraft.retailPrice ?? ""),
-      wholesalePrice: String((initial as any)?.wholesalePrice ?? emptyProductDraft.wholesalePrice ?? ""),
-      wholesaleMinQuantity: Number((initial as any)?.wholesaleMinQuantity ?? emptyProductDraft.wholesaleMinQuantity ?? 10),
-      minSalePrice: String((initial as any)?.minSalePrice ?? emptyProductDraft.minSalePrice ?? ""),
-      maxSalePrice: String((initial as any)?.maxSalePrice ?? emptyProductDraft.maxSalePrice ?? ""),
+      wholesalePrice: (initial as any)?.wholesalePrice ?? null,
+      wholesaleMinQuantity: Number(
+        (initial as any)?.wholesaleMinQuantity ?? emptyProductDraft.wholesaleMinQuantity ?? 10
+      ),
+
+      minSalePrice: (initial as any)?.minSalePrice ?? null,
+      maxSalePrice: (initial as any)?.maxSalePrice ?? null,
+
       minStock: Number((initial as any)?.minStock ?? emptyProductDraft.minStock ?? 0),
       currentStock: Number((initial as any)?.currentStock ?? emptyProductDraft.currentStock ?? 0),
       reservedStock: Number((initial as any)?.reservedStock ?? emptyProductDraft.reservedStock ?? 0),
-      active: Boolean((initial as any)?.active ?? emptyProductDraft.active),
+
+      pendingRequestedStock: Number(
+        (initial as any)?.pendingRequestedStock ?? emptyProductDraft.pendingRequestedStock ?? 0
+      ),
+      availableRealStock: Number(
+        (initial as any)?.availableRealStock ?? emptyProductDraft.availableRealStock ?? 0
+      ),
+      availableCommercialStock: Number(
+        (initial as any)?.availableCommercialStock ?? emptyProductDraft.availableCommercialStock ?? 0
+      ),
+
+      status: ((initial as any)?.status ?? emptyProductDraft.status ?? "ACTIVE") as ProductStatus,
+
       categoryId: String((initial as any)?.categoryId ?? emptyProductDraft.categoryId ?? ""),
-      supplierId: String((initial as any)?.supplierId ?? emptyProductDraft.supplierId ?? ""),
+      supplierId: (initial as any)?.supplierId ?? null,
       unitId: String((initial as any)?.unitId ?? emptyProductDraft.unitId ?? ""),
     };
 
     setDraft(merged);
     setImagePreview(merged.image || "");
     setImageFile(null);
+    setSelectedRecommendedId("");
+    setRecommendationPriority(0);
   }, [open, initial]);
+
+  const availableRecommendationOptions = useMemo(() => {
+    const currentId = String(productId ?? "");
+    const alreadyLinked = new Set(
+      (recommendations ?? []).map((r) => String(r.recommendedProductId))
+    );
+
+    return productOptions.filter((p) => {
+      if (!p.id) return false;
+      if (p.id === currentId) return false;
+      if (alreadyLinked.has(p.id)) return false;
+      return true;
+    });
+  }, [productOptions, recommendations, productId]);
 
   if (!open) return null;
 
@@ -95,8 +255,8 @@ export default function ProductsModal({
     }
 
     const reader = new FileReader();
-    reader.onload = (e) => {
-      setImagePreview(e.target?.result as string);
+    reader.onload = (ev) => {
+      setImagePreview(ev.target?.result as string);
     };
     reader.readAsDataURL(file);
 
@@ -104,7 +264,7 @@ export default function ProductsModal({
   }
 
   function removeImage() {
-    setDraft({ ...draft, image: "" });
+    setDraft({ ...draft, image: null });
     setImagePreview("");
     setImageFile(null);
   }
@@ -144,7 +304,6 @@ export default function ProductsModal({
     try {
       let imageUrl = String(draft.image ?? "").trim();
 
-      // Si hay archivo seleccionado y aún no se subió
       if (imageFile) {
         setUploading(true);
         const result = await uploadFileApi(imageFile);
@@ -155,21 +314,49 @@ export default function ProductsModal({
         ...draft,
         code: String(draft.code ?? "").trim(),
         name,
-        description: String(draft.description ?? "").trim(),
-        image: imageUrl,
+        description: String(draft.description ?? "").trim() || null,
+        image: imageUrl || null,
         purchasePrice,
         retailPrice,
-        wholesalePrice: String(draft.wholesalePrice ?? "").trim(),
-        minSalePrice: String(draft.minSalePrice ?? "").trim(),
-        maxSalePrice: String(draft.maxSalePrice ?? "").trim(),
+        wholesalePrice: String(draft.wholesalePrice ?? "").trim() || null,
+        minSalePrice: String(draft.minSalePrice ?? "").trim() || null,
+        maxSalePrice: String(draft.maxSalePrice ?? "").trim() || null,
         categoryId,
-        supplierId: String(draft.supplierId ?? "").trim(),
+        supplierId: String(draft.supplierId ?? "").trim() || null,
         unitId,
       });
     } catch (e: any) {
       alert("Error al subir imagen: " + (e?.error || e?.message || "Error desconocido"));
     } finally {
       setUploading(false);
+    }
+  }
+
+  async function handleAddRecommendation() {
+    if (!selectedRecommendedId || !onAddRecommendation || savingRecommendation) return;
+
+    try {
+      setSavingRecommendation(true);
+      await onAddRecommendation(selectedRecommendedId, recommendationPriority);
+      setSelectedRecommendedId("");
+      setRecommendationPriority(0);
+    } catch (e: any) {
+      alert("Error al agregar recomendación: " + (e?.error || e?.message || "Error desconocido"));
+    } finally {
+      setSavingRecommendation(false);
+    }
+  }
+
+  async function handleRemoveRecommendation(id: string) {
+    if (!onRemoveRecommendation) return;
+
+    try {
+      setSavingRecommendation(true);
+      await onRemoveRecommendation(id);
+    } catch (e: any) {
+      alert("Error al eliminar recomendación: " + (e?.error || e?.message || "Error desconocido"));
+    } finally {
+      setSavingRecommendation(false);
     }
   }
 
@@ -196,9 +383,8 @@ export default function ProductsModal({
         </div>
 
         <div className="max-h-[70dvh] space-y-6 overflow-y-auto p-4">
-          {/* Sección de imagen */}
           <div>
-            <label className="text-xs font-medium opacity-80 mb-2 block">Imagen del producto</label>
+            <label className="mb-2 block text-xs font-medium opacity-80">Imagen del producto</label>
 
             <label className="relative flex h-48 w-full cursor-pointer items-center justify-center overflow-hidden rounded-xl border-2 border-dashed border-[var(--color-border)] bg-[var(--color-muted)] hover:border-[var(--color-border)] hover:bg-[var(--color-surface)]">
               <input
@@ -226,9 +412,6 @@ export default function ProductsModal({
                       }}
                       className="flex items-center gap-2 rounded-xl bg-red-500 px-4 py-2 text-sm font-medium text-white hover:bg-red-600"
                     >
-                      <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                      </svg>
                       Eliminar imagen
                     </button>
                   </div>
@@ -251,9 +434,6 @@ export default function ProductsModal({
                     </div>
                   ) : (
                     <>
-                      <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                      </svg>
                       <p className="mt-2 text-sm font-medium text-gray-700">Haz clic para subir una imagen</p>
                       <p className="mt-1 text-xs text-gray-500">JPG, PNG, GIF (max. 5MB)</p>
                     </>
@@ -273,7 +453,6 @@ export default function ProductsModal({
             )}
           </div>
 
-          {/* Campos del formulario */}
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             <Field label="Nombre">
               <input
@@ -286,13 +465,13 @@ export default function ProductsModal({
             <Field label="Estado">
               <select
                 className={inputCls}
-                value={draft.active ? "true" : "false"}
+                value={draft.status ?? "ACTIVE"}
                 onChange={(e) =>
-                  setDraft({ ...draft, active: e.target.value === "true" })
+                  setDraft({ ...draft, status: e.target.value as ProductStatus })
                 }
               >
-                <option value="true">Activo</option>
-                <option value="false">Inactivo</option>
+                <option value="ACTIVE">Activo</option>
+                <option value="INACTIVE">Inactivo</option>
               </select>
             </Field>
 
@@ -331,7 +510,7 @@ export default function ProductsModal({
               <select
                 className={inputCls}
                 value={draft.supplierId ?? ""}
-                onChange={(e) => setDraft({ ...draft, supplierId: e.target.value })}
+                onChange={(e) => setDraft({ ...draft, supplierId: e.target.value || null })}
               >
                 <option value="">Sin proveedor</option>
                 {suppliers.map((x) => (
@@ -377,7 +556,7 @@ export default function ProductsModal({
                 className={inputCls}
                 value={draft.wholesalePrice ?? ""}
                 onChange={(e) =>
-                  setDraft({ ...draft, wholesalePrice: e.target.value })
+                  setDraft({ ...draft, wholesalePrice: e.target.value || null })
                 }
               />
             </Field>
@@ -401,7 +580,7 @@ export default function ProductsModal({
                 className={inputCls}
                 value={draft.minSalePrice ?? ""}
                 onChange={(e) =>
-                  setDraft({ ...draft, minSalePrice: e.target.value })
+                  setDraft({ ...draft, minSalePrice: e.target.value || null })
                 }
               />
             </Field>
@@ -411,7 +590,7 @@ export default function ProductsModal({
                 className={inputCls}
                 value={draft.maxSalePrice ?? ""}
                 onChange={(e) =>
-                  setDraft({ ...draft, maxSalePrice: e.target.value })
+                  setDraft({ ...draft, maxSalePrice: e.target.value || null })
                 }
               />
             </Field>
@@ -455,6 +634,81 @@ export default function ProductsModal({
               />
             </Field>
           </div>
+
+          {mode === "edit" && productId ? (
+            <div className="space-y-3 rounded-2xl border border-[var(--color-border)] p-4">
+              <div>
+                <div className="text-sm font-semibold">Productos recomendados</div>
+                <div className="text-xs opacity-70">
+                  Agrega productos relacionados para sugerirlos en el detalle del producto.
+                </div>
+              </div>
+
+              {/* ✅ NUEVO: Combobox con búsqueda integrada (sin input separado) */}
+              <div className="grid gap-3 sm:grid-cols-[1fr_120px_auto]">
+                <ProductCombobox
+                  options={availableRecommendationOptions}
+                  value={selectedRecommendedId}
+                  onChange={setSelectedRecommendedId}
+                  placeholder="Buscar producto..."
+                />
+
+                <input
+                  type="number"
+                  className={inputCls}
+                  value={recommendationPriority}
+                  onChange={(e) => setRecommendationPriority(Number(e.target.value || 0))}
+                  placeholder="Prioridad"
+                />
+
+                <button
+                  type="button"
+                  onClick={handleAddRecommendation}
+                  disabled={!selectedRecommendedId || savingRecommendation}
+                  className="rounded-xl border border-[var(--color-border)] bg-[var(--color-muted)] px-4 py-2 text-sm font-medium hover:opacity-80 disabled:opacity-50"
+                >
+                  Agregar
+                </button>
+              </div>
+
+              <div className="space-y-2">
+                {(recommendations ?? []).length === 0 ? (
+                  <div className="rounded-xl border border-dashed border-[var(--color-border)] p-3 text-sm opacity-70">
+                    Aún no hay productos recomendados.
+                  </div>
+                ) : (
+                  recommendations!.map((r) => (
+                    <div
+                      key={r.id}
+                      className="flex items-center justify-between rounded-xl border border-[var(--color-border)] p-3"
+                    >
+                      <div>
+                        <div className="text-sm font-medium">
+                          {r.recommendedProduct.name}
+                        </div>
+                        <div className="text-xs opacity-70">
+                          {r.recommendedProduct.code} • Prioridad: {r.priority}
+                        </div>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveRecommendation(r.id)}
+                        disabled={savingRecommendation}
+                        className="rounded-lg border border-red-200 bg-red-50 px-3 py-1.5 text-xs text-red-700 hover:bg-red-100 disabled:opacity-50"
+                      >
+                        Quitar
+                      </button>
+                    </div>
+                  ))
+                )}
+              </div>
+
+              <div className="text-[11px] opacity-60">
+                En modo creación, primero guarda el producto y luego podrás asignar recomendados.
+              </div>
+            </div>
+          ) : null}
         </div>
 
         <div className="flex justify-end gap-2 border-t border-[var(--color-border)] p-4">

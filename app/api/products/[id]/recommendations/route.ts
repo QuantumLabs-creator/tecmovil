@@ -16,10 +16,16 @@ export async function GET(
     const useCase = new ListProductRecommendationsUseCase(repo);
     const data = await useCase.execute(id);
 
-    return NextResponse.json(data);
+    return NextResponse.json({
+      ok: true,
+      data,
+    });
   } catch (e: any) {
     return NextResponse.json(
-      { message: e?.message ?? "Error al listar recomendaciones" },
+      {
+        ok: false,
+        error: e?.message ?? "Error al listar recomendaciones",
+      },
       { status: 400 }
     );
   }
@@ -40,7 +46,13 @@ export async function POST(
       priority: body?.priority,
     });
 
-    return NextResponse.json(data, { status: 201 });
+    return NextResponse.json(
+      {
+        ok: true,
+        data,
+      },
+      { status: 201 }
+    );
   } catch (e: any) {
     const message = e?.message ?? "Error al crear recomendación";
 
@@ -49,6 +61,12 @@ export async function POST(
         ? 409
         : 400;
 
-    return NextResponse.json({ message }, { status });
+    return NextResponse.json(
+      {
+        ok: false,
+        error: message,
+      },
+      { status }
+    );
   }
 }

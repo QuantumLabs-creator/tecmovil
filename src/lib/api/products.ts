@@ -3,6 +3,7 @@
 export type Product = {
   id: string;
   code: string;
+
   name: string;
   description: string | null;
   image: string | null;
@@ -19,17 +20,22 @@ export type Product = {
   currentStock: number;
   reservedStock: number;
 
-  active: boolean;
-  createdAt: string;
-  updatedAt: string;
+  pendingRequestedStock: number;
+  availableRealStock: number;
+  availableCommercialStock: number;
+
+  status: "ACTIVE" | "INACTIVE" | "ARCHIVED";
+
+  createdAt?: string;
+  updatedAt?: string;
 
   categoryId: string;
   supplierId: string | null;
   unitId: string;
 
-  category: { id: string; name: string };
-  supplier: { id: string; name: string } | null;
-  unit: { id: string; name: string; symbol: string | null };
+  category?: { id: string; name: string };
+  supplier?: { id: string; name: string } | null;
+  unit?: { id: string; name: string; symbol: string | null };
 };
 
 export type ProductListResponse = {

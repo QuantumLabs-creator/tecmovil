@@ -15,6 +15,36 @@ function money(value: string | null | undefined) {
   }).format(n);
 }
 
+function getStatusBadge(status: string | null | undefined) {
+  const s = String(status ?? "").toUpperCase();
+
+  if (s === "ACTIVE") {
+    return {
+      label: "Activo",
+      className: "bg-green-100 text-green-700 border-green-300",
+    };
+  }
+
+  if (s === "INACTIVE") {
+    return {
+      label: "Inactivo",
+      className: "bg-red-100 text-red-700 border-red-300",
+    };
+  }
+
+  if (s === "ARCHIVED") {
+    return {
+      label: "Archivado",
+      className: "bg-zinc-100 text-zinc-700 border-zinc-300",
+    };
+  }
+
+  return {
+    label: "—",
+    className: "bg-zinc-100 text-zinc-700 border-zinc-300",
+  };
+}
+
 export function getProductColumns(opts: {
   onEdit: (p: Product) => void;
   onDelete: (id: string) => void;
@@ -25,7 +55,7 @@ export function getProductColumns(opts: {
       header: "#",
       size: 40,
       cell: ({ row }) => (
-        <span className="opacity-70 tabular-nums">{row.index + 1}</span>
+        <span className="tabular-nums opacity-70">{row.index + 1}</span>
       ),
     },
     {
@@ -64,6 +94,7 @@ export function getProductColumns(opts: {
       cell: ({ row }) => {
         const unit = row.original.unit;
         if (!unit) return <span>—</span>;
+
         return (
           <span>
             {unit.name}
@@ -78,38 +109,40 @@ export function getProductColumns(opts: {
       cell: ({ getValue }) => <span>{money(String(getValue() ?? ""))}</span>,
     },
     {
-      accessorKey: "currentStock",
+      id: "stockSummary",
       header: "Stock",
       cell: ({ row }) => {
         const current = Number(row.original.currentStock ?? 0);
+        const reserved = Number(row.original.reservedStock ?? 0);
+        const pending = Number(row.original.pendingRequestedStock ?? 0);
+        const available = Number(row.original.availableCommercialStock ?? 0);
         const min = Number(row.original.minStock ?? 0);
-        const low = current <= min;
+
+        const low = available <= min;
 
         return (
-          <span
-            className={
-              low ? "font-medium text-amber-600" : "font-medium"
-            }
-          >
-            {current}
-          </span>
+          <div className="min-w-[130px]">
+            <div className={low ? "font-medium text-amber-600" : "font-medium"}>
+              Disponible: {available}
+            </div>
+            <div className="text-xs opacity-70">
+              Físico: {current} <br/> Res.: {reserved} <br/> Pend.: {pending}
+            </div>
+          </div>
         );
       },
     },
     {
-      accessorKey: "active",
+      accessorKey: "status",
       header: "Estado",
       cell: ({ getValue }) => {
-        const active = Boolean(getValue());
+        const badge = getStatusBadge(String(getValue() ?? ""));
+
         return (
           <span
-            className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium border ${
-              active
-                ? "bg-green-100 text-green-700 border-green-300"
-                : "bg-red-100 text-red-700 border-red-300"
-            }`}
+            className={`inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-medium ${badge.className}`}
           >
-            {active ? "Activo" : "Inactivo"}
+            {badge.label}
           </span>
         );
       },
@@ -130,7 +163,7 @@ export function getProductColumns(opts: {
           <button
             onClick={() => opts.onDelete(row.original.id)}
             className="inline-flex items-center justify-center rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-1.5 text-xs hover:bg-[var(--color-muted)]"
-            title="Desactivar producto"
+            title="Archivar producto"
           >
             <Trash2 className="h-4 w-4" />
           </button>

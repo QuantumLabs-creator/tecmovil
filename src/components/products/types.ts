@@ -1,28 +1,36 @@
+export type ProductStatus = "ACTIVE" | "INACTIVE" | "ARCHIVED";
+
 export type Product = {
   id: string;
   code: string;
   name: string;
-  description: string;
-  image: string;
+
+  description: string | null;
+  image: string | null;
 
   purchasePrice: string;
   retailPrice: string;
-  wholesalePrice: string;
+  wholesalePrice: string | null;
   wholesaleMinQuantity: number;
 
-  minSalePrice: string;
-  maxSalePrice: string;
+  minSalePrice: string | null;
+  maxSalePrice: string | null;
 
   minStock: number;
   currentStock: number;
   reservedStock: number;
 
-  active: boolean;
+  pendingRequestedStock: number;
+  availableRealStock: number;
+  availableCommercialStock: number;
+
+  status: ProductStatus;
+
   createdAt?: string;
   updatedAt?: string;
 
   categoryId: string;
-  supplierId: string;
+  supplierId: string | null;
   unitId: string;
 
   category?: { id: string; name: string };
@@ -30,30 +38,65 @@ export type Product = {
   unit?: { id: string; name: string; symbol: string | null };
 };
 
-export type ProductDraft = Omit<Product, "id" | "createdAt" | "updatedAt">;
+export type ProductDraft = {
+  code: string;
+  name: string;
+  description: string | null;
+  image: string | null;
+
+  purchasePrice: string;
+  retailPrice: string;
+  wholesalePrice: string | null;
+  wholesaleMinQuantity: number;
+
+  minSalePrice: string | null;
+  maxSalePrice: string | null;
+
+  minStock: number;
+  currentStock: number;
+  reservedStock: number;
+
+  pendingRequestedStock: number;
+  availableRealStock: number;
+  availableCommercialStock: number;
+
+  status: ProductStatus;
+
+  categoryId: string;
+  supplierId: string | null;
+  unitId: string;
+
+  category?: { id: string; name: string };
+  supplier?: { id: string; name: string } | null;
+  unit?: { id: string; name: string; symbol: string | null };
+};
 
 export const emptyProductDraft: ProductDraft = {
   code: "",
   name: "",
-  description: "",
-  image: "",
+  description: null,
+  image: null,
 
   purchasePrice: "",
   retailPrice: "",
-  wholesalePrice: "",
+  wholesalePrice: null,
   wholesaleMinQuantity: 10,
 
-  minSalePrice: "",
-  maxSalePrice: "",
+  minSalePrice: null,
+  maxSalePrice: null,
 
   minStock: 0,
   currentStock: 0,
   reservedStock: 0,
 
-  active: true,
+  pendingRequestedStock: 0,
+  availableRealStock: 0,
+  availableCommercialStock: 0,
+
+  status: "ACTIVE",
 
   categoryId: "",
-  supplierId: "",
+  supplierId: null,
   unitId: "",
 
   category: undefined,
