@@ -4,7 +4,7 @@ export type AuthUserEntity = {
   id: string;
   name: string;
   email: string;
-  password: string; // hashed
+  password: string;
   phone: string | null;
   role: Role;
   active: boolean;

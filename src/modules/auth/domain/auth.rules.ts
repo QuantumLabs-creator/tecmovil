@@ -1,18 +1,20 @@
-import { Role } from "@/src/generated/prisma";
+import { Role, RecordStatus } from "@/src/generated/prisma";
 
 export function normalizeEmail(email: string) {
-    return String(email).toLowerCase().trim();
+  return String(email ?? "").toLowerCase().trim();
 }
 
-// ✅ Auto-registro permitido SOLO para USER o SELLER
+// Auto-registro público: solo clientes web
 export function assertSelfRegisterRole(role: Role) {
-    const allowed: Role[] = [Role.USER, Role.SELLER];
+  if (role !== Role.USER) {
+    throw new Error("Rol no permitido para auto-registro");
+  }
+}
 
-    if (!allowed.includes(role)) {
-        throw new Error("Rol no permitido para auto-registro");
-    }
+export function isUserActive(status: RecordStatus) {
+  return status === RecordStatus.ACTIVE;
 }
 
 export function assertActiveUser(active: boolean) {
-    if (!active) throw new Error("Usuario inactivo");
+  if (!active) throw new Error("Usuario inactivo");
 }

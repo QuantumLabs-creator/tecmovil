@@ -15,7 +15,7 @@ model User {
   id       String  @id @default(cuid())
   name     String
   email    String  @unique
-  password String // Hashed with bcrypt
+  password String
   phone    String?
   role     Role    @default(USER)
 
@@ -24,18 +24,16 @@ model User {
 
   lastLogin DateTime?
   createdAt DateTime  @default(now())
+  updatedAt DateTime  @default(now()) @updatedAt
 
-  updatedAt DateTime @default(now()) @updatedAt
+  customer Customer?
 
-  // Relations
   movements      Movement[]
-  purchaseOrders Order[] // Pedidos a proveedores
+  purchaseOrders Order[]
   saleOrders     SaleOrder[] @relation("SaleOrderCustomer")
-
-  // ✅ Relación 2: Como VENDEDOR (atiende pedidos)
-  soldOrders SaleOrder[] @relation("SaleOrderSeller")
-  receipts   Receipt[]
-  auditLogs  AuditLog[]
+  soldOrders     SaleOrder[] @relation("SaleOrderSeller")
+  receipts       Receipt[]
+  auditLogs      AuditLog[]
 
   @@index([status])
   @@map("users")
@@ -63,7 +61,7 @@ model Customer {
   name         String
   email        String?      @unique
   phone        String?
-  document     String? // DNI/RUC
+  document     String?
   customerType CustomerType @default(RETAIL)
 
   status     RecordStatus @default(ACTIVE)
@@ -71,6 +69,9 @@ model Customer {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
+
+  userId String? @unique
+  user   User?   @relation(fields: [userId], references: [id])
 
   saleOrders SaleOrder[]
 

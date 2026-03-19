@@ -1,23 +1,30 @@
-import type { CustomerType, SaleOrderStatus } from "@/src/generated/prisma/client";
+import type { SaleOrderStatus } from "@/src/generated/prisma/client";
 
 export type CreateSaleOrderItemDTO = {
   productId: string;
   quantity: unknown;
 };
 
+export type CreateSaleOrderCustomerDataDTO = {
+  name?: unknown;
+  phone?: unknown;
+  document?: unknown;
+};
+
 export type CreateSaleOrderDTO = {
-  // si viene de web con usuario logueado, normalmente NO mandas userId (lo sacas del token)
+  // web con usuario logueado
   userId?: string | null;
 
-  // cliente externo
+  // cliente externo / venta manual
   customerId?: string | null;
 
-  // si no tienes customerId y es externo, puedes crearlo antes con módulo customers
-  customerType?: unknown; // RETAIL | WHOLESALE (tipo del cliente, NO el pricing por ítem)
+  // tipo de cliente, no pricing
+  customerType?: unknown; // RETAIL | WHOLESALE
 
-  sellerId?: string | null; // opcional si el pedido lo crea seller
-
+  sellerId?: string | null;
   observations?: unknown;
+
+  customerData?: CreateSaleOrderCustomerDataDTO;
 
   items: CreateSaleOrderItemDTO[];
 };
@@ -25,14 +32,12 @@ export type CreateSaleOrderDTO = {
 export type SearchSaleOrdersDTO = {
   q?: string;
   status?: string;
-  mine?: string; // "true" => filtra por userId del token
+  mine?: string;
   customerId?: string;
   userId?: string;
   sellerId?: string;
-
-  from?: string; // ISO date
-  to?: string;   // ISO date
-
+  from?: string;
+  to?: string;
   page?: number;
   pageSize?: number;
 };
@@ -52,20 +57,36 @@ export function assertCreateSaleOrderDTO(input: unknown): asserts input is Creat
   if (!input || typeof input !== "object") throw new Error("Body inválido");
   const x = input as any;
 
-  if (!Array.isArray(x.items) || x.items.length === 0) throw new Error("items requerido");
+  if (!Array.isArray(x.items) || x.items.length === 0) {
+    throw new Error("items requerido");
+  }
 
   for (const it of x.items) {
     if (!String(it?.productId ?? "").trim()) throw new Error("productId requerido");
     if (isBlank(it?.quantity)) throw new Error("quantity requerido");
   }
 
-  // Debe tener userId o customerId (externo) o al menos customerType; en tu caso:
-  // - web: userId lo sacas del token (puede venir null aquí)
-  // - tienda: customerId (externo)
-  // lo validamos suave: al menos uno de los dos o que luego lo completes en capa API
-  if (!String(x.userId ?? "").trim() && !String(x.customerId ?? "").trim()) {
-    // permitimos si tu API luego inyecta userId del token
+  if (x.customerData !== undefined && x.customerData !== null && typeof x.customerData !== "object") {
+    throw new Error("customerData inválido");
   }
+
+  if (x.customerData && typeof x.customerData === "object") {
+    const cd = x.customerData as any;
+
+    if (cd.name !== undefined && cd.name !== null && typeof cd.name !== "string") {
+      throw new Error("customerData.name inválido");
+    }
+
+    if (cd.phone !== undefined && cd.phone !== null && typeof cd.phone !== "string") {
+      throw new Error("customerData.phone inválido");
+    }
+
+    if (cd.document !== undefined && cd.document !== null && typeof cd.document !== "string") {
+      throw new Error("customerData.document inválido");
+    }
+  }
+
+  // userId o customerId puede venir vacío aquí si luego la API inyecta userId desde el token
 }
 
 export function assertRejectSaleOrderDTO(input: unknown): asserts input is RejectSaleOrderDTO {

@@ -156,110 +156,162 @@ export class PrismaSaleOrderRepository implements SaleOrderRepository {
   }
 
   async createRequest(input: CreateSaleOrderInput, actorUserId: string): Promise<SaleOrderRecord> {
-    return prisma.$transaction(async (tx) => {
-      const orderNumber = await generateOrderNumber(tx);
+  return prisma.$transaction(async (tx) => {
+    const orderNumber = await generateOrderNumber(tx);
 
-      // 1) Fetch products involved
-      const productIds = input.items.map((i) => i.productId);
-      const products = await tx.product.findMany({
-        where: { id: { in: productIds } },
-        select: {
-          id: true,
-          code: true,
-          name: true,
-          retailPrice: true,
-          wholesalePrice: true,
-          wholesaleMinQuantity: true,
-          currentStock: true,
-          reservedStock: true,
-          active: true,
-        },
+    let finalUserId = input.userId ?? null;
+    let finalCustomerId = input.customerId ?? null;
+
+    // =========================================================
+    // Resolver / completar customer para compras web
+    // =========================================================
+    if (finalUserId) {
+      const linkedCustomer = await tx.customer.findFirst({
+        where: { userId: finalUserId },
       });
 
-      const byId = new Map(products.map((p) => [p.id, p]));
-
-      // 2) Build details + validate availability (NO reserve yet)
-      const details: Prisma.SaleOrderDetailCreateManyOrderInput[] = [];
-      let total = new (PrismaNS.Decimal as any)("0") as PrismaNS.Decimal;
-      let pricingApplied: PricingType = "RETAIL";
-
-      for (const it of input.items) {
-        const qty = Math.max(1, Number(it.quantity));
-        if (!Number.isFinite(qty) || qty <= 0) throw new Error("quantity inválido");
-
-        const p = byId.get(it.productId);
-        if (!p) throw new Error("Producto no encontrado");
-        if (!p.active) throw new Error(`Producto inactivo: ${p.name}`);
-
-        const available = p.currentStock - p.reservedStock;
-        if (qty > available) throw new Error(`Stock insuficiente para ${p.name}. Disponible: ${available}`);
-
-        const pricing = calcPricingForItem({
-          quantity: qty,
-          retailPrice: p.retailPrice,
-          wholesalePrice: p.wholesalePrice ?? null,
-          wholesaleMinQuantity: p.wholesaleMinQuantity,
-        });
-
-        if (pricing.pricingApplied === "WHOLESALE") pricingApplied = "WHOLESALE";
-
-        const subtotal = moneyMul(pricing.unitPrice as any, qty);
-        total = total.add(subtotal);
-
-        const snapshot = {
-          productId: p.id,
-          code: p.code,
-          name: p.name,
-          retailPrice: String(p.retailPrice),
-          wholesalePrice: p.wholesalePrice ? String(p.wholesalePrice) : null,
-          wholesaleMinQuantity: p.wholesaleMinQuantity,
-          pricingApplied: pricing.pricingApplied,
-        };
-
-        details.push({
-          productId: p.id,
-          quantity: qty,
-          unitPrice: pricing.unitPrice as any,
-          subtotal: subtotal as any,
-          productSnapshot: snapshot as any,
-        });
+      if (!linkedCustomer) {
+        throw new Error("No se encontró un perfil de cliente vinculado al usuario");
       }
 
-      // 3) Create order + details
-      const created = await tx.saleOrder.create({
+      const nextName =
+        linkedCustomer.name?.trim() ||
+        String(input.customerData?.name ?? "").trim() ||
+        linkedCustomer.name;
+
+      const nextPhone =
+        linkedCustomer.phone ??
+        (String(input.customerData?.phone ?? "").trim() || null);
+
+      const nextDocument =
+        linkedCustomer.document ??
+        (String(input.customerData?.document ?? "").trim() || null);
+
+      // Si quieres obligar datos mínimos al momento de comprar:
+      if (!nextPhone || !nextDocument) {
+        throw new Error("Completa tus datos de cliente antes de realizar el pedido");
+      }
+
+      const updatedCustomer = await tx.customer.update({
+        where: { id: linkedCustomer.id },
         data: {
-          orderNumber,
-          status: "PENDING_REQUEST",
-          customerType: input.customerType,
-          pricingApplied,
-          total,
-          orderDate: new Date(),
-          observations: normalizeText(input.observations) ?? null,
-
-          userId: input.userId ?? null,
-          customerId: input.customerId ?? null,
-          sellerId: input.sellerId ?? null,
-
-          details: { createMany: { data: details } },
-        },
-        include: orderInclude,
-      });
-
-      // 4) Audit log (create directly => can set saleOrderId)
-      await tx.auditLog.create({
-        data: {
-          action: "CREATE",
-          entityType: "SaleOrder",
-          entityId: created.id,
-          changes: { createdBy: actorUserId } as any,
-          userId: actorUserId,
-          saleOrderId: created.id,
+          name: nextName,
+          phone: nextPhone,
+          document: nextDocument,
         },
       });
 
-      return mapOrder(created);
+      finalCustomerId = updatedCustomer.id;
+    }
+
+    // Si no viene userId, al menos debe venir customerId para venta física/manual
+    if (!finalUserId && !finalCustomerId) {
+      throw new Error("Se requiere un cliente para registrar el pedido");
+    }
+
+    // 1) Fetch products involved
+    const productIds = input.items.map((i) => i.productId);
+    const products = await tx.product.findMany({
+      where: { id: { in: productIds } },
+      select: {
+        id: true,
+        code: true,
+        name: true,
+        retailPrice: true,
+        wholesalePrice: true,
+        wholesaleMinQuantity: true,
+        currentStock: true,
+        reservedStock: true,
+        status: true,
+      },
     });
-  }
+
+    const byId = new Map(products.map((p) => [p.id, p]));
+
+    // 2) Build details + validate availability
+    const details: Prisma.SaleOrderDetailCreateManyOrderInput[] = [];
+    let total = new (PrismaNS.Decimal as any)("0") as PrismaNS.Decimal;
+    let pricingApplied: PricingType = "RETAIL";
+
+    for (const it of input.items) {
+      const qty = Math.max(1, Number(it.quantity));
+      if (!Number.isFinite(qty) || qty <= 0) throw new Error("quantity inválido");
+
+      const p = byId.get(it.productId);
+      if (!p) throw new Error("Producto no encontrado");
+      if (p.status !== "ACTIVE") throw new Error(`Producto inactivo: ${p.name}`);
+
+      const available = p.currentStock - p.reservedStock;
+      if (qty > available) {
+        throw new Error(`Stock insuficiente para ${p.name}. Disponible: ${available}`);
+      }
+
+      const pricing = calcPricingForItem({
+        quantity: qty,
+        retailPrice: p.retailPrice,
+        wholesalePrice: p.wholesalePrice ?? null,
+        wholesaleMinQuantity: p.wholesaleMinQuantity,
+      });
+
+      if (pricing.pricingApplied === "WHOLESALE") pricingApplied = "WHOLESALE";
+
+      const subtotal = moneyMul(pricing.unitPrice as any, qty);
+      total = total.add(subtotal);
+
+      const snapshot = {
+        productId: p.id,
+        code: p.code,
+        name: p.name,
+        retailPrice: String(p.retailPrice),
+        wholesalePrice: p.wholesalePrice ? String(p.wholesalePrice) : null,
+        wholesaleMinQuantity: p.wholesaleMinQuantity,
+        pricingApplied: pricing.pricingApplied,
+      };
+
+      details.push({
+        productId: p.id,
+        quantity: qty,
+        unitPrice: pricing.unitPrice as any,
+        subtotal: subtotal as any,
+        productSnapshot: snapshot as any,
+      });
+    }
+
+    // 3) Create order + details
+    const created = await tx.saleOrder.create({
+      data: {
+        orderNumber,
+        status: "PENDING_REQUEST",
+        customerType: input.customerType,
+        pricingApplied,
+        total,
+        orderDate: new Date(),
+        observations: normalizeText(input.observations) ?? null,
+
+        userId: finalUserId,
+        customerId: finalCustomerId,
+        sellerId: input.sellerId ?? null,
+
+        details: { createMany: { data: details } },
+      },
+      include: orderInclude,
+    });
+
+    // 4) Audit
+    await tx.auditLog.create({
+      data: {
+        action: "CREATE",
+        entityType: "SaleOrder",
+        entityId: created.id,
+        changes: { createdBy: actorUserId } as any,
+        userId: actorUserId,
+        saleOrderId: created.id,
+      },
+    });
+
+    return mapOrder(created);
+  });
+}
 
   async approve(id: string, adminId: string): Promise<SaleOrderRecord> {
     return prisma.$transaction(async (tx) => {

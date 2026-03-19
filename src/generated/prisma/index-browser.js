@@ -144,7 +144,8 @@ exports.Prisma.CustomerScalarFieldEnum = {
   status: 'status',
   archivedAt: 'archivedAt',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  updatedAt: 'updatedAt',
+  userId: 'userId'
 };
 
 exports.Prisma.CategoryScalarFieldEnum = {

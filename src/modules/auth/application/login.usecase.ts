@@ -1,7 +1,5 @@
-
-
-import { verifyPassword, signAccessToken } from "../../auth/infrastructure/auth.utils";
-import { AuthRepository } from "../domain/auth.repository";
+import { verifyPassword, signAccessToken } from "../infrastructure/auth.utils";
+import type { AuthRepository } from "../domain/auth.repository";
 import { assertActiveUser } from "../domain/auth.rules";
 import { LoginDTO, loginSchema } from "./dtos/auth.dto";
 
@@ -18,7 +16,10 @@ export async function loginUseCase(repo: AuthRepository, input: LoginDTO) {
 
   await repo.updateLastLogin(user.id, new Date());
 
-  const accessToken = await signAccessToken({ sub: user.id, role: user.role });
+  const accessToken = await signAccessToken({
+    sub: user.id,
+    role: user.role,
+  });
 
   return {
     user: {

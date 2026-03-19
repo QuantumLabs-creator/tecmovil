@@ -1,4 +1,3 @@
-// src/modules/products/domain/product.repository.ts
 import type { ProductStatus } from "./product-status";
 
 export type ProductRecord = {
@@ -20,6 +19,11 @@ export type ProductRecord = {
   minStock: number;
   currentStock: number;
   reservedStock: number;
+
+  // nuevos campos calculados
+  pendingRequestedStock: number;
+  availableRealStock: number;
+  availableCommercialStock: number;
 
   status: ProductStatus;
   archivedAt: Date | null;

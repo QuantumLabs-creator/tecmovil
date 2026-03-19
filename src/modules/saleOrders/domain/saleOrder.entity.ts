@@ -1,4 +1,3 @@
-// src/modules/saleOrders/domain/saleOrder.entity.ts
 import type { CustomerType } from "@/src/generated/prisma/client";
 
 export class SaleOrderEntity {
@@ -10,11 +9,15 @@ export class SaleOrderEntity {
     customerType: CustomerType;
     observations: string | null;
 
+    customerData?: {
+      name?: string | null;
+      phone?: string | null;
+      document?: string | null;
+    } | null;
+
     items: { productId: string; quantity: number }[];
   }) {
     if (!input.userId && !input.customerId) {
-      // web: userId viene del token normalmente; tienda: customerId
-      // si no tienes ninguno, no sabemos a quién pertenece el pedido
       throw new Error("userId o customerId requerido");
     }
 
@@ -27,6 +30,17 @@ export class SaleOrderEntity {
       if (!Number.isFinite(it.quantity) || it.quantity <= 0) throw new Error("quantity inválido");
     }
 
-    return { ...input };
+    const customerData = input.customerData
+      ? {
+          name: String(input.customerData.name ?? "").trim() || null,
+          phone: String(input.customerData.phone ?? "").trim() || null,
+          document: String(input.customerData.document ?? "").trim() || null,
+        }
+      : null;
+
+    return {
+      ...input,
+      customerData,
+    };
   }
 }

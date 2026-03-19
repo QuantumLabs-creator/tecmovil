@@ -2,7 +2,6 @@ import type { SaleOrderRepository } from "../domain/saleOrder.repository";
 import { assertCreateSaleOrderDTO, type CreateSaleOrderDTO } from "./dtos/saleOrder.dto";
 import { normalizeCustomerType, normalizeInt, normalizeText } from "../domain/saleOrder.rules";
 
-
 export class CreateSaleOrderUseCase {
   constructor(private readonly repo: SaleOrderRepository) {}
 
@@ -24,6 +23,13 @@ export class CreateSaleOrderUseCase {
         sellerId: dto.sellerId ?? null,
         customerType,
         observations: normalizeText(dto.observations) ?? null,
+        customerData: dto.customerData
+          ? {
+              name: normalizeText(dto.customerData.name) ?? null,
+              phone: normalizeText(dto.customerData.phone) ?? null,
+              document: normalizeText(dto.customerData.document) ?? null,
+            }
+          : undefined,
         items,
       },
       actorUserId

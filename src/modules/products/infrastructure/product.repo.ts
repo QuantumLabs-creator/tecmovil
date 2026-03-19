@@ -43,8 +43,15 @@ function toDecimal(value: string | null): Prisma.Decimal | null {
 }
 
 function mapProduct(
-  p: PrismaTypes.ProductGetPayload<{ include: { category: true; supplier: true; unit: true } }>
+  p: PrismaTypes.ProductGetPayload<{ include: { category: true; supplier: true; unit: true } }>,
+  pendingRequestedStock = 0
 ): ProductRecord {
+  const availableRealStock = Math.max(0, p.currentStock - p.reservedStock);
+  const availableCommercialStock = Math.max(
+    0,
+    p.currentStock - p.reservedStock - pendingRequestedStock
+  );
+
   return {
     id: p.id,
     code: p.code,
@@ -63,6 +70,10 @@ function mapProduct(
     minStock: p.minStock,
     currentStock: p.currentStock,
     reservedStock: p.reservedStock,
+
+    pendingRequestedStock,
+    availableRealStock,
+    availableCommercialStock,
 
     status: p.status as ProductStatus,
     archivedAt: p.archivedAt ?? null,
@@ -98,6 +109,29 @@ function isBlank(v: unknown) {
   return v === undefined || v === null || String(v).trim() === "";
 }
 
+async function getPendingRequestedMap(
+  productIds: string[]
+): Promise<Map<string, number>> {
+  if (!productIds.length) return new Map();
+
+  const rows = await prisma.saleOrderDetail.groupBy({
+    by: ["productId"],
+    where: {
+      productId: { in: productIds },
+      order: {
+        status: "PENDING_REQUEST",
+      },
+    },
+    _sum: {
+      quantity: true,
+    },
+  });
+
+  return new Map(
+    rows.map((r) => [r.productId, Number(r._sum.quantity ?? 0)])
+  );
+}
+
 /** ===================== Repository ===================== */
 
 export class PrismaProductRepository implements ProductRepository {
@@ -106,7 +140,11 @@ export class PrismaProductRepository implements ProductRepository {
       where: { id },
       include: { category: true, supplier: true, unit: true },
     });
-    return p ? mapProduct(p) : null;
+
+    if (!p) return null;
+
+    const pendingMap = await getPendingRequestedMap([p.id]);
+    return mapProduct(p, pendingMap.get(p.id) ?? 0);
   }
 
   async getByCode(code: string): Promise<ProductRecord | null> {
@@ -118,7 +156,10 @@ export class PrismaProductRepository implements ProductRepository {
       include: { category: true, supplier: true, unit: true },
     });
 
-    return p ? mapProduct(p) : null;
+    if (!p) return null;
+
+    const pendingMap = await getPendingRequestedMap([p.id]);
+    return mapProduct(p, pendingMap.get(p.id) ?? 0);
   }
 
   async list(params: ProductListParams): Promise<ProductListResult> {
@@ -166,10 +207,12 @@ export class PrismaProductRepository implements ProductRepository {
       }),
     ]);
 
-    let mapped = items.map(mapProduct);
+    const pendingMap = await getPendingRequestedMap(items.map((p) => p.id));
+
+    let mapped = items.map((p) => mapProduct(p, pendingMap.get(p.id) ?? 0));
 
     if (params.lowStock === true) {
-      mapped = mapped.filter((p) => p.currentStock <= p.minStock);
+      mapped = mapped.filter((p) => p.availableCommercialStock <= p.minStock);
     }
 
     return {
@@ -321,22 +364,22 @@ export class PrismaProductRepository implements ProductRepository {
       const nextWholesale =
         input.wholesalePrice !== undefined
           ? (isBlank(input.wholesalePrice)
-              ? null
-              : new Prisma.Decimal(normalizeMoney(input.wholesalePrice, "wholesalePrice")))
+            ? null
+            : new Prisma.Decimal(normalizeMoney(input.wholesalePrice, "wholesalePrice")))
           : (existing.wholesalePrice ?? null);
 
       const nextMinSale =
         input.minSalePrice !== undefined
           ? (isBlank(input.minSalePrice)
-              ? null
-              : new Prisma.Decimal(normalizeMoney(input.minSalePrice, "minSalePrice")))
+            ? null
+            : new Prisma.Decimal(normalizeMoney(input.minSalePrice, "minSalePrice")))
           : (existing.minSalePrice ?? null);
 
       const nextMaxSale =
         input.maxSalePrice !== undefined
           ? (isBlank(input.maxSalePrice)
-              ? null
-              : new Prisma.Decimal(normalizeMoney(input.maxSalePrice, "maxSalePrice")))
+            ? null
+            : new Prisma.Decimal(normalizeMoney(input.maxSalePrice, "maxSalePrice")))
           : (existing.maxSalePrice ?? null);
 
       if (nextMinSale && nextMinSale.greaterThan(nextRetail)) {

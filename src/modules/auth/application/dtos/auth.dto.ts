@@ -1,5 +1,4 @@
 import { z } from "zod";
-import { Role } from "@/src/generated/prisma";
 
 export const loginSchema = z.object({
   email: z.string().email("Email inválido").toLowerCase().trim(),
@@ -15,7 +14,6 @@ export const registerSchema = z.object({
     .regex(/[A-Z]/, "Debe incluir una mayúscula")
     .regex(/[0-9]/, "Debe incluir un número"),
   phone: z.string().optional(),
-  role: z.enum([Role.USER, Role.SELLER]).default(Role.USER),
 });
 
 export type LoginDTO = z.infer<typeof loginSchema>;

@@ -62,6 +62,12 @@ export type CreateSaleOrderInput = {
   sellerId?: string | null;
   observations?: string | null;
 
+  customerData?: {
+    name?: string |null;
+    phone?: string | null;
+    document?: string | null;
+  };
+
   items: { productId: string; quantity: number }[];
 };
 

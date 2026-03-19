@@ -2725,6 +2725,7 @@ export namespace Prisma {
     lastLogin?: boolean
     createdAt?: boolean
     updatedAt?: boolean
+    customer?: boolean | User$customerArgs<ExtArgs>
     movements?: boolean | User$movementsArgs<ExtArgs>
     purchaseOrders?: boolean | User$purchaseOrdersArgs<ExtArgs>
     saleOrders?: boolean | User$saleOrdersArgs<ExtArgs>
@@ -2778,6 +2779,7 @@ export namespace Prisma {
 
   export type UserOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "email" | "password" | "phone" | "role" | "status" | "archivedAt" | "lastLogin" | "createdAt" | "updatedAt", ExtArgs["result"]["user"]>
   export type UserInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    customer?: boolean | User$customerArgs<ExtArgs>
     movements?: boolean | User$movementsArgs<ExtArgs>
     purchaseOrders?: boolean | User$purchaseOrdersArgs<ExtArgs>
     saleOrders?: boolean | User$saleOrdersArgs<ExtArgs>
@@ -2792,6 +2794,7 @@ export namespace Prisma {
   export type $UserPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "User"
     objects: {
+      customer: Prisma.$CustomerPayload<ExtArgs> | null
       movements: Prisma.$MovementPayload<ExtArgs>[]
       purchaseOrders: Prisma.$OrderPayload<ExtArgs>[]
       saleOrders: Prisma.$SaleOrderPayload<ExtArgs>[]
@@ -3205,6 +3208,7 @@ export namespace Prisma {
    */
   export interface Prisma__UserClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
+    customer<T extends User$customerArgs<ExtArgs> = {}>(args?: Subset<T, User$customerArgs<ExtArgs>>): Prisma__CustomerClient<$Result.GetResult<Prisma.$CustomerPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     movements<T extends User$movementsArgs<ExtArgs> = {}>(args?: Subset<T, User$movementsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$MovementPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     purchaseOrders<T extends User$purchaseOrdersArgs<ExtArgs> = {}>(args?: Subset<T, User$purchaseOrdersArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$OrderPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     saleOrders<T extends User$saleOrdersArgs<ExtArgs> = {}>(args?: Subset<T, User$saleOrdersArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SaleOrderPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -3639,6 +3643,25 @@ export namespace Prisma {
   }
 
   /**
+   * User.customer
+   */
+  export type User$customerArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Customer
+     */
+    select?: CustomerSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Customer
+     */
+    omit?: CustomerOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CustomerInclude<ExtArgs> | null
+    where?: CustomerWhereInput
+  }
+
+  /**
    * User.movements
    */
   export type User$movementsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -3822,6 +3845,7 @@ export namespace Prisma {
     archivedAt: Date | null
     createdAt: Date | null
     updatedAt: Date | null
+    userId: string | null
   }
 
   export type CustomerMaxAggregateOutputType = {
@@ -3835,6 +3859,7 @@ export namespace Prisma {
     archivedAt: Date | null
     createdAt: Date | null
     updatedAt: Date | null
+    userId: string | null
   }
 
   export type CustomerCountAggregateOutputType = {
@@ -3848,6 +3873,7 @@ export namespace Prisma {
     archivedAt: number
     createdAt: number
     updatedAt: number
+    userId: number
     _all: number
   }
 
@@ -3863,6 +3889,7 @@ export namespace Prisma {
     archivedAt?: true
     createdAt?: true
     updatedAt?: true
+    userId?: true
   }
 
   export type CustomerMaxAggregateInputType = {
@@ -3876,6 +3903,7 @@ export namespace Prisma {
     archivedAt?: true
     createdAt?: true
     updatedAt?: true
+    userId?: true
   }
 
   export type CustomerCountAggregateInputType = {
@@ -3889,6 +3917,7 @@ export namespace Prisma {
     archivedAt?: true
     createdAt?: true
     updatedAt?: true
+    userId?: true
     _all?: true
   }
 
@@ -3975,6 +4004,7 @@ export namespace Prisma {
     archivedAt: Date | null
     createdAt: Date
     updatedAt: Date
+    userId: string | null
     _count: CustomerCountAggregateOutputType | null
     _min: CustomerMinAggregateOutputType | null
     _max: CustomerMaxAggregateOutputType | null
@@ -4005,6 +4035,8 @@ export namespace Prisma {
     archivedAt?: boolean
     createdAt?: boolean
     updatedAt?: boolean
+    userId?: boolean
+    user?: boolean | Customer$userArgs<ExtArgs>
     saleOrders?: boolean | Customer$saleOrdersArgs<ExtArgs>
     _count?: boolean | CustomerCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["customer"]>
@@ -4020,6 +4052,8 @@ export namespace Prisma {
     archivedAt?: boolean
     createdAt?: boolean
     updatedAt?: boolean
+    userId?: boolean
+    user?: boolean | Customer$userArgs<ExtArgs>
   }, ExtArgs["result"]["customer"]>
 
   export type CustomerSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
@@ -4033,6 +4067,8 @@ export namespace Prisma {
     archivedAt?: boolean
     createdAt?: boolean
     updatedAt?: boolean
+    userId?: boolean
+    user?: boolean | Customer$userArgs<ExtArgs>
   }, ExtArgs["result"]["customer"]>
 
   export type CustomerSelectScalar = {
@@ -4046,19 +4082,26 @@ export namespace Prisma {
     archivedAt?: boolean
     createdAt?: boolean
     updatedAt?: boolean
+    userId?: boolean
   }
 
-  export type CustomerOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "email" | "phone" | "document" | "customerType" | "status" | "archivedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["customer"]>
+  export type CustomerOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "email" | "phone" | "document" | "customerType" | "status" | "archivedAt" | "createdAt" | "updatedAt" | "userId", ExtArgs["result"]["customer"]>
   export type CustomerInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | Customer$userArgs<ExtArgs>
     saleOrders?: boolean | Customer$saleOrdersArgs<ExtArgs>
     _count?: boolean | CustomerCountOutputTypeDefaultArgs<ExtArgs>
   }
-  export type CustomerIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
-  export type CustomerIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
+  export type CustomerIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | Customer$userArgs<ExtArgs>
+  }
+  export type CustomerIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | Customer$userArgs<ExtArgs>
+  }
 
   export type $CustomerPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "Customer"
     objects: {
+      user: Prisma.$UserPayload<ExtArgs> | null
       saleOrders: Prisma.$SaleOrderPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
@@ -4072,6 +4115,7 @@ export namespace Prisma {
       archivedAt: Date | null
       createdAt: Date
       updatedAt: Date
+      userId: string | null
     }, ExtArgs["result"]["customer"]>
     composites: {}
   }
@@ -4466,6 +4510,7 @@ export namespace Prisma {
    */
   export interface Prisma__CustomerClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
+    user<T extends Customer$userArgs<ExtArgs> = {}>(args?: Subset<T, Customer$userArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     saleOrders<T extends Customer$saleOrdersArgs<ExtArgs> = {}>(args?: Subset<T, Customer$saleOrdersArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SaleOrderPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -4506,6 +4551,7 @@ export namespace Prisma {
     readonly archivedAt: FieldRef<"Customer", 'DateTime'>
     readonly createdAt: FieldRef<"Customer", 'DateTime'>
     readonly updatedAt: FieldRef<"Customer", 'DateTime'>
+    readonly userId: FieldRef<"Customer", 'String'>
   }
     
 
@@ -4755,6 +4801,10 @@ export namespace Prisma {
      */
     data: CustomerCreateManyInput | CustomerCreateManyInput[]
     skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CustomerIncludeCreateManyAndReturn<ExtArgs> | null
   }
 
   /**
@@ -4825,6 +4875,10 @@ export namespace Prisma {
      * Limit how many Customers to update.
      */
     limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CustomerIncludeUpdateManyAndReturn<ExtArgs> | null
   }
 
   /**
@@ -4891,6 +4945,25 @@ export namespace Prisma {
      * Limit how many Customers to delete.
      */
     limit?: number
+  }
+
+  /**
+   * Customer.user
+   */
+  export type Customer$userArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the User
+     */
+    select?: UserSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the User
+     */
+    omit?: UserOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserInclude<ExtArgs> | null
+    where?: UserWhereInput
   }
 
   /**
@@ -19269,7 +19342,8 @@ export namespace Prisma {
     status: 'status',
     archivedAt: 'archivedAt',
     createdAt: 'createdAt',
-    updatedAt: 'updatedAt'
+    updatedAt: 'updatedAt',
+    userId: 'userId'
   };
 
   export type CustomerScalarFieldEnum = (typeof CustomerScalarFieldEnum)[keyof typeof CustomerScalarFieldEnum]
@@ -19740,6 +19814,7 @@ export namespace Prisma {
     lastLogin?: DateTimeNullableFilter<"User"> | Date | string | null
     createdAt?: DateTimeFilter<"User"> | Date | string
     updatedAt?: DateTimeFilter<"User"> | Date | string
+    customer?: XOR<CustomerNullableScalarRelationFilter, CustomerWhereInput> | null
     movements?: MovementListRelationFilter
     purchaseOrders?: OrderListRelationFilter
     saleOrders?: SaleOrderListRelationFilter
@@ -19760,6 +19835,7 @@ export namespace Prisma {
     lastLogin?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    customer?: CustomerOrderByWithRelationInput
     movements?: MovementOrderByRelationAggregateInput
     purchaseOrders?: OrderOrderByRelationAggregateInput
     saleOrders?: SaleOrderOrderByRelationAggregateInput
@@ -19783,6 +19859,7 @@ export namespace Prisma {
     lastLogin?: DateTimeNullableFilter<"User"> | Date | string | null
     createdAt?: DateTimeFilter<"User"> | Date | string
     updatedAt?: DateTimeFilter<"User"> | Date | string
+    customer?: XOR<CustomerNullableScalarRelationFilter, CustomerWhereInput> | null
     movements?: MovementListRelationFilter
     purchaseOrders?: OrderListRelationFilter
     saleOrders?: SaleOrderListRelationFilter
@@ -19839,6 +19916,8 @@ export namespace Prisma {
     archivedAt?: DateTimeNullableFilter<"Customer"> | Date | string | null
     createdAt?: DateTimeFilter<"Customer"> | Date | string
     updatedAt?: DateTimeFilter<"Customer"> | Date | string
+    userId?: StringNullableFilter<"Customer"> | string | null
+    user?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
     saleOrders?: SaleOrderListRelationFilter
   }
 
@@ -19853,12 +19932,15 @@ export namespace Prisma {
     archivedAt?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    userId?: SortOrderInput | SortOrder
+    user?: UserOrderByWithRelationInput
     saleOrders?: SaleOrderOrderByRelationAggregateInput
   }
 
   export type CustomerWhereUniqueInput = Prisma.AtLeast<{
     id?: string
     email?: string
+    userId?: string
     AND?: CustomerWhereInput | CustomerWhereInput[]
     OR?: CustomerWhereInput[]
     NOT?: CustomerWhereInput | CustomerWhereInput[]
@@ -19870,8 +19952,9 @@ export namespace Prisma {
     archivedAt?: DateTimeNullableFilter<"Customer"> | Date | string | null
     createdAt?: DateTimeFilter<"Customer"> | Date | string
     updatedAt?: DateTimeFilter<"Customer"> | Date | string
+    user?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
     saleOrders?: SaleOrderListRelationFilter
-  }, "id" | "email">
+  }, "id" | "email" | "userId">
 
   export type CustomerOrderByWithAggregationInput = {
     id?: SortOrder
@@ -19884,6 +19967,7 @@ export namespace Prisma {
     archivedAt?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    userId?: SortOrderInput | SortOrder
     _count?: CustomerCountOrderByAggregateInput
     _max?: CustomerMaxOrderByAggregateInput
     _min?: CustomerMinOrderByAggregateInput
@@ -19903,6 +19987,7 @@ export namespace Prisma {
     archivedAt?: DateTimeNullableWithAggregatesFilter<"Customer"> | Date | string | null
     createdAt?: DateTimeWithAggregatesFilter<"Customer"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Customer"> | Date | string
+    userId?: StringNullableWithAggregatesFilter<"Customer"> | string | null
   }
 
   export type CategoryWhereInput = {
@@ -20978,6 +21063,7 @@ export namespace Prisma {
     lastLogin?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    customer?: CustomerCreateNestedOneWithoutUserInput
     movements?: MovementCreateNestedManyWithoutUserInput
     purchaseOrders?: OrderCreateNestedManyWithoutUserInput
     saleOrders?: SaleOrderCreateNestedManyWithoutUserInput
@@ -20998,6 +21084,7 @@ export namespace Prisma {
     lastLogin?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    customer?: CustomerUncheckedCreateNestedOneWithoutUserInput
     movements?: MovementUncheckedCreateNestedManyWithoutUserInput
     purchaseOrders?: OrderUncheckedCreateNestedManyWithoutUserInput
     saleOrders?: SaleOrderUncheckedCreateNestedManyWithoutUserInput
@@ -21018,6 +21105,7 @@ export namespace Prisma {
     lastLogin?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    customer?: CustomerUpdateOneWithoutUserNestedInput
     movements?: MovementUpdateManyWithoutUserNestedInput
     purchaseOrders?: OrderUpdateManyWithoutUserNestedInput
     saleOrders?: SaleOrderUpdateManyWithoutUserNestedInput
@@ -21038,6 +21126,7 @@ export namespace Prisma {
     lastLogin?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    customer?: CustomerUncheckedUpdateOneWithoutUserNestedInput
     movements?: MovementUncheckedUpdateManyWithoutUserNestedInput
     purchaseOrders?: OrderUncheckedUpdateManyWithoutUserNestedInput
     saleOrders?: SaleOrderUncheckedUpdateManyWithoutUserNestedInput
@@ -21099,6 +21188,7 @@ export namespace Prisma {
     archivedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    user?: UserCreateNestedOneWithoutCustomerInput
     saleOrders?: SaleOrderCreateNestedManyWithoutCustomerInput
   }
 
@@ -21113,6 +21203,7 @@ export namespace Prisma {
     archivedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    userId?: string | null
     saleOrders?: SaleOrderUncheckedCreateNestedManyWithoutCustomerInput
   }
 
@@ -21127,6 +21218,7 @@ export namespace Prisma {
     archivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneWithoutCustomerNestedInput
     saleOrders?: SaleOrderUpdateManyWithoutCustomerNestedInput
   }
 
@@ -21141,6 +21233,7 @@ export namespace Prisma {
     archivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    userId?: NullableStringFieldUpdateOperationsInput | string | null
     saleOrders?: SaleOrderUncheckedUpdateManyWithoutCustomerNestedInput
   }
 
@@ -21155,6 +21248,7 @@ export namespace Prisma {
     archivedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    userId?: string | null
   }
 
   export type CustomerUpdateManyMutationInput = {
@@ -21181,6 +21275,7 @@ export namespace Prisma {
     archivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    userId?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type CategoryCreateInput = {
@@ -22412,6 +22507,11 @@ export namespace Prisma {
     not?: NestedDateTimeFilter<$PrismaModel> | Date | string
   }
 
+  export type CustomerNullableScalarRelationFilter = {
+    is?: CustomerWhereInput | null
+    isNot?: CustomerWhereInput | null
+  }
+
   export type MovementListRelationFilter = {
     every?: MovementWhereInput
     some?: MovementWhereInput
@@ -22600,6 +22700,11 @@ export namespace Prisma {
     not?: NestedEnumCustomerTypeFilter<$PrismaModel> | $Enums.CustomerType
   }
 
+  export type UserNullableScalarRelationFilter = {
+    is?: UserWhereInput | null
+    isNot?: UserWhereInput | null
+  }
+
   export type CustomerCountOrderByAggregateInput = {
     id?: SortOrder
     name?: SortOrder
@@ -22611,6 +22716,7 @@ export namespace Prisma {
     archivedAt?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    userId?: SortOrder
   }
 
   export type CustomerMaxOrderByAggregateInput = {
@@ -22624,6 +22730,7 @@ export namespace Prisma {
     archivedAt?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    userId?: SortOrder
   }
 
   export type CustomerMinOrderByAggregateInput = {
@@ -22637,6 +22744,7 @@ export namespace Prisma {
     archivedAt?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    userId?: SortOrder
   }
 
   export type EnumCustomerTypeWithAggregatesFilter<$PrismaModel = never> = {
@@ -23183,16 +23291,6 @@ export namespace Prisma {
     not?: NestedEnumPricingTypeFilter<$PrismaModel> | $Enums.PricingType
   }
 
-  export type UserNullableScalarRelationFilter = {
-    is?: UserWhereInput | null
-    isNot?: UserWhereInput | null
-  }
-
-  export type CustomerNullableScalarRelationFilter = {
-    is?: CustomerWhereInput | null
-    isNot?: CustomerWhereInput | null
-  }
-
   export type SaleOrderCountOrderByAggregateInput = {
     id?: SortOrder
     orderNumber?: SortOrder
@@ -23541,6 +23639,12 @@ export namespace Prisma {
     updatedAt?: SortOrder
   }
 
+  export type CustomerCreateNestedOneWithoutUserInput = {
+    create?: XOR<CustomerCreateWithoutUserInput, CustomerUncheckedCreateWithoutUserInput>
+    connectOrCreate?: CustomerCreateOrConnectWithoutUserInput
+    connect?: CustomerWhereUniqueInput
+  }
+
   export type MovementCreateNestedManyWithoutUserInput = {
     create?: XOR<MovementCreateWithoutUserInput, MovementUncheckedCreateWithoutUserInput> | MovementCreateWithoutUserInput[] | MovementUncheckedCreateWithoutUserInput[]
     connectOrCreate?: MovementCreateOrConnectWithoutUserInput | MovementCreateOrConnectWithoutUserInput[]
@@ -23581,6 +23685,12 @@ export namespace Prisma {
     connectOrCreate?: AuditLogCreateOrConnectWithoutUserInput | AuditLogCreateOrConnectWithoutUserInput[]
     createMany?: AuditLogCreateManyUserInputEnvelope
     connect?: AuditLogWhereUniqueInput | AuditLogWhereUniqueInput[]
+  }
+
+  export type CustomerUncheckedCreateNestedOneWithoutUserInput = {
+    create?: XOR<CustomerCreateWithoutUserInput, CustomerUncheckedCreateWithoutUserInput>
+    connectOrCreate?: CustomerCreateOrConnectWithoutUserInput
+    connect?: CustomerWhereUniqueInput
   }
 
   export type MovementUncheckedCreateNestedManyWithoutUserInput = {
@@ -23647,6 +23757,16 @@ export namespace Prisma {
 
   export type DateTimeFieldUpdateOperationsInput = {
     set?: Date | string
+  }
+
+  export type CustomerUpdateOneWithoutUserNestedInput = {
+    create?: XOR<CustomerCreateWithoutUserInput, CustomerUncheckedCreateWithoutUserInput>
+    connectOrCreate?: CustomerCreateOrConnectWithoutUserInput
+    upsert?: CustomerUpsertWithoutUserInput
+    disconnect?: CustomerWhereInput | boolean
+    delete?: CustomerWhereInput | boolean
+    connect?: CustomerWhereUniqueInput
+    update?: XOR<XOR<CustomerUpdateToOneWithWhereWithoutUserInput, CustomerUpdateWithoutUserInput>, CustomerUncheckedUpdateWithoutUserInput>
   }
 
   export type MovementUpdateManyWithoutUserNestedInput = {
@@ -23733,6 +23853,16 @@ export namespace Prisma {
     deleteMany?: AuditLogScalarWhereInput | AuditLogScalarWhereInput[]
   }
 
+  export type CustomerUncheckedUpdateOneWithoutUserNestedInput = {
+    create?: XOR<CustomerCreateWithoutUserInput, CustomerUncheckedCreateWithoutUserInput>
+    connectOrCreate?: CustomerCreateOrConnectWithoutUserInput
+    upsert?: CustomerUpsertWithoutUserInput
+    disconnect?: CustomerWhereInput | boolean
+    delete?: CustomerWhereInput | boolean
+    connect?: CustomerWhereUniqueInput
+    update?: XOR<XOR<CustomerUpdateToOneWithWhereWithoutUserInput, CustomerUpdateWithoutUserInput>, CustomerUncheckedUpdateWithoutUserInput>
+  }
+
   export type MovementUncheckedUpdateManyWithoutUserNestedInput = {
     create?: XOR<MovementCreateWithoutUserInput, MovementUncheckedCreateWithoutUserInput> | MovementCreateWithoutUserInput[] | MovementUncheckedCreateWithoutUserInput[]
     connectOrCreate?: MovementCreateOrConnectWithoutUserInput | MovementCreateOrConnectWithoutUserInput[]
@@ -23817,6 +23947,12 @@ export namespace Prisma {
     deleteMany?: AuditLogScalarWhereInput | AuditLogScalarWhereInput[]
   }
 
+  export type UserCreateNestedOneWithoutCustomerInput = {
+    create?: XOR<UserCreateWithoutCustomerInput, UserUncheckedCreateWithoutCustomerInput>
+    connectOrCreate?: UserCreateOrConnectWithoutCustomerInput
+    connect?: UserWhereUniqueInput
+  }
+
   export type SaleOrderCreateNestedManyWithoutCustomerInput = {
     create?: XOR<SaleOrderCreateWithoutCustomerInput, SaleOrderUncheckedCreateWithoutCustomerInput> | SaleOrderCreateWithoutCustomerInput[] | SaleOrderUncheckedCreateWithoutCustomerInput[]
     connectOrCreate?: SaleOrderCreateOrConnectWithoutCustomerInput | SaleOrderCreateOrConnectWithoutCustomerInput[]
@@ -23833,6 +23969,16 @@ export namespace Prisma {
 
   export type EnumCustomerTypeFieldUpdateOperationsInput = {
     set?: $Enums.CustomerType
+  }
+
+  export type UserUpdateOneWithoutCustomerNestedInput = {
+    create?: XOR<UserCreateWithoutCustomerInput, UserUncheckedCreateWithoutCustomerInput>
+    connectOrCreate?: UserCreateOrConnectWithoutCustomerInput
+    upsert?: UserUpsertWithoutCustomerInput
+    disconnect?: UserWhereInput | boolean
+    delete?: UserWhereInput | boolean
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutCustomerInput, UserUpdateWithoutCustomerInput>, UserUncheckedUpdateWithoutCustomerInput>
   }
 
   export type SaleOrderUpdateManyWithoutCustomerNestedInput = {
@@ -25091,6 +25237,39 @@ export namespace Prisma {
     _max?: NestedBoolFilter<$PrismaModel>
   }
 
+  export type CustomerCreateWithoutUserInput = {
+    id?: string
+    name: string
+    email?: string | null
+    phone?: string | null
+    document?: string | null
+    customerType?: $Enums.CustomerType
+    status?: $Enums.RecordStatus
+    archivedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    saleOrders?: SaleOrderCreateNestedManyWithoutCustomerInput
+  }
+
+  export type CustomerUncheckedCreateWithoutUserInput = {
+    id?: string
+    name: string
+    email?: string | null
+    phone?: string | null
+    document?: string | null
+    customerType?: $Enums.CustomerType
+    status?: $Enums.RecordStatus
+    archivedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    saleOrders?: SaleOrderUncheckedCreateNestedManyWithoutCustomerInput
+  }
+
+  export type CustomerCreateOrConnectWithoutUserInput = {
+    where: CustomerWhereUniqueInput
+    create: XOR<CustomerCreateWithoutUserInput, CustomerUncheckedCreateWithoutUserInput>
+  }
+
   export type MovementCreateWithoutUserInput = {
     id?: string
     type: $Enums.MovementType
@@ -25339,6 +25518,45 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type CustomerUpsertWithoutUserInput = {
+    update: XOR<CustomerUpdateWithoutUserInput, CustomerUncheckedUpdateWithoutUserInput>
+    create: XOR<CustomerCreateWithoutUserInput, CustomerUncheckedCreateWithoutUserInput>
+    where?: CustomerWhereInput
+  }
+
+  export type CustomerUpdateToOneWithWhereWithoutUserInput = {
+    where?: CustomerWhereInput
+    data: XOR<CustomerUpdateWithoutUserInput, CustomerUncheckedUpdateWithoutUserInput>
+  }
+
+  export type CustomerUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    document?: NullableStringFieldUpdateOperationsInput | string | null
+    customerType?: EnumCustomerTypeFieldUpdateOperationsInput | $Enums.CustomerType
+    status?: EnumRecordStatusFieldUpdateOperationsInput | $Enums.RecordStatus
+    archivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    saleOrders?: SaleOrderUpdateManyWithoutCustomerNestedInput
+  }
+
+  export type CustomerUncheckedUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    document?: NullableStringFieldUpdateOperationsInput | string | null
+    customerType?: EnumCustomerTypeFieldUpdateOperationsInput | $Enums.CustomerType
+    status?: EnumRecordStatusFieldUpdateOperationsInput | $Enums.RecordStatus
+    archivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    saleOrders?: SaleOrderUncheckedUpdateManyWithoutCustomerNestedInput
+  }
+
   export type MovementUpsertWithWhereUniqueWithoutUserInput = {
     where: MovementWhereUniqueInput
     update: XOR<MovementUpdateWithoutUserInput, MovementUncheckedUpdateWithoutUserInput>
@@ -25525,6 +25743,51 @@ export namespace Prisma {
     saleOrderId?: StringNullableFilter<"AuditLog"> | string | null
   }
 
+  export type UserCreateWithoutCustomerInput = {
+    id?: string
+    name: string
+    email: string
+    password: string
+    phone?: string | null
+    role?: $Enums.Role
+    status?: $Enums.RecordStatus
+    archivedAt?: Date | string | null
+    lastLogin?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    movements?: MovementCreateNestedManyWithoutUserInput
+    purchaseOrders?: OrderCreateNestedManyWithoutUserInput
+    saleOrders?: SaleOrderCreateNestedManyWithoutUserInput
+    soldOrders?: SaleOrderCreateNestedManyWithoutSellerInput
+    receipts?: ReceiptCreateNestedManyWithoutUploadedByInput
+    auditLogs?: AuditLogCreateNestedManyWithoutUserInput
+  }
+
+  export type UserUncheckedCreateWithoutCustomerInput = {
+    id?: string
+    name: string
+    email: string
+    password: string
+    phone?: string | null
+    role?: $Enums.Role
+    status?: $Enums.RecordStatus
+    archivedAt?: Date | string | null
+    lastLogin?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    movements?: MovementUncheckedCreateNestedManyWithoutUserInput
+    purchaseOrders?: OrderUncheckedCreateNestedManyWithoutUserInput
+    saleOrders?: SaleOrderUncheckedCreateNestedManyWithoutUserInput
+    soldOrders?: SaleOrderUncheckedCreateNestedManyWithoutSellerInput
+    receipts?: ReceiptUncheckedCreateNestedManyWithoutUploadedByInput
+    auditLogs?: AuditLogUncheckedCreateNestedManyWithoutUserInput
+  }
+
+  export type UserCreateOrConnectWithoutCustomerInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutCustomerInput, UserUncheckedCreateWithoutCustomerInput>
+  }
+
   export type SaleOrderCreateWithoutCustomerInput = {
     id?: string
     orderNumber: string
@@ -25571,6 +25834,57 @@ export namespace Prisma {
   export type SaleOrderCreateManyCustomerInputEnvelope = {
     data: SaleOrderCreateManyCustomerInput | SaleOrderCreateManyCustomerInput[]
     skipDuplicates?: boolean
+  }
+
+  export type UserUpsertWithoutCustomerInput = {
+    update: XOR<UserUpdateWithoutCustomerInput, UserUncheckedUpdateWithoutCustomerInput>
+    create: XOR<UserCreateWithoutCustomerInput, UserUncheckedCreateWithoutCustomerInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutCustomerInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutCustomerInput, UserUncheckedUpdateWithoutCustomerInput>
+  }
+
+  export type UserUpdateWithoutCustomerInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    password?: StringFieldUpdateOperationsInput | string
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
+    status?: EnumRecordStatusFieldUpdateOperationsInput | $Enums.RecordStatus
+    archivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastLogin?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    movements?: MovementUpdateManyWithoutUserNestedInput
+    purchaseOrders?: OrderUpdateManyWithoutUserNestedInput
+    saleOrders?: SaleOrderUpdateManyWithoutUserNestedInput
+    soldOrders?: SaleOrderUpdateManyWithoutSellerNestedInput
+    receipts?: ReceiptUpdateManyWithoutUploadedByNestedInput
+    auditLogs?: AuditLogUpdateManyWithoutUserNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutCustomerInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    password?: StringFieldUpdateOperationsInput | string
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
+    status?: EnumRecordStatusFieldUpdateOperationsInput | $Enums.RecordStatus
+    archivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastLogin?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    movements?: MovementUncheckedUpdateManyWithoutUserNestedInput
+    purchaseOrders?: OrderUncheckedUpdateManyWithoutUserNestedInput
+    saleOrders?: SaleOrderUncheckedUpdateManyWithoutUserNestedInput
+    soldOrders?: SaleOrderUncheckedUpdateManyWithoutSellerNestedInput
+    receipts?: ReceiptUncheckedUpdateManyWithoutUploadedByNestedInput
+    auditLogs?: AuditLogUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type SaleOrderUpsertWithWhereUniqueWithoutCustomerInput = {
@@ -26322,6 +26636,7 @@ export namespace Prisma {
     lastLogin?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    customer?: CustomerCreateNestedOneWithoutUserInput
     purchaseOrders?: OrderCreateNestedManyWithoutUserInput
     saleOrders?: SaleOrderCreateNestedManyWithoutUserInput
     soldOrders?: SaleOrderCreateNestedManyWithoutSellerInput
@@ -26341,6 +26656,7 @@ export namespace Prisma {
     lastLogin?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    customer?: CustomerUncheckedCreateNestedOneWithoutUserInput
     purchaseOrders?: OrderUncheckedCreateNestedManyWithoutUserInput
     saleOrders?: SaleOrderUncheckedCreateNestedManyWithoutUserInput
     soldOrders?: SaleOrderUncheckedCreateNestedManyWithoutSellerInput
@@ -26439,6 +26755,7 @@ export namespace Prisma {
     lastLogin?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    customer?: CustomerUpdateOneWithoutUserNestedInput
     purchaseOrders?: OrderUpdateManyWithoutUserNestedInput
     saleOrders?: SaleOrderUpdateManyWithoutUserNestedInput
     soldOrders?: SaleOrderUpdateManyWithoutSellerNestedInput
@@ -26458,6 +26775,7 @@ export namespace Prisma {
     lastLogin?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    customer?: CustomerUncheckedUpdateOneWithoutUserNestedInput
     purchaseOrders?: OrderUncheckedUpdateManyWithoutUserNestedInput
     saleOrders?: SaleOrderUncheckedUpdateManyWithoutUserNestedInput
     soldOrders?: SaleOrderUncheckedUpdateManyWithoutSellerNestedInput
@@ -26510,6 +26828,7 @@ export namespace Prisma {
     lastLogin?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    customer?: CustomerCreateNestedOneWithoutUserInput
     movements?: MovementCreateNestedManyWithoutUserInput
     saleOrders?: SaleOrderCreateNestedManyWithoutUserInput
     soldOrders?: SaleOrderCreateNestedManyWithoutSellerInput
@@ -26529,6 +26848,7 @@ export namespace Prisma {
     lastLogin?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    customer?: CustomerUncheckedCreateNestedOneWithoutUserInput
     movements?: MovementUncheckedCreateNestedManyWithoutUserInput
     saleOrders?: SaleOrderUncheckedCreateNestedManyWithoutUserInput
     soldOrders?: SaleOrderUncheckedCreateNestedManyWithoutSellerInput
@@ -26671,6 +26991,7 @@ export namespace Prisma {
     lastLogin?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    customer?: CustomerUpdateOneWithoutUserNestedInput
     movements?: MovementUpdateManyWithoutUserNestedInput
     saleOrders?: SaleOrderUpdateManyWithoutUserNestedInput
     soldOrders?: SaleOrderUpdateManyWithoutSellerNestedInput
@@ -26690,6 +27011,7 @@ export namespace Prisma {
     lastLogin?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    customer?: CustomerUncheckedUpdateOneWithoutUserNestedInput
     movements?: MovementUncheckedUpdateManyWithoutUserNestedInput
     saleOrders?: SaleOrderUncheckedUpdateManyWithoutUserNestedInput
     soldOrders?: SaleOrderUncheckedUpdateManyWithoutSellerNestedInput
@@ -26937,6 +27259,7 @@ export namespace Prisma {
     lastLogin?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    customer?: CustomerCreateNestedOneWithoutUserInput
     movements?: MovementCreateNestedManyWithoutUserInput
     purchaseOrders?: OrderCreateNestedManyWithoutUserInput
     soldOrders?: SaleOrderCreateNestedManyWithoutSellerInput
@@ -26956,6 +27279,7 @@ export namespace Prisma {
     lastLogin?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    customer?: CustomerUncheckedCreateNestedOneWithoutUserInput
     movements?: MovementUncheckedCreateNestedManyWithoutUserInput
     purchaseOrders?: OrderUncheckedCreateNestedManyWithoutUserInput
     soldOrders?: SaleOrderUncheckedCreateNestedManyWithoutSellerInput
@@ -26979,6 +27303,7 @@ export namespace Prisma {
     archivedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    user?: UserCreateNestedOneWithoutCustomerInput
   }
 
   export type CustomerUncheckedCreateWithoutSaleOrdersInput = {
@@ -26992,6 +27317,7 @@ export namespace Prisma {
     archivedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    userId?: string | null
   }
 
   export type CustomerCreateOrConnectWithoutSaleOrdersInput = {
@@ -27011,6 +27337,7 @@ export namespace Prisma {
     lastLogin?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    customer?: CustomerCreateNestedOneWithoutUserInput
     movements?: MovementCreateNestedManyWithoutUserInput
     purchaseOrders?: OrderCreateNestedManyWithoutUserInput
     saleOrders?: SaleOrderCreateNestedManyWithoutUserInput
@@ -27030,6 +27357,7 @@ export namespace Prisma {
     lastLogin?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    customer?: CustomerUncheckedCreateNestedOneWithoutUserInput
     movements?: MovementUncheckedCreateNestedManyWithoutUserInput
     purchaseOrders?: OrderUncheckedCreateNestedManyWithoutUserInput
     saleOrders?: SaleOrderUncheckedCreateNestedManyWithoutUserInput
@@ -27169,6 +27497,7 @@ export namespace Prisma {
     lastLogin?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    customer?: CustomerUpdateOneWithoutUserNestedInput
     movements?: MovementUpdateManyWithoutUserNestedInput
     purchaseOrders?: OrderUpdateManyWithoutUserNestedInput
     soldOrders?: SaleOrderUpdateManyWithoutSellerNestedInput
@@ -27188,6 +27517,7 @@ export namespace Prisma {
     lastLogin?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    customer?: CustomerUncheckedUpdateOneWithoutUserNestedInput
     movements?: MovementUncheckedUpdateManyWithoutUserNestedInput
     purchaseOrders?: OrderUncheckedUpdateManyWithoutUserNestedInput
     soldOrders?: SaleOrderUncheckedUpdateManyWithoutSellerNestedInput
@@ -27217,6 +27547,7 @@ export namespace Prisma {
     archivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneWithoutCustomerNestedInput
   }
 
   export type CustomerUncheckedUpdateWithoutSaleOrdersInput = {
@@ -27230,6 +27561,7 @@ export namespace Prisma {
     archivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    userId?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type UserUpsertWithoutSoldOrdersInput = {
@@ -27255,6 +27587,7 @@ export namespace Prisma {
     lastLogin?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    customer?: CustomerUpdateOneWithoutUserNestedInput
     movements?: MovementUpdateManyWithoutUserNestedInput
     purchaseOrders?: OrderUpdateManyWithoutUserNestedInput
     saleOrders?: SaleOrderUpdateManyWithoutUserNestedInput
@@ -27274,6 +27607,7 @@ export namespace Prisma {
     lastLogin?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    customer?: CustomerUncheckedUpdateOneWithoutUserNestedInput
     movements?: MovementUncheckedUpdateManyWithoutUserNestedInput
     purchaseOrders?: OrderUncheckedUpdateManyWithoutUserNestedInput
     saleOrders?: SaleOrderUncheckedUpdateManyWithoutUserNestedInput
@@ -27631,6 +27965,7 @@ export namespace Prisma {
     lastLogin?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    customer?: CustomerCreateNestedOneWithoutUserInput
     movements?: MovementCreateNestedManyWithoutUserInput
     purchaseOrders?: OrderCreateNestedManyWithoutUserInput
     saleOrders?: SaleOrderCreateNestedManyWithoutUserInput
@@ -27650,6 +27985,7 @@ export namespace Prisma {
     lastLogin?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    customer?: CustomerUncheckedCreateNestedOneWithoutUserInput
     movements?: MovementUncheckedCreateNestedManyWithoutUserInput
     purchaseOrders?: OrderUncheckedCreateNestedManyWithoutUserInput
     saleOrders?: SaleOrderUncheckedCreateNestedManyWithoutUserInput
@@ -27775,6 +28111,7 @@ export namespace Prisma {
     lastLogin?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    customer?: CustomerUpdateOneWithoutUserNestedInput
     movements?: MovementUpdateManyWithoutUserNestedInput
     purchaseOrders?: OrderUpdateManyWithoutUserNestedInput
     saleOrders?: SaleOrderUpdateManyWithoutUserNestedInput
@@ -27794,6 +28131,7 @@ export namespace Prisma {
     lastLogin?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    customer?: CustomerUncheckedUpdateOneWithoutUserNestedInput
     movements?: MovementUncheckedUpdateManyWithoutUserNestedInput
     purchaseOrders?: OrderUncheckedUpdateManyWithoutUserNestedInput
     saleOrders?: SaleOrderUncheckedUpdateManyWithoutUserNestedInput
@@ -27813,6 +28151,7 @@ export namespace Prisma {
     lastLogin?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    customer?: CustomerCreateNestedOneWithoutUserInput
     movements?: MovementCreateNestedManyWithoutUserInput
     purchaseOrders?: OrderCreateNestedManyWithoutUserInput
     saleOrders?: SaleOrderCreateNestedManyWithoutUserInput
@@ -27832,6 +28171,7 @@ export namespace Prisma {
     lastLogin?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    customer?: CustomerUncheckedCreateNestedOneWithoutUserInput
     movements?: MovementUncheckedCreateNestedManyWithoutUserInput
     purchaseOrders?: OrderUncheckedCreateNestedManyWithoutUserInput
     saleOrders?: SaleOrderUncheckedCreateNestedManyWithoutUserInput
@@ -27910,6 +28250,7 @@ export namespace Prisma {
     lastLogin?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    customer?: CustomerUpdateOneWithoutUserNestedInput
     movements?: MovementUpdateManyWithoutUserNestedInput
     purchaseOrders?: OrderUpdateManyWithoutUserNestedInput
     saleOrders?: SaleOrderUpdateManyWithoutUserNestedInput
@@ -27929,6 +28270,7 @@ export namespace Prisma {
     lastLogin?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    customer?: CustomerUncheckedUpdateOneWithoutUserNestedInput
     movements?: MovementUncheckedUpdateManyWithoutUserNestedInput
     purchaseOrders?: OrderUncheckedUpdateManyWithoutUserNestedInput
     saleOrders?: SaleOrderUncheckedUpdateManyWithoutUserNestedInput
