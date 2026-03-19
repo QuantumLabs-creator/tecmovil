@@ -16,18 +16,25 @@ export async function GET() {
       outOfStockProducts,
       todayMovements,
       monthMovements,
-      totalUsers,
-      totalAdmins,
+
+      pendingOrders,
+      approvedOrders,
+
       recentProducts,
       recentMovements,
-      recentUsers,
+      recentOrders,
     ] = await Promise.all([
-      prisma.product.count(),
       prisma.product.count({
-        where: { active: true },
+        where: {
+          status: { in: ["ACTIVE", "INACTIVE"] },
+        },
+      }),
+      prisma.product.count({
+        where: { status: "ACTIVE" },
       }),
       prisma.product.count({
         where: {
+          status: "ACTIVE",
           currentStock: { lte: 0 },
         },
       }),
@@ -41,14 +48,20 @@ export async function GET() {
           createdAt: { gte: startOfMonth },
         },
       }),
-      prisma.user.count(),
-      prisma.user.count({
-        where: {
-          role: "ADMIN",
-        },
+
+      // ✅ KPIs órdenes
+      prisma.saleOrder.count({
+        where: { status: "PENDING_REQUEST" },
       }),
+      prisma.saleOrder.count({
+        where: { status: "APPROVED" },
+      }),
+
       prisma.product.findMany({
         take: 5,
+        where: {
+          status: { in: ["ACTIVE", "INACTIVE"] },
+        },
         orderBy: { createdAt: "desc" },
         select: {
           id: true,
@@ -57,6 +70,7 @@ export async function GET() {
           createdAt: true,
         },
       }),
+
       prisma.movement.findMany({
         take: 5,
         orderBy: { createdAt: "desc" },
@@ -73,13 +87,16 @@ export async function GET() {
           },
         },
       }),
-      prisma.user.findMany({
+
+      // ✅ NUEVO: órdenes recientes
+      prisma.saleOrder.findMany({
         take: 5,
         orderBy: { createdAt: "desc" },
         select: {
           id: true,
-          name: true,
-          email: true,
+          orderNumber: true,
+          status: true,
+          total: true,
           createdAt: true,
         },
       }),
@@ -102,12 +119,13 @@ export async function GET() {
         at: m.createdAt.toISOString(),
       })),
 
-      ...recentUsers.map((u) => ({
-        id: `user-${u.id}`,
-        type: "USER" as const,
-        title: `Usuario registrado: ${u.name}`,
-        subtitle: u.email,
-        at: u.createdAt.toISOString(),
+      // ✅ NUEVO: actividad de órdenes
+      ...recentOrders.map((o) => ({
+        id: `order-${o.id}`,
+        type: "ORDER" as const,
+        title: `Pedido ${o.orderNumber}`,
+        subtitle: `Estado: ${o.status} • Total: S/ ${o.total}`,
+        at: o.createdAt.toISOString(),
       })),
     ]
       .sort((a, b) => new Date(b.at).getTime() - new Date(a.at).getTime())
@@ -126,10 +144,13 @@ export async function GET() {
             hoy: todayMovements,
             mes: monthMovements,
           },
-          usuarios: {
-            total: totalUsers,
-            admins: totalAdmins,
+
+          // ✅ NUEVO KPI
+          ordenes: {
+            pendientes: pendingOrders,
+            aprobadas: approvedOrders,
           },
+
           mesActual: {
             month: now.getMonth() + 1,
             year: now.getFullYear(),

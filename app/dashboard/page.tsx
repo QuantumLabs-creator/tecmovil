@@ -3,10 +3,12 @@
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { getDashboardApi, type DashboardResponse } from "@/src/lib/api/dashboard";
+import { useRouter } from "next/navigation";
 
 export default function DashboardPage() {
   const [data, setData] = useState<DashboardResponse | null>(null);
   const [loading, setLoading] = useState(true);
+  const router = useRouter();
 
   async function loadDashboard() {
     setLoading(true);
@@ -37,6 +39,7 @@ export default function DashboardPage() {
         hint: k
           ? `Activos: ${k.productos.activos} • Sin stock: ${k.productos.sinStock}`
           : "Registros totales",
+        href: "/dashboard/products",
         color: "text-sky-600 dark:text-sky-400",
         bg: "bg-sky-50 dark:bg-sky-900/20",
         border: "border-sky-200 dark:border-sky-800",
@@ -47,14 +50,16 @@ export default function DashboardPage() {
         hint: k
           ? `Mes: ${k.movimientos.mes} • ${k.mesActual.month}/${k.mesActual.year}`
           : "Entradas + salidas",
+        href: "/dashboard/movements/history",
         color: "text-emerald-600 dark:text-emerald-400",
         bg: "bg-emerald-50 dark:bg-emerald-900/20",
         border: "border-emerald-200 dark:border-emerald-800",
       },
       {
-        title: "Usuarios",
-        value: k ? String(k.usuarios.total) : "—",
-        hint: k ? `Admins: ${k.usuarios.admins}` : "Cuentas registradas",
+        title: "Órdenes",
+        value: k ? String(k.ordenes.pendientes) : "—",
+        hint: k ? `Aprobadas: ${k.ordenes.aprobadas}` : "Pedidos del sistema",
+        href: "/dashboard/sale-orders", // 🔥 aquí
         color: "text-violet-600 dark:text-violet-400",
         bg: "bg-violet-50 dark:bg-violet-900/20",
         border: "border-violet-200 dark:border-violet-800",
@@ -63,6 +68,7 @@ export default function DashboardPage() {
         title: "Periodo",
         value: k ? `${k.mesActual.month}/${k.mesActual.year}` : "—",
         hint: "Mes actual",
+        href: null,
         color: "text-amber-600 dark:text-amber-400",
         bg: "bg-amber-50 dark:bg-amber-900/20",
         border: "border-amber-200 dark:border-amber-800",
@@ -74,7 +80,9 @@ export default function DashboardPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-semibold tracking-tight text-[var(--color-text)]">Dashboard</h1>
+          <h1 className="text-xl font-semibold tracking-tight text-[var(--color-text)]">
+            Dashboard
+          </h1>
           <p className="mt-1 text-sm text-zinc-400">
             Vista general de la actividad del sistema.
           </p>
@@ -93,7 +101,9 @@ export default function DashboardPage() {
         {cards.map((c) => (
           <div
             key={c.title}
-            className={`rounded-2xl border ${c.border} ${c.bg} p-4 shadow-sm transition-all hover:shadow-md`}
+            onClick={() => c.href && router.push(c.href)}
+            className={`rounded-2xl border ${c.border} ${c.bg} p-4 shadow-sm transition-all hover:shadow-md ${c.href ? "cursor-pointer hover:scale-[1.02]" : ""
+              }`}
           >
             <div className={`text-sm font-medium ${c.color}`}>{c.title}</div>
             <div className={`mt-2 text-3xl font-semibold ${c.color}`}>
@@ -106,7 +116,9 @@ export default function DashboardPage() {
 
       <div className="grid gap-4 lg:grid-cols-3">
         <div className="lg:col-span-2 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-4 shadow-sm">
-          <div className="text-sm font-medium text-[var(--color-text)] mb-3">Actividad reciente</div>
+          <div className="mb-3 text-sm font-medium text-[var(--color-text)]">
+            Actividad reciente
+          </div>
 
           <div className="space-y-2 text-sm text-zinc-300">
             {loading ? (
@@ -125,7 +137,9 @@ export default function DashboardPage() {
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div>
-                      <div className="font-medium text-[var(--color-text)] text-sm">{a.title}</div>
+                      <div className="text-sm font-medium text-[var(--color-text)]">
+                        {a.title}
+                      </div>
                       {a.subtitle ? (
                         <div className="mt-0.5 text-xs text-zinc-400">{a.subtitle}</div>
                       ) : null}
@@ -145,35 +159,37 @@ export default function DashboardPage() {
         </div>
 
         <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-4 shadow-sm">
-          <div className="text-sm font-medium text-[var(--color-text)]">Acciones rápidas</div>
+          <div className="text-sm font-medium text-[var(--color-text)]">
+            Acciones rápidas
+          </div>
 
           <div className="mt-3 space-y-2">
             <a
-              className="block rounded-xl border border-[var(--color-border)] bg-[var(--color-muted)] px-3 py-2 text-xs hover:opacity-90 transition-colors"
+              className="block rounded-xl border border-[var(--color-border)] bg-[var(--color-muted)] px-3 py-2 text-xs transition-colors hover:opacity-90"
               href="/dashboard/products"
             >
               Ver productos →
             </a>
 
             <a
-              className="block rounded-xl border border-[var(--color-border)] bg-[var(--color-muted)] px-3 py-2 text-xs hover:opacity-90 transition-colors"
+              className="block rounded-xl border border-[var(--color-border)] bg-[var(--color-muted)] px-3 py-2 text-xs transition-colors hover:opacity-90"
               href="/dashboard/movements/new"
             >
               Registrar movimiento →
             </a>
 
             <a
-              className="block rounded-xl border border-[var(--color-border)] bg-[var(--color-muted)] px-3 py-2 text-xs hover:opacity-90 transition-colors"
+              className="block rounded-xl border border-[var(--color-border)] bg-[var(--color-muted)] px-3 py-2 text-xs transition-colors hover:opacity-90"
               href="/dashboard/movements/history"
             >
               Ver historial →
             </a>
 
             <a
-              className="block rounded-xl border border-[var(--color-border)] bg-[var(--color-muted)] px-3 py-2 text-xs hover:opacity-90 transition-colors"
-              href="/dashboard/users"
+              className="block rounded-xl border border-[var(--color-border)] bg-[var(--color-muted)] px-3 py-2 text-xs transition-colors hover:opacity-90"
+              href="/dashboard/sale-orders"
             >
-              Ver usuarios →
+              Ver órdenes →
             </a>
           </div>
         </div>
