@@ -3,133 +3,167 @@ import { prisma } from "@/src/shared/db/prisma";
 import type { Prisma } from "@/src/generated/prisma/client";
 
 import type {
-    UnitRepository,
-    UnitRecord,
-    UnitListParams,
-    UnitListResult,
-    CreateUnitInput,
-    UpdateUnitInput,
+  UnitRepository,
+  UnitRecord,
+  UnitListParams,
+  UnitListResult,
+  CreateUnitInput,
+  UpdateUnitInput,
 } from "../domain/unit.repository";
 
 import {
-    normalizeText,
-    normalizeBoolean,
+  normalizeText,
+  normalizeUnitStatus,
 } from "../domain/unit.rules";
+import { isUnitStatus, type UnitStatus } from "../domain/unit-status";
 
 function mapUnit(u: Prisma.UnitOfMeasureGetPayload<{}>): UnitRecord {
-    return {
-        id: u.id,
-        name: u.name,
-        symbol: u.symbol ?? null,
-        active: u.active,
-    };
+  return {
+    id: u.id,
+    name: u.name,
+    symbol: u.symbol ?? null,
+    status: u.status as UnitStatus,
+    archivedAt: u.archivedAt ?? null,
+    createdAt: u.createdAt,
+    updatedAt: u.updatedAt,
+  };
 }
 
-function parseActiveFilter(v?: string): boolean | undefined {
-    if (!v || !String(v).trim()) return undefined;
-    return String(v).toLowerCase() === "true";
+function parseStatusFilter(v?: string): UnitStatus | undefined {
+  if (!v || !String(v).trim()) return undefined;
+
+  const s = String(v).trim().toUpperCase();
+  if (!isUnitStatus(s)) throw new Error("status inválido");
+  if (s === "ARCHIVED") throw new Error("No se permite buscar unidades archivadas");
+
+  return s;
 }
 
 export class PrismaUnitRepository implements UnitRepository {
-    async getById(id: string) {
-        const u = await prisma.unitOfMeasure.findUnique({ where: { id } });
-        return u ? mapUnit(u) : null;
+  async getById(id: string): Promise<UnitRecord | null> {
+    const u = await prisma.unitOfMeasure.findUnique({ where: { id } });
+    return u ? mapUnit(u) : null;
+  }
+
+  async getByName(name: string): Promise<UnitRecord | null> {
+    const n = String(name ?? "").trim();
+    if (!n) return null;
+
+    const u = await prisma.unitOfMeasure.findFirst({
+      where: {
+        name: { equals: n, mode: "insensitive" },
+        status: { in: ["ACTIVE", "INACTIVE"] },
+      },
+    });
+
+    return u ? mapUnit(u) : null;
+  }
+
+  async list(params: UnitListParams): Promise<UnitListResult> {
+    const page = Math.max(1, Number(params.page ?? 1));
+    const pageSize = Math.min(500, Math.max(5, Number(params.pageSize ?? 10)));
+    const skip = (page - 1) * pageSize;
+
+    const where: Prisma.UnitOfMeasureWhereInput = {};
+
+    const status = parseStatusFilter(params.status as string | undefined);
+    if (status) {
+      where.status = status;
+    } else {
+      where.status = { in: ["ACTIVE", "INACTIVE"] };
     }
 
-    async getByName(name: string) {
-        const u = await prisma.unitOfMeasure.findFirst({
-            where: { name: { equals: name, mode: "insensitive" } },
-        });
-        return u ? mapUnit(u) : null;
+    const q = String(params.q ?? "").trim();
+    if (q) {
+      where.OR = [
+        { name: { contains: q, mode: "insensitive" } },
+        { symbol: { contains: q, mode: "insensitive" } },
+      ];
     }
 
-    async list(params: UnitListParams): Promise<UnitListResult> {
-        const page = Math.max(1, Number(params.page ?? 1));
-        const pageSize = Math.min(500, Math.max(5, Number(params.pageSize ?? 10)));
-        const skip = (page - 1) * pageSize;
+    const [total, items] = await Promise.all([
+      prisma.unitOfMeasure.count({ where }),
+      prisma.unitOfMeasure.findMany({
+        where,
+        orderBy: { name: "asc" },
+        skip,
+        take: pageSize,
+      }),
+    ]);
 
-        const where: Prisma.UnitOfMeasureWhereInput = {};
+    return {
+      items: items.map(mapUnit),
+      meta: {
+        total,
+        page,
+        pageSize,
+        totalPages: Math.max(1, Math.ceil(total / pageSize)),
+      },
+    };
+  }
 
-        const active = parseActiveFilter(params.active);
-        if (active !== undefined) where.active = active;
+  async create(input: CreateUnitInput): Promise<UnitRecord> {
+    const name = normalizeText(input.name);
+    if (!name) throw new Error("name requerido");
 
-        if (params.q) {
-            where.OR = [
-                { name: { contains: params.q, mode: "insensitive" } },
-                { symbol: { contains: params.q, mode: "insensitive" } },
-            ];
-        }
+    const status = normalizeUnitStatus(input.status, "ACTIVE");
 
-        const [total, items] = await Promise.all([
-            prisma.unitOfMeasure.count({ where }),
-            prisma.unitOfMeasure.findMany({
-                where,
-                orderBy: { name: "asc" },
-                skip,
-                take: pageSize,
-            }),
-        ]);
+    const created = await prisma.unitOfMeasure.create({
+      data: {
+        name,
+        symbol: normalizeText(input.symbol) ?? null,
+        status,
+        archivedAt: status === "ARCHIVED" ? new Date() : null,
+      },
+    });
 
-        return {
-            items: items.map(mapUnit),
-            meta: {
-                total,
-                page,
-                pageSize,
-                totalPages: Math.max(1, Math.ceil(total / pageSize)),
-            },
-        };
-    }
+    return mapUnit(created);
+  }
 
-    async create(input: CreateUnitInput) {
-        const name = normalizeText(input.name);
-        if (!name) throw new Error("name requerido");
+  async update(id: string, input: UpdateUnitInput): Promise<UnitRecord> {
+    return prisma.$transaction(async (tx) => {
+      const existing = await tx.unitOfMeasure.findUnique({ where: { id } });
+      if (!existing) throw new Error("Unidad no encontrada");
 
-        const created = await prisma.unitOfMeasure.create({
-            data: {
-                name,
-                symbol: normalizeText(input.symbol) ?? null,
-                active: normalizeBoolean(input.active, true),
-            },
-        });
+      const data: Prisma.UnitOfMeasureUpdateInput = {};
 
-        return mapUnit(created);
-    }
+      if (input.name !== undefined) {
+        const v = normalizeText(input.name);
+        if (!v) throw new Error("name inválido");
+        data.name = v;
+      }
 
-    async update(id: string, input: UpdateUnitInput) {
-        return prisma.$transaction(async (tx) => {
-            const existing = await tx.unitOfMeasure.findUnique({ where: { id } });
-            if (!existing) throw new Error("Unidad no encontrada");
+      if (input.symbol !== undefined) {
+        data.symbol = normalizeText(input.symbol) ?? null;
+      }
 
-            const data: Prisma.UnitOfMeasureUpdateInput = {};
+      if (input.status !== undefined) {
+        const status = normalizeUnitStatus(input.status);
+        data.status = status;
+        data.archivedAt = status === "ARCHIVED" ? new Date() : null;
+      }
 
-            if (input.name !== undefined) {
-                const v = normalizeText(input.name);
-                if (!v) throw new Error("name inválido");
-                data.name = v;
-            }
+      const updated = await tx.unitOfMeasure.update({
+        where: { id },
+        data,
+      });
 
-            if (input.symbol !== undefined) {
-                data.symbol = normalizeText(input.symbol) ?? null; // ✅ string | null
-            }
+      return mapUnit(updated);
+    });
+  }
 
-            if (input.active !== undefined) {
-                data.active = normalizeBoolean(input.active, true); // ✅ boolean
-            }
+  async archive(id: string): Promise<void> {
+    const u = await prisma.unitOfMeasure.findUnique({ where: { id } });
+    if (!u) return;
 
-            const updated = await tx.unitOfMeasure.update({
-                where: { id },
-                data,
-            });
+    if (u.status === "ARCHIVED") return;
 
-            return mapUnit(updated);
-        });
-    }
-
-    async delete(id: string) {
-        await prisma.unitOfMeasure.update({
-            where: { id },
-            data: { active: false }, // soft delete
-        });
-    }
+    await prisma.unitOfMeasure.update({
+      where: { id },
+      data: {
+        status: "ARCHIVED",
+        archivedAt: new Date(),
+      },
+    });
+  }
 }

@@ -8,6 +8,6 @@ export class DeleteUnitUseCase {
     const uid = String(id ?? "").trim();
     if (!uid) throw new Error("id requerido");
 
-    await this.repo.delete(uid);
+    await this.repo.archive(uid);
   }
 }

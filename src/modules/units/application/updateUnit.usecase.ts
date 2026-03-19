@@ -1,6 +1,6 @@
 // src/modules/units/application/updateUnit.usecase.ts
 import type { UnitRepository } from "../domain/unit.repository";
-import { normalizeText, normalizeBoolean } from "../domain/unit.rules";
+import { normalizeText, normalizeUnitStatus } from "../domain/unit.rules";
 import { assertUpdateUnitDTO, type UpdateUnitDTO } from "./dtos/unit.dto";
 
 export class UpdateUnitUseCase {
@@ -25,8 +25,8 @@ export class UpdateUnitUseCase {
       patch.symbol = normalizeText(dto.symbol) ?? null;
     }
 
-    if (dto.active !== undefined) {
-      patch.active = normalizeBoolean(dto.active, true);
+    if (dto.status !== undefined) {
+      patch.status = normalizeUnitStatus(dto.status);
     }
 
     return this.repo.update(uid, patch);

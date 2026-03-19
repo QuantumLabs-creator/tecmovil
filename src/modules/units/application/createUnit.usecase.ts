@@ -1,7 +1,7 @@
 // src/modules/units/application/createUnit.usecase.ts
 import type { UnitRepository } from "../domain/unit.repository";
 import { UnitEntity } from "../domain/unit.entity";
-import { normalizeText, normalizeBoolean } from "../domain/unit.rules";
+import { normalizeText, normalizeUnitStatus } from "../domain/unit.rules";
 import { assertCreateUnitDTO, type CreateUnitDTO } from "./dtos/unit.dto";
 
 export class CreateUnitUseCase {
@@ -17,7 +17,7 @@ export class CreateUnitUseCase {
     const entity = UnitEntity.create({
       name,
       symbol: normalizeText(dto.symbol) ?? null,
-      active: normalizeBoolean(dto.active, true),
+      status: normalizeUnitStatus(dto.status, "ACTIVE"),
     });
 
     return this.repo.create(entity);

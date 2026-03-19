@@ -1,5 +1,6 @@
 // src/modules/units/domain/unit.rules.ts
 import type { CreateUnitInput, UpdateUnitInput } from "./unit.repository";
+import { isUnitStatus, UnitStatus } from "./unit-status";
 
 function toStr(v: unknown) {
   return String(v ?? "").trim();
@@ -11,22 +12,38 @@ export function normalizeText(v: unknown): string | null {
   return s.length ? s : null;
 }
 
-export function normalizeBoolean(v: unknown, defaultValue = true): boolean {
-  if (v === undefined || v === null || toStr(v) === "") return defaultValue;
-  const s = toStr(v).toLowerCase();
-  if (s === "true" || s === "1" || s === "yes" || s === "si") return true;
-  if (s === "false" || s === "0" || s === "no") return false;
-  return defaultValue;
+export function normalizeUnitStatus(
+  v: unknown,
+  defaultValue: UnitStatus = "ACTIVE"
+): UnitStatus {
+  const s = toStr(v).toUpperCase();
+  if (!s) return defaultValue;
+  if (isUnitStatus(s)) return s;
+  throw new Error("status inválido");
 }
 
 export function assertCreateUnitInput(input: unknown): asserts input is CreateUnitInput {
   if (!input || typeof input !== "object") throw new Error("Body inválido");
-  const x = input as any;
+  const x = input as Record<string, unknown>;
+
   if (!toStr(x.name)) throw new Error("name requerido");
+
+  if (x.status !== undefined) {
+    normalizeUnitStatus(x.status);
+  }
 }
 
 export function assertUpdateUnitInput(input: unknown): asserts input is UpdateUnitInput {
   if (!input || typeof input !== "object") throw new Error("Body inválido");
+  const x = input as Record<string, unknown>;
+
+  if (x.name !== undefined && !toStr(x.name)) {
+    throw new Error("name inválido");
+  }
+
+  if (x.status !== undefined) {
+    normalizeUnitStatus(x.status);
+  }
 }
 
 export function normalizeCreateUnit(input: CreateUnitInput) {
@@ -36,7 +53,7 @@ export function normalizeCreateUnit(input: CreateUnitInput) {
   return {
     name,
     symbol: normalizeText(input.symbol),
-    active: normalizeBoolean(input.active, true),
+    status: normalizeUnitStatus(input.status, "ACTIVE"),
   };
 }
 
@@ -53,8 +70,8 @@ export function normalizeUpdateUnit(input: UpdateUnitInput): UpdateUnitInput {
     out.symbol = normalizeText(input.symbol);
   }
 
-  if (input.active !== undefined) {
-    out.active = normalizeBoolean(input.active, true);
+  if (input.status !== undefined) {
+    out.status = normalizeUnitStatus(input.status);
   }
 
   return out;

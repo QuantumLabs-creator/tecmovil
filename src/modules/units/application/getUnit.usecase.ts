@@ -9,7 +9,9 @@ export class GetUnitUseCase {
     if (!uid) throw new Error("id requerido");
 
     const row = await this.repo.getById(uid);
-    if (!row) throw new Error("Unidad no encontrada");
+    if (!row || row.status === "ARCHIVED") {
+      throw new Error("Unidad no encontrada");
+    }
 
     return row;
   }

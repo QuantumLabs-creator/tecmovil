@@ -1,17 +1,22 @@
 // src/modules/units/domain/unit.entity.ts
+import { isUnitStatus, UnitStatus } from "./unit-status";
 
 export class UnitEntity {
   static create(input: {
     name: string;
     symbol: string | null;
-    active: boolean;
+    status?: UnitStatus;
   }) {
-    if (!input.name) throw new Error("name requerido");
+    const name = String(input.name ?? "").trim();
+    if (!name) throw new Error("name requerido");
+
+    const status = input.status ?? "ACTIVE";
+    if (!isUnitStatus(status)) throw new Error("status inválido");
 
     return {
-      name: input.name,
-      symbol: input.symbol,
-      active: input.active,
+      name,
+      symbol: input.symbol ?? null,
+      status,
     };
   }
 }
