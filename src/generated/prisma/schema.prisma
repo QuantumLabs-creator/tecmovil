@@ -189,11 +189,30 @@ model Product {
   purchaseOrderDetails OrderDetail[]
   saleOrderDetails     SaleOrderDetail[]
 
+  recommendationsFrom ProductRecommendation[] @relation("ProductRecommendationsFrom")
+  recommendationsTo   ProductRecommendation[] @relation("ProductRecommendationsTo")
+
   @@index([status])
   @@index([code]) // 🔲 Índice para búsqueda rápida por código de barras
   @@index([categoryId])
   @@index([supplierId])
   @@map("products")
+}
+
+model ProductRecommendation {
+  id                   String   @id @default(cuid())
+  productId            String
+  recommendedProductId String
+  priority             Int      @default(0)
+  createdAt            DateTime @default(now())
+
+  product            Product @relation("ProductRecommendationsFrom", fields: [productId], references: [id], onDelete: Cascade)
+  recommendedProduct Product @relation("ProductRecommendationsTo", fields: [recommendedProductId], references: [id], onDelete: Cascade)
+
+  @@unique([productId, recommendedProductId])
+  @@index([productId])
+  @@index([recommendedProductId])
+  @@map("product_recommendations")
 }
 
 // ============================================

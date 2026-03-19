@@ -205,6 +205,14 @@ exports.Prisma.ProductScalarFieldEnum = {
   unitId: 'unitId'
 };
 
+exports.Prisma.ProductRecommendationScalarFieldEnum = {
+  id: 'id',
+  productId: 'productId',
+  recommendedProductId: 'recommendedProductId',
+  priority: 'priority',
+  createdAt: 'createdAt'
+};
+
 exports.Prisma.MovementScalarFieldEnum = {
   id: 'id',
   type: 'type',
@@ -399,6 +407,7 @@ exports.Prisma.ModelName = {
   Supplier: 'Supplier',
   UnitOfMeasure: 'UnitOfMeasure',
   Product: 'Product',
+  ProductRecommendation: 'ProductRecommendation',
   Movement: 'Movement',
   Order: 'Order',
   OrderDetail: 'OrderDetail',
