@@ -8,6 +8,7 @@ import type {
 } from "../domain/auth.repository";
 import type { AuthUserEntity } from "../domain/auth.entity";
 import { normalizeEmail, isUserActive } from "../domain/auth.rules";
+import bcrypt from "bcryptjs";
 
 function toAuthUserEntity(row: {
   id: string;
@@ -183,5 +184,9 @@ export class PrismaAuthRepository implements AuthRepository {
       where: { id: userId },
       data: { lastLogin: at },
     });
+  }
+
+  async comparePassword(password: string, hash: string) {
+    return bcrypt.compare(password, hash);
   }
 }

@@ -32,6 +32,15 @@ import { getCategoriesApi } from "@/src/lib/api/categories";
 import { getSuppliersApi } from "@/src/lib/api/suppliers";
 import { getUnitsApi } from "@/src/lib/api/units";
 
+// --- Tipos auxiliares ---
+
+type AdminCredentials = {
+  email: string;
+  password: string;
+};
+
+// --- Mapeo de API a frontend ---
+
 function mapApiProductToProduct(p: ProductApiRecord | null | undefined): Product {
   return {
     id: String(p?.id ?? ""),
@@ -100,6 +109,15 @@ export default function ProductsPage() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
   const [recommendations, setRecommendations] = useState<ProductRecommendation[]>([]);
+
+  // ✅ NUEVOS ESTADOS PARA MODAL DE ADMINISTRADOR
+  const [adminModalOpen, setAdminModalOpen] = useState(false);
+  const [adminCredentials, setAdminCredentials] = useState<AdminCredentials>({
+    email: "",
+    password: "",
+  });
+  const [adminLoading, setAdminLoading] = useState(false);
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
 
   async function loadProducts() {
     setLoading(true);
@@ -215,28 +233,75 @@ export default function ProductsPage() {
       });
   }
 
-  async function handleDelete(id: string) {
+  // ✅ FUNCIÓN ACTUALIZADA: Abre modal de admin en lugar de confirmar directamente
+  function handleDelete(id: string) {
     const product = items.find((x) => x.id === id);
     if (!product) return;
 
-    const confirmed = window.confirm(
-      `¿Deseas desactivar el producto ${product.name}?`
-    );
+    // Guardamos el ID pendiente y abrimos el modal de admin
+    setPendingDeleteId(id);
+    setAdminCredentials({ email: "", password: "" });
+    setAdminModalOpen(true);
+  }
 
-    if (!confirmed) return;
+  // ✅ NUEVA FUNCIÓN: Verifica credenciales de admin y ejecuta la eliminación
+  async function handleAdminConfirm() {
+    if (!pendingDeleteId) return;
+
+    const { email, password } = adminCredentials;
+
+    // Validaciones básicas del frontend
+    if (!email.trim()) {
+      toast.error("Ingresa tu correo de administrador");
+      return;
+    }
+
+    if (!password.trim()) {
+      toast.error("Ingresa tu contraseña");
+      return;
+    }
 
     try {
-      await deactivateProductApi(id);
+      setAdminLoading(true);
+
+      // ✅ VERIFICACIÓN DE CREDENCIALES
+      // Reemplaza esta llamada con tu endpoint real de autenticación
+      const authResponse = await fetch("/api/auth/verify-admin", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: email.trim(), password }),
+      });
+
+      if (!authResponse.ok) {
+        const errorData = await authResponse.json().catch(() => ({}));
+        throw new Error(errorData.message || "Credenciales inválidas");
+      }
+
+      // Si la autenticación es exitosa, procedemos con la desactivación
+      const product = items.find((x) => x.id === pendingDeleteId);
+      
+      await deactivateProductApi(pendingDeleteId);
 
       setItems((prev) =>
-        prev.map((x) => (x.id === id ? { ...x, status: "ARCHIVED" } : x))
+        prev.map((x) =>
+          x.id === pendingDeleteId ? { ...x, status: "ARCHIVED" } : x
+        )
       );
 
-      toast.success("Producto desactivado");
-    } catch (e: any) {
-      toast.error("Error", {
-        description: e?.error || e?.message || "No se pudo desactivar el producto",
+      toast.success("Producto archivado", {
+        description: product?.name ? `"${product.name}" ha sido desactivado` : undefined,
       });
+
+      // Resetear estados
+      setPendingDeleteId(null);
+      setAdminModalOpen(false);
+      setAdminCredentials({ email: "", password: "" });
+    } catch (e: any) {
+      toast.error("Error de autenticación", {
+        description: e?.message || "No se pudo verificar tu identidad como administrador",
+      });
+    } finally {
+      setAdminLoading(false);
     }
   }
 
@@ -453,7 +518,7 @@ export default function ProductsPage() {
         )}
       </div>
 
-      {/* Modal */}
+      {/* Modal de Producto */}
       <ProductsModal
         open={modalOpen}
         mode={modalMode}
@@ -462,7 +527,6 @@ export default function ProductsPage() {
         categories={categories}
         suppliers={suppliers}
         units={units}
-        // ✅ Pasamos todas las opciones, el modal filtra internamente
         productOptions={productOptions}
         recommendations={(recommendations ?? []).map((r) => ({
           id: r.id,
@@ -484,6 +548,133 @@ export default function ProductsPage() {
         }}
         onSubmit={handleSubmit}
       />
+
+      {/* ✅ MODAL DE VERIFICACIÓN DE ADMINISTRADOR */}
+      {adminModalOpen && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
+          {/* Overlay con blur */}
+          <button
+            type="button"
+            className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+            aria-label="Cerrar modal"
+            onClick={() => {
+              if (adminLoading) return;
+              setAdminModalOpen(false);
+              setPendingDeleteId(null);
+            }}
+          />
+
+          <div className="relative z-10 w-full max-w-md rounded-2xl border border-gray-200 bg-white p-6 shadow-2xl animate-in fade-in zoom-in duration-200">
+            {/* Header del modal */}
+            <div className="mb-5 flex items-start gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-amber-100 ring-1 ring-amber-200">
+                <svg className="h-5 w-5 text-amber-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900">
+                  Verificación de administrador
+                </h3>
+                <p className="mt-0.5 text-sm text-gray-600">
+                  Para archivar un producto, confirma tu identidad con credenciales de administrador.
+                </p>
+              </div>
+            </div>
+
+            {/* Formulario de credenciales */}
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleAdminConfirm();
+              }}
+              className="space-y-4"
+            >
+              <div>
+                <label className="mb-1.5 block text-sm font-medium text-gray-700">
+                  Correo electrónico
+                </label>
+                <input
+                  type="email"
+                  value={adminCredentials.email}
+                  onChange={(e) =>
+                    setAdminCredentials((prev) => ({ ...prev, email: e.target.value }))
+                  }
+                  placeholder="admin@empresa.com"
+                  className="w-full rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm text-gray-900 outline-none focus:border-gray-400 focus:ring-1 focus:ring-gray-400 transition-all"
+                  disabled={adminLoading}
+                  autoComplete="email"
+                />
+              </div>
+
+              <div>
+                <label className="mb-1.5 block text-sm font-medium text-gray-700">
+                  Contraseña
+                </label>
+                <input
+                  type="password"
+                  value={adminCredentials.password}
+                  onChange={(e) =>
+                    setAdminCredentials((prev) => ({ ...prev, password: e.target.value }))
+                  }
+                  placeholder="••••••••"
+                  className="w-full rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm text-gray-900 outline-none focus:border-gray-400 focus:ring-1 focus:ring-gray-400 transition-all"
+                  disabled={adminLoading}
+                  autoComplete="current-password"
+                />
+              </div>
+
+              {/* Nota de seguridad */}
+              <div className="rounded-lg bg-gray-50 p-3 text-xs text-gray-500 flex items-start gap-2">
+                <svg className="h-4 w-4 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                </svg>
+                <span>
+                  Esta acción es irreversible. El producto quedará archivado y no estará disponible para la venta.
+                </span>
+              </div>
+
+              {/* Botones de acción */}
+              <div className="mt-6 flex justify-end gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setAdminModalOpen(false);
+                    setPendingDeleteId(null);
+                  }}
+                  disabled={adminLoading}
+                  className="rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-50"
+                >
+                  Cancelar
+                </button>
+
+                <button
+                  type="submit"
+                  disabled={adminLoading}
+                  className="inline-flex items-center gap-2 rounded-xl bg-amber-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-amber-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {adminLoading ? (
+                    <>
+                      <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                      </svg>
+                      Verificando...
+                    </>
+                  ) : (
+                    <>
+                      <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                      </svg>
+                      Confirmar y archivar
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

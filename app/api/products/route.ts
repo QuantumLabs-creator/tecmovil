@@ -26,7 +26,7 @@ export async function GET(req: Request) {
 
     const result = await uc.execute({
       q,
-      active,
+      status: active === "true" ? "ACTIVE" : undefined,
       categoryId,
       supplierId,
       unitId,

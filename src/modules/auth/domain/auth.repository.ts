@@ -41,4 +41,6 @@ export interface AuthRepository {
   }>;
 
   updateLastLogin(userId: string, at: Date): Promise<void>;
+
+  comparePassword(password: string, hash: string): Promise<boolean>;
 }
