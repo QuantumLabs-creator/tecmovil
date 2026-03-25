@@ -169,6 +169,8 @@ model Product {
   currentStock  Int @default(0)
   reservedStock Int @default(0) // Stock reservado en pedidos pendientes
 
+  hasVariants Boolean @default(false)
+
   status     RecordStatus @default(ACTIVE)
   archivedAt DateTime?
 
@@ -185,6 +187,8 @@ model Product {
   unitId String
   unit   UnitOfMeasure @relation(fields: [unitId], references: [id])
 
+  variants ProductVariant[]
+
   movements            Movement[]
   purchaseOrderDetails OrderDetail[]
   saleOrderDetails     SaleOrderDetail[]
@@ -196,7 +200,35 @@ model Product {
   @@index([code]) // 🔲 Índice para búsqueda rápida por código de barras
   @@index([categoryId])
   @@index([supplierId])
+  @@index([hasVariants])
   @@map("products")
+}
+
+model ProductVariant {
+  id String @id @default(cuid())
+
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  color String?
+  size  String?
+
+  sku         String?  @unique
+  retailPrice Decimal? @db.Decimal(10, 2)
+
+  currentStock  Int @default(0)
+  reservedStock Int @default(0)
+
+  status     RecordStatus @default(ACTIVE)
+  archivedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  @@unique([productId, color, size])
+  @@index([productId])
+  @@index([status])
+  @@map("product_variants")
 }
 
 model ProductRecommendation {

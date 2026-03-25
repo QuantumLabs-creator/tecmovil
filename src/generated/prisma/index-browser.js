@@ -196,6 +196,7 @@ exports.Prisma.ProductScalarFieldEnum = {
   minStock: 'minStock',
   currentStock: 'currentStock',
   reservedStock: 'reservedStock',
+  hasVariants: 'hasVariants',
   status: 'status',
   archivedAt: 'archivedAt',
   createdAt: 'createdAt',
@@ -203,6 +204,21 @@ exports.Prisma.ProductScalarFieldEnum = {
   categoryId: 'categoryId',
   supplierId: 'supplierId',
   unitId: 'unitId'
+};
+
+exports.Prisma.ProductVariantScalarFieldEnum = {
+  id: 'id',
+  productId: 'productId',
+  color: 'color',
+  size: 'size',
+  sku: 'sku',
+  retailPrice: 'retailPrice',
+  currentStock: 'currentStock',
+  reservedStock: 'reservedStock',
+  status: 'status',
+  archivedAt: 'archivedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
 };
 
 exports.Prisma.ProductRecommendationScalarFieldEnum = {
@@ -407,6 +423,7 @@ exports.Prisma.ModelName = {
   Supplier: 'Supplier',
   UnitOfMeasure: 'UnitOfMeasure',
   Product: 'Product',
+  ProductVariant: 'ProductVariant',
   ProductRecommendation: 'ProductRecommendation',
   Movement: 'Movement',
   Order: 'Order',

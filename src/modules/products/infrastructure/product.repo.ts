@@ -10,6 +10,7 @@ import type {
   ProductListResult,
   CreateProductInput,
   UpdateProductInput,
+  ProductVariantRecord,
 } from "../domain/product.repository";
 
 import {
@@ -19,6 +20,7 @@ import {
   normalizeProductStatus,
 } from "../domain/product.rules";
 import { isProductStatus, type ProductStatus } from "../domain/product-status";
+import { ProductVariantEntity } from "../domain/product-variant.entity";
 
 /** ===================== Helpers ===================== */
 
@@ -40,6 +42,38 @@ async function generateProductCode(tx: PrismaTypes.TransactionClient) {
 function toDecimal(value: string | null): Prisma.Decimal | null {
   if (value === null) return null;
   return new Prisma.Decimal(value);
+}
+
+function mapVariant(
+  v: {
+    id: string;
+    productId: string;
+    color: string | null;
+    size: string | null;
+    sku: string | null;
+    retailPrice: Prisma.Decimal | null;
+    currentStock: number;
+    reservedStock: number;
+    status: ProductStatus;
+    archivedAt: Date | null;
+    createdAt: Date;
+    updatedAt: Date;
+  }
+): ProductVariantRecord {
+  return {
+    id: v.id,
+    productId: v.productId,
+    color: v.color ?? null,
+    size: v.size ?? null,
+    sku: v.sku ?? null,
+    retailPrice: v.retailPrice?.toString() ?? null,
+    currentStock: v.currentStock,
+    reservedStock: v.reservedStock,
+    status: v.status as ProductStatus,
+    archivedAt: v.archivedAt ?? null,
+    createdAt: v.createdAt,
+    updatedAt: v.updatedAt,
+  };
 }
 
 function mapProduct(
@@ -70,6 +104,8 @@ function mapProduct(
     minStock: p.minStock,
     currentStock: p.currentStock,
     reservedStock: p.reservedStock,
+
+    hasVariants: p.hasVariants,
 
     pendingRequestedStock,
     availableRealStock,
@@ -286,6 +322,7 @@ export class PrismaProductRepository implements ProductRepository {
       }
 
       const status = normalizeProductStatus(input.status, "ACTIVE");
+      const hasVariants = input.hasVariants === true || input.hasVariants === "true";
 
       const created = await tx.product.create({
         data: {
@@ -305,6 +342,8 @@ export class PrismaProductRepository implements ProductRepository {
           minStock,
           currentStock,
           reservedStock,
+
+          hasVariants,
 
           status,
           archivedAt: status === "ARCHIVED" ? new Date() : null,
@@ -459,6 +498,10 @@ export class PrismaProductRepository implements ProductRepository {
         data.code = v;
       }
 
+      if (input.hasVariants !== undefined) {
+        data.hasVariants = input.hasVariants === true || input.hasVariants === "true";
+      }
+
       const updated = await tx.product.update({
         where: { id },
         data,
@@ -476,6 +519,129 @@ export class PrismaProductRepository implements ProductRepository {
     if (p.status === "ARCHIVED") return;
 
     await prisma.product.update({
+      where: { id },
+      data: {
+        status: "ARCHIVED",
+        archivedAt: new Date(),
+      },
+    });
+  }
+  async existsById(id: string) {
+    const count = await prisma.product.count({
+      where: { id },
+    });
+    return count > 0;
+  }
+
+  async listVariants(productId: string, status?: ProductStatus): Promise<ProductVariantRecord[]> {
+    const rows = await prisma.productVariant.findMany({
+      where: {
+        productId,
+        ...(status ? { status } : {}),
+      },
+      orderBy: [{ color: "asc" }, { size: "asc" }, { createdAt: "asc" }],
+    });
+
+    return rows.map((row) => mapVariant(row as any));
+  }
+
+  async getVariantById(id: string): Promise<ProductVariantRecord | null> {
+    const row = await prisma.productVariant.findUnique({
+      where: { id },
+    });
+
+    if (!row) return null;
+
+    return mapVariant({
+      ...row,
+      status: row.status as ProductStatus,
+    });
+  }
+
+  async existsVariantDuplicate(params: {
+    productId: string;
+    color?: string | null;
+    size?: string | null;
+    excludeId?: string;
+  }) {
+    const found = await prisma.productVariant.findFirst({
+      where: {
+        productId: params.productId,
+        color: params.color ?? null,
+        size: params.size ?? null,
+        ...(params.excludeId ? { id: { not: params.excludeId } } : {}),
+      },
+      select: { id: true },
+    });
+
+    return !!found;
+  }
+
+  async createVariant(entity: ProductVariantEntity): Promise<ProductVariantRecord> {
+    const p = entity.props;
+
+    const row = await prisma.productVariant.create({
+      data: {
+        productId: p.productId,
+        color: p.color ?? null,
+        size: p.size ?? null,
+        sku: p.sku ?? null,
+        retailPrice:
+          p.retailPrice != null ? new Prisma.Decimal(p.retailPrice) : null,
+        currentStock: p.currentStock,
+        reservedStock: p.reservedStock,
+        status: p.status as ProductStatus,
+        archivedAt: p.status === "ARCHIVED" ? new Date() : null,
+      },
+    });
+
+    return mapVariant({
+      ...row,
+      status: row.status as ProductStatus,
+    });
+  }
+
+  async updateVariant(
+    id: string,
+    data: Partial<ProductVariantEntity["props"]>
+  ): Promise<ProductVariantRecord> {
+    const row = await prisma.productVariant.update({
+      where: { id },
+      data: {
+        ...(data.color !== undefined ? { color: data.color ?? null } : {}),
+        ...(data.size !== undefined ? { size: data.size ?? null } : {}),
+        ...(data.sku !== undefined ? { sku: data.sku ?? null } : {}),
+        ...(data.retailPrice !== undefined
+          ? {
+            retailPrice:
+              data.retailPrice != null
+                ? new Prisma.Decimal(data.retailPrice)
+                : null,
+          }
+          : {}),
+        ...(data.currentStock !== undefined
+          ? { currentStock: data.currentStock }
+          : {}),
+        ...(data.reservedStock !== undefined
+          ? { reservedStock: data.reservedStock }
+          : {}),
+        ...(data.status !== undefined
+          ? {
+            status: data.status as ProductStatus,
+            archivedAt: data.status === "ARCHIVED" ? new Date() : null,
+          }
+          : {}),
+      },
+    });
+
+    return mapVariant({
+      ...row,
+      status: row.status as ProductStatus,
+    });
+  }
+
+  async deleteVariant(id: string) {
+    await prisma.productVariant.update({
       where: { id },
       data: {
         status: "ARCHIVED",

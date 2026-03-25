@@ -1,4 +1,5 @@
 import type { ProductStatus } from "./product-status";
+import { ProductVariantEntity } from "./product-variant.entity";
 
 export type ProductRecord = {
   id: string;
@@ -20,6 +21,8 @@ export type ProductRecord = {
   currentStock: number;
   reservedStock: number;
 
+  hasVariants: boolean;
+
   // nuevos campos calculados
   pendingRequestedStock: number;
   availableRealStock: number;
@@ -37,6 +40,25 @@ export type ProductRecord = {
   category: { id: string; name: string };
   supplier: { id: string; name: string } | null;
   unit: { id: string; name: string; symbol: string | null };
+};
+
+export type ProductVariantRecord = {
+  id: string;
+  productId: string;
+
+  color: string | null;
+  size: string | null;
+
+  sku: string | null;
+  retailPrice: string | null;
+
+  currentStock: number;
+  reservedStock: number;
+
+  status: ProductStatus;
+  archivedAt: Date | null;
+  createdAt: Date;
+  updatedAt: Date;
 };
 
 export type ProductListResult = {
@@ -75,6 +97,8 @@ export type CreateProductInput = {
   currentStock?: unknown;
   reservedStock?: unknown;
 
+  hasVariants?: unknown;
+
   status?: unknown;
 
   categoryId: string;
@@ -91,4 +115,21 @@ export interface ProductRepository {
   create(input: CreateProductInput): Promise<ProductRecord>;
   update(id: string, input: UpdateProductInput): Promise<ProductRecord>;
   archive(id: string): Promise<void>;
+
+  existsById(id: string): Promise<boolean>;
+
+  listVariants(productId: string, status?: ProductStatus): Promise<ProductVariantRecord[]>;
+  getVariantById(id: string): Promise<ProductVariantRecord | null>;
+  createVariant(entity: ProductVariantEntity): Promise<ProductVariantRecord>;
+  updateVariant(
+    id: string,
+    data: Partial<ProductVariantEntity["props"]>
+  ): Promise<ProductVariantRecord>;
+  deleteVariant(id: string): Promise<void>;
+  existsVariantDuplicate(params: {
+    productId: string;
+    color?: string | null;
+    size?: string | null;
+    excludeId?: string;
+  }): Promise<boolean>;
 }
