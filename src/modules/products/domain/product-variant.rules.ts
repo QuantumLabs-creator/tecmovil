@@ -1,3 +1,5 @@
+import type { ProductStatus } from "./product-status";
+
 function toNullableText(v: unknown) {
   const s = String(v ?? "").trim();
   return s ? s : null;
@@ -16,10 +18,11 @@ function toMoneyOrNull(v: unknown) {
   return n.toFixed(2);
 }
 
-function toBooleanDefault(v: unknown, fallback = true) {
-  if (typeof v === "boolean") return v;
-  if (v === "true") return true;
-  if (v === "false") return false;
+function toStatus(v: unknown, fallback: ProductStatus = "ACTIVE"): ProductStatus {
+  const s = String(v ?? "").trim().toUpperCase();
+  if (s === "ACTIVE" || s === "INACTIVE" || s === "ARCHIVED") {
+    return s as ProductStatus;
+  }
   return fallback;
 }
 
@@ -31,7 +34,7 @@ export function normalizeCreateVariant(input: {
   retailPrice?: unknown;
   currentStock?: unknown;
   reservedStock?: unknown;
-  active?: unknown;
+  status?: unknown;
 }) {
   return {
     productId: String(input.productId ?? "").trim(),
@@ -41,7 +44,7 @@ export function normalizeCreateVariant(input: {
     retailPrice: toMoneyOrNull(input.retailPrice),
     currentStock: toNonNegativeInt(input.currentStock, 0),
     reservedStock: toNonNegativeInt(input.reservedStock, 0),
-    active: toBooleanDefault(input.active, true),
+    status: toStatus(input.status, "ACTIVE"),
   };
 }
 
@@ -52,7 +55,7 @@ export function normalizeUpdateVariant(input: {
   retailPrice?: unknown;
   currentStock?: unknown;
   reservedStock?: unknown;
-  active?: unknown;
+  status?: unknown;
 }) {
   const out: Record<string, unknown> = {};
 
@@ -62,7 +65,7 @@ export function normalizeUpdateVariant(input: {
   if ("retailPrice" in input) out.retailPrice = toMoneyOrNull(input.retailPrice);
   if ("currentStock" in input) out.currentStock = toNonNegativeInt(input.currentStock, 0);
   if ("reservedStock" in input) out.reservedStock = toNonNegativeInt(input.reservedStock, 0);
-  if ("active" in input) out.active = toBooleanDefault(input.active, true);
+  if ("status" in input) out.status = toStatus(input.status, "ACTIVE");
 
   return out;
 }

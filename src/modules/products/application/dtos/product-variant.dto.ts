@@ -12,12 +12,9 @@ function toInt(v: unknown, fallback = 0) {
   return Number.isInteger(n) ? n : fallback;
 }
 
-function toBool(v: unknown, fallback = true) {
-  if (typeof v === "boolean") return v;
-  if (typeof v === "string") {
-    if (v === "true") return true;
-    if (v === "false") return false;
-  }
+function toStatus(v: unknown, fallback = "ACTIVE") {
+  const s = String(v ?? "").trim().toUpperCase();
+  if (s === "ACTIVE" || s === "INACTIVE" || s === "ARCHIVED") return s;
   return fallback;
 }
 
@@ -30,7 +27,8 @@ export type ProductVariantDTO = {
   retailPrice: string | null;
   currentStock: number;
   reservedStock: number;
-  active: boolean;
+  status: "ACTIVE" | "INACTIVE" | "ARCHIVED";
+  archivedAt: string | null;
   createdAt: string;
   updatedAt: string;
 };
@@ -42,13 +40,13 @@ export type CreateProductVariantDTO = {
   retailPrice?: string | number | null;
   currentStock?: number;
   reservedStock?: number;
-  active?: boolean;
+  status?: "ACTIVE" | "INACTIVE" | "ARCHIVED" | string;
 };
 
 export type UpdateProductVariantDTO = Partial<CreateProductVariantDTO>;
 
 export type VariantQueryDTO = {
-  active?: string;
+  status?: string;
 };
 
 export function assertCreateProductVariantDTO(
@@ -64,8 +62,10 @@ export function assertCreateProductVariantDTO(
     throw new Error("La variante debe tener al menos color o talla");
   }
 
-  const currentStock = x.currentStock == null ? 0 : toInt(x.currentStock, NaN as never);
-  const reservedStock = x.reservedStock == null ? 0 : toInt(x.reservedStock, NaN as never);
+  const currentStock =
+    x.currentStock == null ? 0 : toInt(x.currentStock, NaN as never);
+  const reservedStock =
+    x.reservedStock == null ? 0 : toInt(x.reservedStock, NaN as never);
 
   if (!Number.isInteger(currentStock) || currentStock < 0) {
     throw new Error("currentStock inválido");
@@ -83,6 +83,13 @@ export function assertCreateProductVariantDTO(
     const price = Number(x.retailPrice);
     if (!Number.isFinite(price) || price < 0) {
       throw new Error("retailPrice inválido");
+    }
+  }
+
+  if ("status" in x && x.status != null && x.status !== "") {
+    const status = toStatus(x.status, "__INVALID__");
+    if (status === "__INVALID__") {
+      throw new Error("status inválido");
     }
   }
 }
@@ -114,13 +121,20 @@ export function assertUpdateProductVariantDTO(
       throw new Error("retailPrice inválido");
     }
   }
+
+  if ("status" in x && x.status != null && x.status !== "") {
+    const raw = String(x.status).trim().toUpperCase();
+    if (raw !== "ACTIVE" && raw !== "INACTIVE" && raw !== "ARCHIVED") {
+      throw new Error("status inválido");
+    }
+  }
 }
 
 export function normalizeVariantQuery(input: unknown): VariantQueryDTO {
   const x = (input ?? {}) as Record<string, unknown>;
   return {
-    active: toStr(x.active) || undefined,
+    status: toStr(x.status).toUpperCase() || undefined,
   };
 }
 
-export { toStr, toNullableStr, toInt, toBool };
+export { toStr, toNullableStr, toInt, toStatus };
