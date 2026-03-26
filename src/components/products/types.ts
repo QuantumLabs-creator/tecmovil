@@ -20,6 +20,8 @@ export type Product = {
   currentStock: number;
   reservedStock: number;
 
+  hasVariants: boolean;
+
   pendingRequestedStock: number;
   availableRealStock: number;
   availableCommercialStock: number;
@@ -56,6 +58,8 @@ export type ProductDraft = {
   currentStock: number;
   reservedStock: number;
 
+  hasVariants: boolean;
+
   pendingRequestedStock: number;
   availableRealStock: number;
   availableCommercialStock: number;
@@ -88,6 +92,8 @@ export const emptyProductDraft: ProductDraft = {
   minStock: 0,
   currentStock: 0,
   reservedStock: 0,
+
+  hasVariants: false,
 
   pendingRequestedStock: 0,
   availableRealStock: 0,

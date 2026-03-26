@@ -25,6 +25,7 @@ export type Product = {
   availableCommercialStock: number;
 
   status: "ACTIVE" | "INACTIVE" | "ARCHIVED";
+  hasVariants: boolean;
 
   createdAt?: string;
   updatedAt?: string;

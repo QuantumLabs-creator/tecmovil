@@ -61,6 +61,8 @@ function mapApiProductToProduct(p: ProductApiRecord | null | undefined): Product
     currentStock: Number(p?.currentStock ?? 0),
     reservedStock: Number(p?.reservedStock ?? 0),
 
+    hasVariants: Boolean((p as any)?.hasVariants ?? false),
+
     pendingRequestedStock: Number(p?.pendingRequestedStock ?? 0),
     availableRealStock: Number(p?.availableRealStock ?? 0),
     availableCommercialStock: Number(p?.availableCommercialStock ?? 0),
@@ -209,6 +211,8 @@ export default function ProductsPage() {
       currentStock: product.currentStock,
       reservedStock: product.reservedStock,
 
+      hasVariants: product.hasVariants,
+
       pendingRequestedStock: product.pendingRequestedStock,
       availableRealStock: product.availableRealStock,
       availableCommercialStock: product.availableCommercialStock,
@@ -324,6 +328,8 @@ export default function ProductsPage() {
         minStock: draft.minStock,
         currentStock: draft.currentStock,
         reservedStock: draft.reservedStock,
+
+        hasVariants: Boolean(draft.hasVariants),
 
         status: draft.status,
 

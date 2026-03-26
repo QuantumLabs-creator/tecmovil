@@ -26,6 +26,63 @@ function toStatus(v: unknown, fallback: ProductStatus = "ACTIVE"): ProductStatus
   return fallback;
 }
 
+function normalizeSkuPart(v?: string | null) {
+  return String(v ?? "")
+    .trim()
+    .toUpperCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^A-Z0-9]/g, "")
+    .slice(0, 5);
+}
+
+function colorCode(color?: string | null) {
+  const c = String(color ?? "").trim().toLowerCase();
+
+  const map: Record<string, string> = {
+    rojo: "RED",
+    red: "RED",
+    azul: "BLU",
+    blue: "BLU",
+    negro: "BLK",
+    black: "BLK",
+    blanco: "WHT",
+    white: "WHT",
+    verde: "GRN",
+    green: "GRN",
+    amarillo: "YLW",
+    yellow: "YLW",
+    rosado: "PNK",
+    pink: "PNK",
+    morado: "PUR",
+    purple: "PUR",
+    gris: "GRY",
+    gray: "GRY",
+    plata: "SLV",
+    silver: "SLV",
+    dorado: "GLD",
+    gold: "GLD",
+  };
+
+  return map[c] ?? normalizeSkuPart(color);
+}
+
+function sizeCode(size?: string | null) {
+  return normalizeSkuPart(size);
+}
+
+export function generateVariantSku(params: {
+  productCode: string;
+  color?: string | null;
+  size?: string | null;
+}) {
+  const base = normalizeSkuPart(params.productCode);
+  const color = colorCode(params.color);
+  const size = sizeCode(params.size);
+
+  return [base, color, size].filter(Boolean).join("-");
+}
+
 export function normalizeCreateVariant(input: {
   productId: unknown;
   color?: unknown;
